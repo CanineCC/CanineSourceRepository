@@ -1,21 +1,28 @@
 ﻿using EngineEvents;
 using Marten;
 using Marten.Events.Aggregation;
+using System.Globalization;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
 
 public static class FeatureInovationFeatures
 {
-  public static async Task RegisterEvent(this IDocumentSession session, Guid id, IEvent @event, CancellationToken ct)
+  //public static async Task RegisterEvent(this IDocumentSession session, Guid id, Guid causationId, IEvent @event, CancellationToken ct)
+  //{
+  //  session.CorrelationId = id.ToString("N");
+  //  session.CausationId = causationId;
+
+  //  await session.Events.WriteToAggregate<FeatureInvocationAggregate>(
+  //          id,
+  //          stream => stream.AppendOne(@event),
+  //          ct);
+  //}
+  public static async Task RegisterEvents(this IDocumentSession session, CancellationToken ct, Guid id, Guid causationId, params IEvent[] @events)
   {
-    await session.Events.WriteToAggregate<FeatureInvocationAggregate>(
-            id,
-            stream => stream.AppendOne(@event),
-            ct);
-  }
-  public static async Task RegisterEvents(this IDocumentSession session, CancellationToken ct, Guid id, params IEvent[] @events)
-  {
+    session.CorrelationId = id.ToString("N");
+    session.CausationId = causationId.ToString("N");
+
     await session.Events.WriteToAggregate<FeatureInvocationAggregate>(
             id,
             stream => stream .AppendMany(@events),

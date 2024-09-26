@@ -122,7 +122,7 @@ public static class BpnEngine
       stopwatch.Stop();
     }
 
-    await session.RegisterEvents(ct, correlationId.Value, invocationEvents.ToArray());
+    await session.RegisterEvents(ct, correlationId.Value, feature.Id, invocationEvents.ToArray());
     return success;
   }
 }

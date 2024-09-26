@@ -49,7 +49,7 @@ public abstract class ServiceInjection
       if (isOk == false)
       {
         invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed));
-        await session.RegisterEvents(ct, correlationId, invocationEvents.ToArray());
+        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
 
@@ -63,7 +63,7 @@ public abstract class ServiceInjection
           break;
         default:
           invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed));
-          await session.RegisterEvents(ct, correlationId, invocationEvents.ToArray());
+          await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
           return new TaskResult(false, result);
       }
 
@@ -74,7 +74,7 @@ public abstract class ServiceInjection
       if (ex.InnerException != null)
       {
         invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed));
-        await session.RegisterEvents(ct, correlationId, invocationEvents.ToArray());
+        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
 
         if (ex.InnerException is UnauthorizedAccessException)
         {
@@ -84,12 +84,12 @@ public abstract class ServiceInjection
       else
       {
         invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed));
-        await session.RegisterEvents(ct, correlationId, invocationEvents.ToArray());
+        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
         throw;
       }
       return new TaskResult(false, result);
     }
-    await session.RegisterEvents(ct, correlationId, invocationEvents.ToArray());
+    await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
     return new TaskResult(true, result);
   }
 }

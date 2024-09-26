@@ -40,7 +40,7 @@
 
 <script>
   const model = @Html.Raw(JsonSerializer.Serialize(Model, BpnFeatureRepository.bpnJsonSerialize));
-  const nodesData = model.Feature.Nodes;
+  const nodesData = model.Feature.Tasks;
   const nodesPositions = model.Diagram.BpnPositions;
   const connectionsData = model.Feature.Transitions;
   const eventLog = @Html.Raw(JsonSerializer.Serialize(Model.LastRun?.EventLog, BpnFeatureRepository.bpnJsonSerialize));  
@@ -57,19 +57,19 @@
       // Loop through eventLog to find NodeSucceeded or NodeFailed for the given NodeId
       for (let event of eventLog) {
           console.log(event);
-          console.log("is : " + event.NodeId + " " + event.Type);
-          console.log(event.NodeId === nodeId);
+          console.log("is : " + event.TaskId + " " + event.Type);
+          console.log(event.TaskId === nodeId);
 
-          if (event.Type === "NodeSucceeded" &&
-              event.NodeId === nodeId) {
+          if (event.Type === "TaskSucceeded" &&
+              event.TaskId === nodeId) {
               result.status = 'Succeeded';
               result.executionDuration = event.ExecutionDuration;
               console.log("Found - success");
               break;
           }
 
-          if (event.Type === "NodeFailed" &&
-              event.NodeId === nodeId) {
+          if (event.Type === "TaskFailed" &&
+              event.TaskId === nodeId) {
               result.status = 'Failed';
               result.executionDuration = event.ExecutionDuration;
               console.log("Found - failed");

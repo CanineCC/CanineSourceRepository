@@ -16,7 +16,7 @@ public record BpnFeatureCompleted(DateTimeOffset EndTime, TimeSpan Duration) : I
 public record TaskInitialized(Guid TaskId, string Input) : IEvent;
 public record TaskFailed(Guid TaskId, ErrorEvent Exception, TimeSpan ExecutionDuration) : IEvent;
 public record FailedTaskReInitialized(string NewInput, TimeSpan ExecutionDuration) : IEvent;
-public record TaskSucceeded(Guid TaskID, TimeSpan ExecutionDuration) : IEvent;
+public record TaskSucceeded(Guid TaskId, TimeSpan ExecutionDuration) : IEvent;
 public record TransitionUsed(Guid FromBpn, Guid ToBpn) : IEvent;
 public record TransitionSkipped(Guid FromBpn, Guid ToBpn) : IEvent;
 public record ErrorEvent(string Message, string Details);
