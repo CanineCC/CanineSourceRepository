@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/CaniineSourceRepository.Ui/bin
+/CaniineSourceRepository.Ui/obj
+/CanineSourceRepository/bin
+/CanineSourceRepository/obj
+/CanineSourceRepositoryTest/bin
+/CanineSourceRepositoryTest/obj
