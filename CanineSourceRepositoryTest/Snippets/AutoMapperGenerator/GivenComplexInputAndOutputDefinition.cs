@@ -1,4 +1,4 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.Bpn;
+﻿using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
 
 namespace CanineSourceRepositoryTest.Snippets.AutoMapperGenerator;
 
@@ -40,7 +40,7 @@ public class GivenComplexInputAndOutputDefinition
   {
     //ARRANGE
     //ACT
-    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Snippets.AutoMapperGenerator.GenerateMapping(inputDefinition, outputDefinition, [inputDetailDefinition, outputDetailDefinition, inputDefinition, outputDefinition]);
+    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets.AutoMapperGenerator.GenerateMapping(inputDefinition, outputDefinition, [inputDetailDefinition, outputDetailDefinition, inputDefinition, outputDefinition]);
 
     //ASSERT
     Assert.Contains("First_Name = input.FirstName", generatedCode);
@@ -55,7 +55,7 @@ public class GivenComplexInputAndOutputDefinition
   {
     //ARRANGE
     //ACT
-    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Snippets.AutoMapperGenerator.GenerateMapping(outputDefinition, inputDefinition, [inputDetailDefinition, outputDetailDefinition, inputDefinition, outputDefinition]);
+    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets.AutoMapperGenerator.GenerateMapping(outputDefinition, inputDefinition, [inputDetailDefinition, outputDetailDefinition, inputDefinition, outputDefinition]);
 
     //ASSERT
     Assert.Contains("FirstName = input.First_Name", generatedCode);

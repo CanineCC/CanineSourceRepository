@@ -29,7 +29,7 @@ public class FeatureInvocationAggregate
   public int Version { get; set; } = 0;
   public void Apply(
        FeatureInvocationAggregate aggregate,
-       BpnFeatureStarted @event
+       FeatureStarted @event
    )
   {
     aggregate.Id = @event.CorrelationId;
@@ -46,11 +46,11 @@ public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocat
     public TimeSpan Duration { get; set; } = TimeSpan.Zero;
     public Guid FeatureId { get; set; }
     public long FeatureVersion { get; set; }
-    public List<IEvent> EventLog { get; set; } = new();
+    public List<IEvent> EventLog { get; set; } = new(); //TODO: Consider NOT using events, instead keep the states "i.e. 'createUserTask, status=success'", instead of an initialized+success event
     public FeatureStatus Status { get; set; } = FeatureStatus.Undefined;
     public FeatureInvocation() { }
 
-    public void Apply(FeatureInvocation projection, BpnFeatureStarted @event)
+    public void Apply(FeatureInvocation projection, FeatureStarted @event)
     {
       projection.Id = @event.CorrelationId;
       projection.StarTime = @event.StarTime;
@@ -59,25 +59,25 @@ public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocat
       projection.Status = FeatureStatus.InProgress;
       EventLog.Add(@event);
     }
-    public void Apply(FeatureInvocation projection, BpnFeatureError @event)
+    public void Apply(FeatureInvocation projection, FeatureError @event)
     {
       EventLog.Add(@event);
       projection.Status = FeatureStatus.Failed;
     }
-    public void Apply(FeatureInvocation projection, NodeInitialized @event) => EventLog.Add(@event);
-    public void Apply(FeatureInvocation projection, NodeFailed @event)
+    public void Apply(FeatureInvocation projection, TaskInitialized @event) => EventLog.Add(@event);
+    public void Apply(FeatureInvocation projection, TaskFailed @event)
     {
       EventLog.Add(@event);
       projection.Status = FeatureStatus.Failed;
     }
-    public void Apply(FeatureInvocation projection, FailedNodeReInitialized @event)
+    public void Apply(FeatureInvocation projection, FailedTaskReInitialized @event)
     {
       EventLog.Add(@event);
       projection.Status = FeatureStatus.InProgress;
     }
-    public void Apply(FeatureInvocation projection, NodeSucceeded @event) => EventLog.Add(@event);
-    public void Apply(FeatureInvocation projection, ConnectionUsed @event) => EventLog.Add(@event);
-    public void Apply(FeatureInvocation projection, ConnectionSkipped @event) => EventLog.Add(@event);
+    public void Apply(FeatureInvocation projection, TaskSucceeded @event) => EventLog.Add(@event);
+    public void Apply(FeatureInvocation projection, TransitionUsed @event) => EventLog.Add(@event);
+    public void Apply(FeatureInvocation projection, TransitionSkipped @event) => EventLog.Add(@event);
     public void Apply(FeatureInvocation projection, BpnFeatureCompleted @event) 
     { 
       EventLog.Add(@event);

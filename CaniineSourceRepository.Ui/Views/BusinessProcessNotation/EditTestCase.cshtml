@@ -1,4 +1,5 @@
-﻿<style>
+﻿@using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task
+<style>
   .test-case {
     border: 1px solid #ccc;
     padding: 15px;
@@ -51,7 +52,7 @@
 
 <script>
   const assertOperations = [
-  @foreach (var operation in Enum.GetNames(typeof(CanineSourceRepository.BusinessProcessNotation.AssertOperation)))
+  @foreach (var operation in Enum.GetNames(typeof(AssertOperation)))
   {
     <text>'@operation',</text>
   }

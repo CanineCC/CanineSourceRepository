@@ -1,4 +1,3 @@
-using CanineSourceRepository.BusinessProcessNotation;
 using EngineEvents;
 using CanineSourceRepository.BusinessProcessNotation.Engine;
 using CanineSourceRepository.Ui.Controllers;
@@ -8,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Npgsql;
 using Weasel.Core;
 using Marten.Events.Projections;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,14 +32,14 @@ builder.Services.AddMarten(serviceProvider =>
   //options.Projections.Errors.SkipApplyErrors = true;
   //options.Projections.Errors.SkipSerializationErrors = true;
   //options.Projections.Errors.SkipUnknownEvents = true;
-  options.Events.AddEventType<BpnFeatureStarted>();
-  options.Events.AddEventType<BpnFeatureError>();
-  options.Events.AddEventType<NodeInitialized>();
-  options.Events.AddEventType<NodeFailed>();
-  options.Events.AddEventType<FailedNodeReInitialized>();
-  options.Events.AddEventType<NodeSucceeded>();
-  options.Events.AddEventType<ConnectionUsed>();
-  options.Events.AddEventType<ConnectionSkipped>();
+  options.Events.AddEventType<FeatureStarted>();
+  options.Events.AddEventType<FeatureError>();
+  options.Events.AddEventType<TaskInitialized>();
+  options.Events.AddEventType<TaskFailed>();
+  options.Events.AddEventType<FailedTaskReInitialized>();
+  options.Events.AddEventType<TaskSucceeded>();
+  options.Events.AddEventType<TransitionUsed>();
+  options.Events.AddEventType<TransitionSkipped>();
 
 
 
@@ -121,17 +122,17 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
-BpnRepository.Load();
+BpnFeatureRepository.Load();
 BpnDiagramRepository.Load();
 
 BpnFeature feature;
 BpnFeatureDiagram diagram;
-if (BpnRepository.All().Count == 0)
+if (BpnFeatureRepository.All().Count == 0)
 {
   HomeController.GenerateDefaultData(out feature, out diagram);
-  BpnRepository.Add(feature);
+  BpnFeatureRepository.Add(feature);
   BpnDiagramRepository.Add(diagram);
-  BpnRepository.Save();
+  BpnFeatureRepository.Save();
   BpnDiagramRepository.Save();
 }
 

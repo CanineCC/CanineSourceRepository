@@ -1,4 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 using System.Reflection;
 
 namespace CanineSourceRepositoryTest.BusinessProcessNotation;
@@ -10,8 +11,8 @@ public class GivenAValidHelloWorldCodeBlock
   public GivenAValidHelloWorldCodeBlock()
   {
     block = new CodeBlock("Generate hello world");
-    block = (block.AddRecordType(new Bpn.RecordDefinition("Output", new Bpn.DataDefinition("Greeting", "string"))) as CodeBlock)!;
-    block = (block.AddRecordType(new Bpn.RecordDefinition("Input", new Bpn.DataDefinition("Greet", "string"), new Bpn.DataDefinition("Name", "string"))) as CodeBlock)!;
+    block = (block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Greeting", "string"))) as CodeBlock)!;
+    block = (block.AddRecordType(new BpnTask.RecordDefinition("Input", new BpnTask.DataDefinition("Greet", "string"), new BpnTask.DataDefinition("Name", "string"))) as CodeBlock)!;
     block = block with { Input = "Input", Output = "Output", Code = "return new Output(input.Greet + ' ' + input.Name);" };
 
 
@@ -30,7 +31,7 @@ public class GivenAValidHelloWorldCodeBlock
     var input = new { Greet = "Hello", Name = "world" };
 
     //ACT
-    var result = await block.Execute(input, null, assembly);
+    var result = await block.Execute(input, new NoService(), assembly);
 
     //ASSERT
     Assert.Equal("Hello world", result?.Greeting);
@@ -43,7 +44,7 @@ public class GivenAValidHelloWorldCodeBlock
     var input = new { Greet = "Hello", wrongField = "world" };
 
     //ACT
-    var result = await block.Execute(input, null, assembly);
+    var result = await block.Execute(input, new NoService(), assembly);
 
     //ASSERT
     Assert.NotEqual("Hello world", result?.Greeting);
@@ -93,7 +94,7 @@ public class GivenAValidHelloWorldCodeBlock
   {
     //ARRANGE
     //ACT
-    var testResult = await block.RunTests(null, assembly);
+    var testResult = await block.RunTests(new NoService(), assembly);
     var anyUnsuccessful = testResult.Any(p => p.Success == false);
 
     //ASSERT

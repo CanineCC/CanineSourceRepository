@@ -1,4 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 using System.Reflection;
 
 namespace CanineSourceRepositoryTest.BusinessProcessNotation;
@@ -10,15 +11,15 @@ public class GivenACodeBlockUsingAllBasicTypes
   public GivenACodeBlockUsingAllBasicTypes()
   {
     block = new CodeBlock("Check Types");
-    block = (block.AddRecordType(new Bpn.RecordDefinition("Output", new Bpn.DataDefinition("Success", "bool"))) as CodeBlock)!;
-    block = (block.AddRecordType(new Bpn.RecordDefinition("Input",
-        new Bpn.DataDefinition("Text", "string"),
-        new Bpn.DataDefinition("YesNo", "bool"),
-        new Bpn.DataDefinition("Number", "long"),
-        new Bpn.DataDefinition("Fraction", "decimal"),
-        new Bpn.DataDefinition("StartDateTime", "DateTimeOffset"),
-        new Bpn.DataDefinition("StartDate", "DateOnly"),
-        new Bpn.DataDefinition("StartTime", "TimeOnly")
+    block = (block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Success", "bool"))) as CodeBlock)!;
+    block = (block.AddRecordType(new BpnTask.RecordDefinition("Input",
+        new BpnTask.DataDefinition("Text", "string"),
+        new BpnTask.DataDefinition("YesNo", "bool"),
+        new BpnTask.DataDefinition("Number", "long"),
+        new BpnTask.DataDefinition("Fraction", "decimal"),
+        new BpnTask.DataDefinition("StartDateTime", "DateTimeOffset"),
+        new BpnTask.DataDefinition("StartDate", "DateOnly"),
+        new BpnTask.DataDefinition("StartTime", "TimeOnly")
         //        new BPN.DataDefinition("Blob", "byte[]") -- base64 encoded... helper functions needed
         )) as CodeBlock)!;
     block = block with { Input = "Input", Output = "Output", Code = "return new Output(true);" };
@@ -44,7 +45,7 @@ public class GivenACodeBlockUsingAllBasicTypes
 """;
 
     //ACT
-    var result = await block.Execute(jsonInput, null, assembly);
+    var result = await block.Execute(jsonInput, new NoService(), assembly);
 
     //ASSERT
     Assert.NotNull(result);

@@ -1,5 +1,6 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
-using CanineSourceRepository.BusinessProcessNotation.Snippets;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ namespace CanineSourceRepository.Ui.Controllers
     public async Task<IActionResult> GetSnippetsForCodeBlock()
     {
       var json = await (new StreamReader(Request.Body).ReadToEndAsync());
-      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnRepository.bpnJsonSerialize)!;
+      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnFeatureRepository.bpnJsonSerialize)!;
 
       var input = fromClient.RecordTypes.FirstOrDefault(p => p.Name == fromClient.Input);
       var output = fromClient.RecordTypes.FirstOrDefault(p => p.Name == fromClient.Output);
@@ -39,7 +40,7 @@ namespace CanineSourceRepository.Ui.Controllers
     public async Task<IActionResult> VerifyCodeBlock()
     {
       var json = await (new StreamReader(Request.Body).ReadToEndAsync());
-      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnRepository.bpnJsonSerialize)!;
+      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnFeatureRepository.bpnJsonSerialize)!;
 
       var res = fromClient.VerifyCode();
       if (res.success)
@@ -53,15 +54,15 @@ namespace CanineSourceRepository.Ui.Controllers
     public async Task<IActionResult> Save([FromServices] IDocumentSession session)
     {
       var json = await (new StreamReader(Request.Body).ReadToEndAsync());
-      var fromClient = JsonSerializer.Deserialize<UiModel>(json, BpnRepository.bpnJsonSerialize)!;
+      var fromClient = JsonSerializer.Deserialize<UiModel>(json, BpnFeatureRepository.bpnJsonSerialize)!;
 
       var newFeature = fromClient.Feature.NewRevision("todo-user");
       var newDiagram = fromClient.Diagram;
 
       //TODO: verify....
       //TODO: run tests...
-      BpnRepository.Add(newFeature);
-      BpnRepository.Save();
+      BpnFeatureRepository.Add(newFeature);
+      BpnFeatureRepository.Save();
 
       newDiagram.FeatureVersion = newFeature.Version;
       //TODO: validate...
@@ -77,7 +78,7 @@ namespace CanineSourceRepository.Ui.Controllers
     public IActionResult Index(Guid id, [FromServices] IDocumentSession session)//htmx
     {
       var lastRun = session.Query<FeatureInvocation>().Where(p=>p.FeatureId == id).OrderByDescending(p=>p.StarTime).FirstOrDefault();
-      return PartialView("Index", new UiModel(BpnRepository.Load(id), BpnDiagramRepository.Load(id), lastRun));
+      return PartialView("Index", new UiModel(BpnFeatureRepository.Load(id), BpnDiagramRepository.Load(id), lastRun));
     }
 
 

@@ -1,11 +1,13 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 
 /// <summary>
 /// Visual representation of the BpnFeature, annotations for position on UI
 /// </summary>
 public class BpnFeatureDiagram
 {
-  public Guid FeatureId { get; set;  }
+  public Guid FeatureId { get; set; }
   public long FeatureVersion { get; set; }
   public record Position(int X, int Y);
   public record BpnPosition(Guid Id, Position Position);
@@ -14,17 +16,17 @@ public class BpnFeatureDiagram
   public List<ConnectionWaypoints> BpnConnectionWaypoints { get; set; } = [];
   public record ConnectionWaypoints(Guid FromBPN, Guid ToBPN, params Position[] Waypoints);
 
-  public List<Bpn> MissingElements()
+  public List<BpnTask> MissingElements()
   {
-    var feature = BpnRepository.Load(FeatureId, FeatureVersion);
+    var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
     var positions = BpnPositions.Select(n => n.Id).ToList();
-    return feature.Nodes.Where(node => positions.Contains(node.Id) == false).ToList();
+    return feature.Tasks.Where(node => positions.Contains(node.Id) == false).ToList();
   }
-  public List<Connection> MissingConnections()
+  public List<Transition> MissingConnections()
   {
-    var feature = BpnRepository.Load(FeatureId, FeatureVersion);
-    var connectionProjections = feature.Connections
-        .Select(c => new { c.FromBPN, c.ToBPN});
+    var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
+    var connectionProjections = feature.Transitions
+        .Select(c => new { c.FromBPN, c.ToBPN });
 
     var waypointProjections = BpnConnectionWaypoints
         .Select(w => new { w.FromBPN, w.ToBPN });
@@ -33,16 +35,16 @@ public class BpnFeatureDiagram
         .Except(waypointProjections)
         .ToList();
 
-    return feature.Connections
+    return feature.Transitions
         .Where(c => difference
             .Contains(new { c.FromBPN, c.ToBPN }))
         .ToList();
   }
 
-  public List<Bpn> OrphanElements()
+  public List<BpnTask> OrphanElements()
   {
-    var feature = BpnRepository.Load(FeatureId, FeatureVersion);
-    return feature.Nodes.Where(node => feature.Connections.Where(c => c.FromBPN == node.Id || c.ToBPN == node.Id).Any() == false).ToList();
+    var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
+    return feature.Tasks.Where(node => feature.Transitions.Where(c => c.FromBPN == node.Id || c.ToBPN == node.Id).Any() == false).ToList();
   }
 }
 

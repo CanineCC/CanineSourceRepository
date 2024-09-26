@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 
-namespace CanineSourceRepository.BusinessProcessNotation;
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 public record Map(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
 
-public record Connection(
+public record Transition(
     Guid FromBPN,
     Guid ToBPN,
     string Name,
@@ -11,7 +11,7 @@ public record Connection(
     params Map[] Mappings
 )
 {
-  private string GetTypeName() => $"Connection_{FromBPN:N}_{ToBPN:N}";
+  private string GetTypeName() => $"Transition_{FromBPN:N}_{ToBPN:N}";
   public string ToCode(bool includeNamespace = true)
   {
     var usingAndNamespace = includeNamespace ? @$"using System;
@@ -34,7 +34,7 @@ public static class {GetTypeName()} {{
 
     var res = method.Invoke(null, [inputObject]);
 
-    return res != null && (bool)res; 
+    return res != null && (bool)res;
   }
 
 

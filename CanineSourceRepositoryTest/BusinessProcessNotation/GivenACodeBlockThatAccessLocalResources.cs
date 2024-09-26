@@ -1,4 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using System.Reflection;
 
 namespace CanineSourceRepositoryTest.BusinessProcessNotation;
@@ -9,8 +9,8 @@ public class GivenACodeBlockThatAccessLocalResources
   public GivenACodeBlockThatAccessLocalResources()
   {
     block = new CodeBlock("Use FileIO");
-    block.AddRecordType(new Bpn.RecordDefinition("Output", new Bpn.DataDefinition("Text", "string")));
-    block.AddRecordType(new Bpn.RecordDefinition("Input"));
+    block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Text", "string")));
+    block.AddRecordType(new BpnTask.RecordDefinition("Input"));
     block = block with
     {
       Input = "Input",

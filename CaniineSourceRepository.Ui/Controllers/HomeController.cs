@@ -1,4 +1,6 @@
 using CanineSourceRepository.BusinessProcessNotation;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.Ui.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +27,7 @@ namespace CanineSourceRepository.Ui.Controllers
     //[Authorize]
     public IActionResult BusinessProcessNotation()
     {
-      var diagrams = BpnRepository.All().Select(d => new { id = d.Id, name = d.Name }).ToList();
+      var diagrams = BpnFeatureRepository.All().Select(d => new { id = d.Id, name = d.Name }).ToList();
 
       ViewBag.Diagrams = JsonSerializer.Serialize(diagrams);
       return View();
@@ -35,8 +37,8 @@ namespace CanineSourceRepository.Ui.Controllers
     public static void GenerateDefaultData(out BpnFeature feature, out BpnFeatureDiagram diagram)
     {
       var entryBlock = new ApiInputBlock("Create user endpoint", ["Anonymous"]);
-      entryBlock = (entryBlock.AddRecordType(new Bpn.RecordDefinition("Api",
-        new Bpn.DataDefinition("Name", "string")
+      entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
+        new BpnTask.DataDefinition("Name", "string")
         )) as ApiInputBlock)!;
       entryBlock = entryBlock with
       {
@@ -45,19 +47,20 @@ namespace CanineSourceRepository.Ui.Controllers
 
       var createUserBlock = new CodeBlock("Create user logic");
       createUserBlock = (createUserBlock.AddRecordType(
-        new Bpn.RecordDefinition("Output",
-        new Bpn.DataDefinition("Id", "Guid"),
-        new Bpn.DataDefinition("Name", "string")
+        new BpnTask.RecordDefinition("Output",
+        new BpnTask.DataDefinition("Id", "Guid"),
+        new BpnTask.DataDefinition("Name", "string")
      //   new Bpn.DataDefinition("Accessscope", "string")
         )) as CodeBlock)!;
       createUserBlock = (createUserBlock.AddRecordType(
-        new Bpn.RecordDefinition("Input",
-        new Bpn.DataDefinition("Name", "string")
+        new BpnTask.RecordDefinition("Input",
+        new BpnTask.DataDefinition("Name", "string")
       //  new Bpn.DataDefinition("Accessscope", "string")
         )) as CodeBlock)!;
       createUserBlock = createUserBlock with
       {
-        Description = "todo - longer description to help with overview in diagram",
+        BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",
+        BehavioralGoal = "Ensure the email is verified and allow access to content.",
         Input = "Input",
         Output = "Output",
         Code = @$"
@@ -69,20 +72,21 @@ namespace CanineSourceRepository.Ui.Controllers
 
       var logUserBlock = new CodeBlock("Log user");
       logUserBlock = (logUserBlock.AddRecordType(
-        new Bpn.RecordDefinition("Input",
-        new Bpn.DataDefinition("Id", "Guid"),
-        new Bpn.DataDefinition("Name", "string")
+        new BpnTask.RecordDefinition("Input",
+        new BpnTask.DataDefinition("Id", "Guid"),
+        new BpnTask.DataDefinition("Name", "string")
         )) as CodeBlock)!;
       logUserBlock = logUserBlock with
       {
-        Description = "todo - another description to help with overview in diagram",
+        BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",
+        BehavioralGoal = "Ensure the email is verified and allow access to content.",
         Input = "Input",
         Code = @$"
     Console.WriteLine(input.Id.ToString() + input.Name);
     "
       };
 
-      var connection = new Connection(
+      var transition = new Transition(
         entryBlock.Id,
         createUserBlock.Id,
         "Call Accepted",
@@ -90,7 +94,7 @@ namespace CanineSourceRepository.Ui.Controllers
         new Map("input.Name", "Name")//,//issue with lists and multiple fields of same type, but with different mappings
        // new Map("input.Name ?? \"Anonymous\"", "Accessscope")
         );
-      var logconnection = new Connection(
+      var logTransition = new Transition(
         createUserBlock.Id,
         logUserBlock.Id,
         "Log info",
@@ -102,11 +106,11 @@ namespace CanineSourceRepository.Ui.Controllers
       feature = BpnFeature
         .CreateNew(
         name: "Test diagram",
-        nodes: [entryBlock, createUserBlock, logUserBlock],
-        connections: [connection, logconnection],
+        tasks: [entryBlock, createUserBlock, logUserBlock],
+        transitions: [transition, logTransition],
         targetEnvironments: [BpnFeature.Environment.Development, BpnFeature.Environment.Testing])
         .NewRevision("me");
-      BpnRepository.Add(feature);
+      BpnFeatureRepository.Add(feature);
 
       feature = feature.NewRevision("System");
 

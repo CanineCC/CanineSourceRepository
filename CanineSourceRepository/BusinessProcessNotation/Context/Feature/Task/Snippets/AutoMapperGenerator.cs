@@ -1,6 +1,6 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.Bpn;
+﻿using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Snippets;
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 
 
 public static class AutoMapperGenerator
@@ -34,14 +34,15 @@ public static class AutoMapperGenerator
         else if (IsCustomRecordDefinition(inputField.Type, customDefinitions, out var customInputDefinition) &&
                  IsCustomRecordDefinition(outputField.Type, customDefinitions, out var customOutputDefinition))
         {
-          code += $"{inputAlias}.{inputField.Name}.Select(item => {GenerateMapping(customInputDefinition!, customOutputDefinition!, customDefinitions, "item", tabs+1)}).ToImmutableList()";
+          code += $"{inputAlias}.{inputField.Name}.Select(item => {GenerateMapping(customInputDefinition!, customOutputDefinition!, customDefinitions, "item", tabs + 1)}).ToImmutableList()";
         }
         else
         {
           // Handle scalar type conversions
           code += HandleTypeConversion(inputAlias, inputField.Type, outputField.Type, inputField.Name);
         }
-      } else
+      }
+      else
       {
         code += "/*todo*/";
       }
@@ -55,7 +56,7 @@ public static class AutoMapperGenerator
   {
     return name.Replace("_", "").ToLowerInvariant();
   }
- 
+
   private static bool IsCustomRecordDefinition(string type, RecordDefinition[] customDefinitions, out RecordDefinition? customDefinition)
   {
     customDefinition = customDefinitions.FirstOrDefault(def => def.Name == type);

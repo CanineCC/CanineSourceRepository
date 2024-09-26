@@ -10,15 +10,15 @@ public interface IEvent;
 //TODO: CausationId => event?
 //TODO: Headers => ?
 //TODO: Archived => ?
-public record BpnFeatureStarted(DateTimeOffset StarTime, Guid FeatureId, long FeatureVersion, Guid CorrelationId) : IEvent;
-public record BpnFeatureError(ErrorEvent Exception) : IEvent;
+public record FeatureStarted(DateTimeOffset StarTime, Guid FeatureId, long FeatureVersion, Guid CorrelationId) : IEvent;
+public record FeatureError(ErrorEvent Exception) : IEvent;
 public record BpnFeatureCompleted(DateTimeOffset EndTime, TimeSpan Duration) : IEvent;
-public record NodeInitialized(Guid NodeId, string Input) : IEvent;
-public record NodeFailed(Guid NodeId, ErrorEvent Exception, TimeSpan ExecutionDuration) : IEvent;
-public record FailedNodeReInitialized(string NewInput, TimeSpan ExecutionDuration) : IEvent;
-public record NodeSucceeded(Guid NodeId, TimeSpan ExecutionDuration) : IEvent;
-public record ConnectionUsed(Guid FromBpn, Guid ToBpn) : IEvent;
-public record ConnectionSkipped(Guid FromBpn, Guid ToBpn) : IEvent;
+public record TaskInitialized(Guid TaskId, string Input) : IEvent;
+public record TaskFailed(Guid TaskId, ErrorEvent Exception, TimeSpan ExecutionDuration) : IEvent;
+public record FailedTaskReInitialized(string NewInput, TimeSpan ExecutionDuration) : IEvent;
+public record TaskSucceeded(Guid TaskID, TimeSpan ExecutionDuration) : IEvent;
+public record TransitionUsed(Guid FromBpn, Guid ToBpn) : IEvent;
+public record TransitionSkipped(Guid FromBpn, Guid ToBpn) : IEvent;
 public record ErrorEvent(string Message, string Details);
 
 
@@ -67,7 +67,7 @@ public static class InputLogger
     return JsonSerializer.Serialize(logDetails, new JsonSerializerOptions { WriteIndented = true });
   }
 
-  private static object LogInputRecursive(object input)
+  private static object? LogInputRecursive(object input)
   {
     if (input == null) return null;
 
@@ -79,18 +79,18 @@ public static class InputLogger
       return input;
     }
 
-    var logDetails = new Dictionary<string, object>();
+    var logDetails = new Dictionary<string, object?>();
 
     foreach (var prop in inputType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
     {
       var value = prop.GetValue(input);
-      logDetails[prop.Name] = TruncateIfNeeded(value);
+      logDetails[prop.Name] = value == null ? value  : TruncateIfNeeded(value);
     }
 
     return logDetails;
   }
 
-  private static object TruncateIfNeeded(object value)
+  private static object? TruncateIfNeeded(object value)
   {
     if (value == null) return null;
 

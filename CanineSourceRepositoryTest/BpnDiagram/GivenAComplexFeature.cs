@@ -1,4 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 namespace CanineSourceRepositoryTest.BpnDiagram;
 
@@ -8,8 +10,8 @@ public class GivenAComplexFeature
   public GivenAComplexFeature()
   {
     var entryBlock = new ApiInputBlock("Create user endpoint", ["Anonymous"]);
-    entryBlock = (entryBlock.AddRecordType(new Bpn.RecordDefinition("Api",
-      new Bpn.DataDefinition("Name", "string")
+    entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
+      new BpnTask.DataDefinition("Name", "string")
       )) as ApiInputBlock)!;
     entryBlock = entryBlock with
     {
@@ -18,15 +20,15 @@ public class GivenAComplexFeature
 
     var createUserBlock = new CodeBlock("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
-      new Bpn.RecordDefinition("Output", 
-      new Bpn.DataDefinition("Id", "Guid"),
-      new Bpn.DataDefinition("Name", "string"),
-      new Bpn.DataDefinition("Accessscope", "string")
+      new BpnTask.RecordDefinition("Output", 
+      new BpnTask.DataDefinition("Id", "Guid"),
+      new BpnTask.DataDefinition("Name", "string"),
+      new BpnTask.DataDefinition("Accessscope", "string")
       )) as CodeBlock)!;
     createUserBlock = (createUserBlock.AddRecordType(
-      new Bpn.RecordDefinition("Input", 
-      new Bpn.DataDefinition("Name", "string"),
-      new Bpn.DataDefinition("Accessscope", "string")
+      new BpnTask.RecordDefinition("Input", 
+      new BpnTask.DataDefinition("Name", "string"),
+      new BpnTask.DataDefinition("Accessscope", "string")
       )) as CodeBlock)!;
     createUserBlock = createUserBlock with
     {
@@ -41,9 +43,9 @@ public class GivenAComplexFeature
 
     var logUserBlock = new CodeBlock("Log user");
     logUserBlock = (logUserBlock.AddRecordType(
-      new Bpn.RecordDefinition("Input",
-      new Bpn.DataDefinition("Id", "Guid"),
-      new Bpn.DataDefinition("Name", "string")
+      new BpnTask.RecordDefinition("Input",
+      new BpnTask.DataDefinition("Id", "Guid"),
+      new BpnTask.DataDefinition("Name", "string")
       )) as CodeBlock)!;
     logUserBlock = logUserBlock with
     {
@@ -54,7 +56,7 @@ public class GivenAComplexFeature
     };
 
 
-    var connection = new Connection(
+    var transition = new Transition(
       entryBlock.Id,
       createUserBlock.Id,
       "Call Accepted",
@@ -62,7 +64,7 @@ public class GivenAComplexFeature
       new Map("input.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
       new Map("input.Name ?? \"Anonymous\"", "Accessscope")
       );
-    var logconnection = new Connection(
+    var logTransition = new Transition(
       createUserBlock.Id,
       logUserBlock.Id,
       "Log info",
@@ -71,8 +73,8 @@ public class GivenAComplexFeature
       new Map("output.Id", "Id")
       );
 
-    feature = BpnFeature.CreateNew("Test diagram", [entryBlock, createUserBlock, logUserBlock], [connection, logconnection], [BpnFeature.Environment.Development, BpnFeature.Environment.Testing]);
-    BpnRepository.Add(feature.NewRevision("me"));
+    feature = BpnFeature.CreateNew("Test diagram", [entryBlock, createUserBlock, logUserBlock], [transition, logTransition], [BpnFeature.Environment.Development, BpnFeature.Environment.Testing]);
+    BpnFeatureRepository.Add(feature.NewRevision("me"));
   }
 
 

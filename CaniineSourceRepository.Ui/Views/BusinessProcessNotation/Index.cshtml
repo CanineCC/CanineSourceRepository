@@ -1,4 +1,5 @@
-﻿@model UiModel
+﻿@using CanineSourceRepository.BusinessProcessNotation.Context.Feature
+@model UiModel
 
 <div style="display:grid; grid-template-columns: auto 250px;">
   <h1>
@@ -38,11 +39,11 @@
 @await Html.PartialAsync("Editor")
 
 <script>
-  const model = @Html.Raw(JsonSerializer.Serialize(Model, BpnRepository.bpnJsonSerialize));
+  const model = @Html.Raw(JsonSerializer.Serialize(Model, BpnFeatureRepository.bpnJsonSerialize));
   const nodesData = model.Feature.Nodes;
   const nodesPositions = model.Diagram.BpnPositions;
-  const connectionsData = model.Feature.Connections;
-  const eventLog = @Html.Raw(JsonSerializer.Serialize(Model.LastRun.EventLog, BpnRepository.bpnJsonSerialize));  
+  const connectionsData = model.Feature.Transitions;
+  const eventLog = @Html.Raw(JsonSerializer.Serialize(Model.LastRun?.EventLog, BpnFeatureRepository.bpnJsonSerialize));  
   console.log(eventLog)
 
   function getNodeStatus(nodeId) {

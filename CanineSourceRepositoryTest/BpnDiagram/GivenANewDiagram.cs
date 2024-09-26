@@ -1,4 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 
 namespace CanineSourceRepositoryTest.BpnDiagram;
 
@@ -25,12 +25,12 @@ public class GivenANewDiagram
   public void WhenLoadingById_ExpectNewest()
   {
     //ARRANGE
-    var version1 = BpnRepository.Add(diagram.NewRevision("me"));
-    var version2 = BpnRepository.Add(version1.NewRevision("me"));
-    _ = BpnRepository.Add(version2.NewRevision("me"));
+    var version1 = BpnFeatureRepository.Add(diagram.NewRevision("me"));
+    var version2 = BpnFeatureRepository.Add(version1.NewRevision("me"));
+    _ = BpnFeatureRepository.Add(version2.NewRevision("me"));
 
     //ACT
-    var newest = BpnRepository.Load(diagram.Id);
+    var newest = BpnFeatureRepository.Load(diagram.Id);
 
     //ASSERT
     Assert.Equal(3, newest.Version);

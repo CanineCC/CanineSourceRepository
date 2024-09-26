@@ -1,6 +1,8 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 
-public record ApiInputBlock(string Name, string[] AccessScopes) : Bpn(Guid.CreateVersion7(), Name)
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+
+public record ApiInputBlock(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
   public string[] AccessScopes { get; init; } = AccessScopes;
   public override string ToCode(bool includeNamespace = true)
@@ -11,9 +13,9 @@ namespace {BpnFeature.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
 /* 
-Name: {Name}
------------------------------------
-{Description}
+<Name>{Name}</Name>
+<Purpose>{BusinessPurpose}</Purpose>
+<Goal>{BehavioralGoal}</Goal>
 */
 public static class {GetTypeName()} {{
   {records}
@@ -23,7 +25,7 @@ public static class {GetTypeName()} {{
         throw new UnauthorizedAccessException(""User is not authenticated."");
     }}
 
-    var requiredScopes =  new List<string> {{{string.Join(',', AccessScopes.Select(p=> "\""+p+ "\""))}}};
+    var requiredScopes =  new List<string> {{{string.Join(',', AccessScopes.Select(p => "\"" + p + "\""))}}};
     if (!requiredScopes.All(scope => userContext.AccessScopes.Contains(scope)))
     {{
         throw new UnauthorizedAccessException(""User does not have the required access scope."");
@@ -33,7 +35,7 @@ public static class {GetTypeName()} {{
   }}
 }}
       ";
-    
+
   }
 }
 

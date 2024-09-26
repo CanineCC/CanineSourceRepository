@@ -2,25 +2,57 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Reflection;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 
-namespace CanineSourceRepository.BusinessProcessNotation;
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
-public abstract record Bpn(Guid Id, string Name)
+
+
+
+public abstract record BpnTask(Guid Id, string Name)
 {
-  public enum ServiceInjection
-  {
-    None,
-    PostgreSql
-  }
+  //public enum ServiceInjection
+  //{
+  //  None,
+  //  Sql,           // PostgreSql, (settings?)
+  //  EventSourcing, // Marten (settings?)
+  //  Smtp,          // Send email (settings?) --> maybe get-pop3, get-imap, send-imap, send-smtp
+  //  Pop3,          // Get email
+  //  WebApi,        // WebApi (settings?, including selecting THE http-verb) -> force to one endpoint?
+  //  Ado,           // generic sql client for legacy integration
+  //  //Global settings? (multiple named instances?!)
+  //}
 
   public Guid Id { get; init; } = Id;
-  public string Name { get; init; } = Name;
-  public string Description { get; init; } = string.Empty;
+  public string Name { get; init; } = Name; //sanitize?
+
+  /// <summary>
+  /// Describe why this node exists from a business perspective. What is its value in the broader workflow
+  /// </summary>
+  /// <example>
+  /// Validate that the user has a verified email address before allowing access to premium content.
+  /// </example>
+  public string BusinessPurpose { get; init; } = string.Empty;
+
+  /// <summary>
+  /// Focus on what behavior this node should enforce. It should emphasize the expected result or transformation without mentioning technical specifics. This will guide the LLM to create logic that fulfills the business behavior.
+  /// </summary>
+  /// <example>
+  /// Ensure the email is verified and allow access to content.
+  /// </example>
+  public string BehavioralGoal { get; init; } = string.Empty;
+
   public string? Input { get; init; }
-  public ServiceInjection ServiceDependency { get; init; } = ServiceInjection.None;
+  public string ServiceDependency { get; init; } = typeof(NoService).Name;
+  public string NamedConfiguration { get; init; } = string.Empty;
+  public ServiceInjection GetServiceDependency()
+  {
+    return ServiceInjection.ServiceLocator(ServiceDependency, NamedConfiguration);
+  }
+
   public ImmutableList<RecordDefinition> RecordTypes { get; init; } = [];
   public string[] ValidDatatypes
-  {  
+  {
     get
     {
       return RecordTypes.Select(p => p.Name).ToArray()
@@ -73,10 +105,11 @@ public abstract record Bpn(Guid Id, string Name)
     }
     return (missingFields.Count == 0, missingFields);
   }
-  public Bpn AddRecordType(RecordDefinition record)
+  public BpnTask AddRecordType(RecordDefinition record)
   {
-    record = record with { 
-      Name = record.Name.SanitizeVariableName().ToPascalCase(), 
+    record = record with
+    {
+      Name = record.Name.SanitizeVariableName().ToPascalCase(),
       Fields = record.Fields.Select(field => field = field with { Name = field.Name.SanitizeVariableName().ToPascalCase(), Type = field.Type }).ToArray()
     };
 
@@ -86,7 +119,7 @@ public abstract record Bpn(Guid Id, string Name)
     return this with { RecordTypes = records };
   }
 
-  public Bpn RemoveRecordType(RecordDefinition record)
+  public BpnTask RemoveRecordType(RecordDefinition record)
   {
     var name = record.Name.SanitizeVariableName().ToPascalCase();
     var records = RecordTypes.RemoveAll(p => p.Name == record.Name);//update instead?
@@ -99,7 +132,7 @@ public abstract record Bpn(Guid Id, string Name)
   {
     public string ToCode()
     {
-      var fields = string.Join(",", Fields.Select(p => 
+      var fields = string.Join(",", Fields.Select(p =>
         p.IsCollection ? $"ImmutableList<{p.Type}{(p.IsMandatory ? "" : "?")}> {p.Name}"
         : $"{p.Type}{(p.IsMandatory ? "" : "?")} {p.Name}"
         ));
@@ -113,9 +146,9 @@ public abstract record Bpn(Guid Id, string Name)
   }
 }
 
-public class BpnConverter : JsonConverter<Bpn>
+public class BpnConverter : JsonConverter<BpnTask>
 {
-  public override Bpn Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+  public override BpnTask Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
     using var jsonDoc = JsonDocument.ParseValue(ref reader);
     var jsonObject = jsonDoc.RootElement;
@@ -131,7 +164,7 @@ public class BpnConverter : JsonConverter<Bpn>
     };
   }
 
-  public override void Write(Utf8JsonWriter writer, Bpn value, JsonSerializerOptions options)
+  public override void Write(Utf8JsonWriter writer, BpnTask value, JsonSerializerOptions options)
   {
     // Determine the actual type of the object
     var type = value.GetType();

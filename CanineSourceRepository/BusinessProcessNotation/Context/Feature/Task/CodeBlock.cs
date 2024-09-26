@@ -1,9 +1,10 @@
-﻿using System.Collections.Immutable;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using static CanineSourceRepository.DynamicCompiler;
 
-namespace CanineSourceRepository.BusinessProcessNotation;
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 //TODO: (requires that we have the command=>event (verified by aggregate)=>projection in place, so we can target the projection)
 //TODO: Let projection be more like a view, based on a specific aggregate, having a version number from that aggregate on each line
@@ -47,7 +48,7 @@ public enum AssertOperation
 }
 public record AssertDefinition(string Field, AssertOperation Operation, object? ExpectedValue = null);
 
-public record CodeBlock(string Name) : Bpn(Guid.CreateVersion7(), Name)
+public record CodeBlock(string Name) : BpnTask(Guid.CreateVersion7(), Name)
 {
   public string? Output { get; init; }
   public string? Code { get; init; }
@@ -79,28 +80,35 @@ public record CodeBlock(string Name) : Bpn(Guid.CreateVersion7(), Name)
   }
 
 
-  public string RecordsAsCode { get {
+  public string RecordsAsCode
+  {
+    get
+    {
       return string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
     }
   }
-  public string MethodSignatureAsCode {  get {
-      return Output == null ? $"public static async Task Execute({Input} input)" : $"public static async Task<{Output}> Execute({Input} input) ";
+  public string MethodSignatureAsCode
+  {
+    get
+    {
+      return Output == null ?
+        $"public static async Task Execute({Input} input, {ServiceDependency} service)" :
+        $"public static async Task<{Output}> Execute({Input} input, {ServiceDependency} service) ";
     }
   }
 
   public override string ToCode(bool includeNamespace = true)
   {
     if (Code == null) return "";
-
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
-    var usingAndNamespace = includeNamespace ? @$"using System; using System.Threading.Tasks; using System.Linq;
+    var usingAndNamespace = includeNamespace ? @$"using System; using System.Threading.Tasks; using System.Linq; using CanineSourceRepository.BusinessProcessNotation.Engine;
 namespace {BpnFeature.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
 /* 
-Name: {Name}
------------------------------------
-{Description}
+<Name>{Name}</Name>
+<Purpose>{BusinessPurpose}</Purpose>
+<Goal>{BehavioralGoal}</Goal>
 */
 public static class {GetTypeName()} {{
   {RecordsAsCode}
@@ -118,7 +126,7 @@ public static class {GetTypeName()} {{
     var fullCode = ToCode();
     int snippetStartIndex = fullCode.IndexOf(Code);
 
-    if (snippetStartIndex == -1) return 0; 
+    if (snippetStartIndex == -1) return 0;
 
     string beforeSnippet = fullCode[..snippetStartIndex];
     int lineNumber = beforeSnippet.Split("\r\n").Length - 1; //, StringSplitOptions.RemoveEmptyEntries
@@ -210,7 +218,7 @@ public static class {GetTypeName()} {{
   }
 
 
-  
+
 }
 
 
