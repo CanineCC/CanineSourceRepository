@@ -1,0 +1,120 @@
+﻿<div style="display:grid; grid-template-columns: auto 250px">
+  <p></p>
+  <button id="add-record-type" class="positiveBtn">
+    <i class="bi bi-plus-square padright10"></i>Add record
+  </button>
+</div>
+
+
+<div id="record-types-container"></div>
+
+
+<script>
+  const InitializeRecordTypeEditor = (node) => {
+    const recordTypesContainer = document.getElementById('record-types-container');
+
+    const renderRecordTypes = () => {
+          recordTypesContainer.innerHTML = '';
+
+        node.RecordTypes.forEach((recordType, index) => {
+        const recordTypeDiv = document.createElement('div');
+        recordTypeDiv.className = 'record-type';
+        recordTypeDiv.innerHTML = `
+                  <label>Type Name:</label>
+                  <input type="text" value="${recordType.Name}" data-index="${index}" class="record-type-name">
+                  <div class="fields-container"></div>
+                  <button class="add-field-button positiveBtn" data-index="${index}"><i class="bi bi-plus-square padright10"></i>Add field</button>
+                  <button class="remove-record-type" data-index="${index}">Remove type</button>
+              `;
+        const fieldsContainer = recordTypeDiv.querySelector('.fields-container');
+
+
+        fieldsContainer.innerHTML += `
+                          <div class="field">
+                              <label>Field</label>
+                              <label>Type</label>
+                              <label>Mandatory?</label>
+                              <label>Collection?</label>
+                          </div>
+                      `;
+
+        recordType.Fields.forEach((field, fieldIndex) => {
+                  const selectOptions = node.ValidDatatypes.map(type => {
+                      const selected = field.Type === type ? 'selected' : '';
+                      return `<option value="${type}" ${selected}>${type}</option>`;
+                  }).join('');
+                  fieldsContainer.innerHTML += `
+                      <div class="field">
+                          <input type="text" value="${field.Name}" data-record-index="${index}" data-field-index="${fieldIndex}" class="field-name">
+                          <select data-record-index="${index}" data-field-index="${fieldIndex}" class="field-type">
+                              ${selectOptions}
+                          </select>
+                          <input type="checkbox" ${field.IsMandatory ? "checked" : ""} data-record-index="${index}" data-field-index="${fieldIndex}" class="field-mandatory">
+                          <input type="checkbox" ${field.IsCollection ? "checked" : ""} data-record-index="${index}" data-field-index="${fieldIndex}" class="field-collection">
+                      </div>
+                  `;
+        });
+        recordTypesContainer.appendChild(recordTypeDiv);
+      });
+    };
+
+    // Render initial record types
+    renderRecordTypes();
+
+    // Add record type event listener
+    let addRecordType = document.getElementById('add-record-type');
+    addRecordType.outerHTML = addRecordType.outerHTML
+    addRecordType = document.getElementById('add-record-type');
+    addRecordType.addEventListener('click', () => {
+      node.RecordTypes.push({ Name: 'new', Fields: [] });
+      node.ValidDatatypes.push('new');//todo: update when we change names
+      InitializeEditor(node);
+    });
+
+    let RecordTypesContainer = document.getElementById('record-types-container');
+    RecordTypesContainer.outerHTML = RecordTypesContainer.outerHTML
+    RecordTypesContainer = document.getElementById('record-types-container');
+    RecordTypesContainer.addEventListener('input', (event) => {
+      const target = event.target;
+      if (target.classList.contains('record-type-name')) {
+        const index = target.dataset.index;
+        node.RecordTypes[index].Name = target.value;
+      }
+      if (target.classList.contains('field-name')) {
+        const recordIndex = target.dataset.recordIndex;
+        const fieldIndex = target.dataset.fieldIndex;
+        node.RecordTypes[recordIndex].Fields[fieldIndex].Name = target.value;
+      }
+      if (target.classList.contains('field-type')) {
+        const recordIndex = target.dataset.recordIndex;
+        const fieldIndex = target.dataset.fieldIndex;
+        node.RecordTypes[recordIndex].Fields[fieldIndex].Type = target.value;
+      }
+      if (target.classList.contains('field-collection')) {
+          const recordIndex = target.dataset.recordIndex;
+          const fieldIndex = target.dataset.fieldIndex;
+          node.RecordTypes[recordIndex].Fields[fieldIndex].IsCollection = target.checked;
+      }
+      if (target.classList.contains('field-mandatory')) {
+          const recordIndex = target.dataset.recordIndex;
+          const fieldIndex = target.dataset.fieldIndex;
+          node.RecordTypes[recordIndex].Fields[fieldIndex].IsMandatory = target.checked;
+      }
+    });
+
+    RecordTypesContainer.addEventListener('click', (event) => {
+      const target = event.target;
+      if (target.classList.contains('remove-record-type')) {
+        const index = target.dataset.index;
+        node.RecordTypes.splice(index, 1);
+        InitializeRecordTypeEditor(node);
+      }
+
+      if (target.classList.contains('add-field-button')) {
+        const index = target.dataset.index;
+        node.RecordTypes[index].Fields.push({ Name: 'new', Type: 'string', IsCollection: false, IsMandatory : false });
+        InitializeRecordTypeEditor(node);
+      }
+    });
+  }
+</script>

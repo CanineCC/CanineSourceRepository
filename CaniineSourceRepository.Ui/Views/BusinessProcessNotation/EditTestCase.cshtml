@@ -1,0 +1,167 @@
+﻿<style>
+  .test-case {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+    .test-case h3 {
+      margin-top: 0;
+    }
+
+  .assertion {
+    margin-left: 20px;
+  }
+
+  .assertions {
+    margin-bottom: 10px;
+  }
+</style>
+
+
+<div id="testCaseForm">
+  <label>
+    Test Case Name:
+    <input type="text" id="testCaseName">
+  </label>
+  <br><br>
+
+  <label>
+    Input (JSON format):
+    TODO: Input fields based on the input type...
+    <textarea id="testCaseInput" rows="4" cols="50"></textarea>
+  </label>
+  <br><br>
+
+  <div id="assertions">
+    <h4>Assertions</h4>
+    <!-- Assertions will be dynamically added here -->
+  </div>
+
+  <button id="addAssertionButton">Add Assertion</button>
+  <br><br>
+
+  <button id="saveTestCaseButton">Update</button>
+</div>
+
+<h3>Test Cases</h3>
+<div id="testCaseList">
+  <!-- List of test cases will be displayed here -->
+</div>
+
+<script>
+  const assertOperations = [
+  @foreach (var operation in Enum.GetNames(typeof(CanineSourceRepository.BusinessProcessNotation.AssertOperation)))
+  {
+    <text>'@operation',</text>
+  }
+  ];
+
+  let testCases = [];
+  let currentTestCase = { name: '', input: '', asserts: [] };
+
+  // Function to add a new assertion row
+  function addAssertionRow(assertion = { field: '', operation: 'Equal', expectedValue: '' }) {
+      const assertionsDiv = document.getElementById('assertions');
+
+      const assertionDiv = document.createElement('div');
+      assertionDiv.className = 'assertion';
+
+      assertionDiv.innerHTML = `
+          <label>Field: <input type="text" class="assert-field" value="${assertion.field} TODO: dropdown based on output"></label>
+          <label>Operation:
+            <select class="assert-operation">
+              ${assertOperations.map(op => `<option value="${op}" ${op === assertion.operation ? 'selected' : ''}>${op}</option>`).join('')}
+            </select>
+          </label>
+          <label>Expected Value: <input type="text" class="assert-value" value="${assertion.expectedValue || ''}"></label>
+          <button class="delete-assertion-button">Delete</button>
+        `;
+
+      // Append the new assertion row
+      assertionsDiv.appendChild(assertionDiv);
+
+      // Handle delete button for the assertion row
+      assertionDiv.querySelector('.delete-assertion-button').addEventListener('click', () => {
+          assertionsDiv.removeChild(assertionDiv);
+      });
+  }
+
+  // Add assertion button event listener
+  document.getElementById('addAssertionButton').addEventListener('click', () => {
+      addAssertionRow();
+  });
+
+  // Save test case button event listener
+  document.getElementById('saveTestCaseButton').addEventListener('click', () => {
+      const name = document.getElementById('testCaseName').value;
+      const input = document.getElementById('testCaseInput').value;
+
+      // Collect assertions data
+      const assertions = Array.from(document.querySelectorAll('.assertion')).map(assertionDiv => ({
+          field: assertionDiv.querySelector('.assert-field').value,
+          operation: assertionDiv.querySelector('.assert-operation').value,
+          expectedValue: assertionDiv.querySelector('.assert-value').value
+      }));
+
+      const newTestCase = { name, input, asserts: assertions };
+      testCases.push(newTestCase);
+
+      displayTestCases();
+      clearForm();
+  });
+
+  // Display saved test cases
+  function displayTestCases() {
+      const testCaseList = document.getElementById('testCaseList');
+      testCaseList.innerHTML = '';
+
+      testCases.forEach((testCase, index) => {
+          const testCaseDiv = document.createElement('div');
+          testCaseDiv.className = 'test-case';
+          testCaseDiv.innerHTML = `
+            <h3>${testCase.name}</h3>
+            <pre>${testCase.input}</pre>
+            <div class="assertions">
+              <strong>Assertions:</strong>
+              <ul>
+                ${testCase.asserts.map(assert => `<li>Field: ${assert.field}, Operation: ${assert.operation}, Expected Value: ${assert.expectedValue}</li>`).join('')}
+              </ul>
+            </div>
+            <button onclick="editTestCase(${index})">Edit</button>
+            <button onclick="deleteTestCase(${index})">Delete</button>
+          `;
+          testCaseList.appendChild(testCaseDiv);
+      });
+  }
+
+  // Edit test case
+  function editTestCase(index) {
+      const testCase = testCases[index];
+      currentTestCase = { ...testCase };
+
+      document.getElementById('testCaseName').value = testCase.name;
+      document.getElementById('testCaseInput').value = testCase.input;
+
+      const assertionsDiv = document.getElementById('assertions');
+      assertionsDiv.innerHTML = '';
+      testCase.asserts.forEach(assertion => addAssertionRow(assertion));
+  }
+
+  // Delete test case
+  function deleteTestCase(index) {
+      testCases.splice(index, 1);
+      displayTestCases();
+  }
+
+  // Clear form
+  function clearForm() {
+      document.getElementById('testCaseName').value = '';
+      document.getElementById('testCaseInput').value = '';
+      document.getElementById('assertions').innerHTML = '';
+      currentTestCase = { name: '', input: '', asserts: [] };
+  }
+
+  const InitializeTestCaseEditor = (node) => {
+  }
+</script>

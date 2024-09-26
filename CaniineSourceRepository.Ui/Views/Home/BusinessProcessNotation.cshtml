@@ -1,0 +1,58 @@
+﻿<label for="diagramInput">Select BPN</label>
+
+<div class="autocomplete-container">
+  <input type="text" id="diagramInput" placeholder="Enter diagram name" autocomplete="off">
+  <div id="autocompleteList" class="autocomplete-suggestions"></div>
+</div>
+
+<div id="content"><!-- Content will be loaded here --></div>
+
+
+<script>
+  const diagrams = @Html.Raw(ViewBag.Diagrams);
+
+  const input = document.getElementById('diagramInput');
+  const autocompleteList = document.getElementById('autocompleteList');
+
+  function filterDiagrams(query) {
+      if (query) {
+          return diagrams.filter(diagram =>
+              diagram.name.toLowerCase().includes(query.toLowerCase()));
+        } else {
+          return diagrams;
+      }
+  }
+
+  function renderSuggestions(suggestions) {
+      autocompleteList.innerHTML = '';
+      suggestions.forEach(diagram => {
+          console.log("Render: " + diagram.name);
+          const item = document.createElement('div');
+          item.textContent = diagram.name;
+          item.className = 'autocomplete-item';
+          item.dataset.id = diagram.id;
+          item.onclick = () => {
+              input.value = diagram.name;
+              autocompleteList.innerHTML = '';
+              const url = `/BusinessProcessNotation/Index?id=${diagram.id}`;
+              htmx.ajax('GET', url, { target: "#content" });//htmx
+            };
+          autocompleteList.appendChild(item);
+      });
+  }
+  function updateSuggestions() {
+      const query = input.value;
+      const suggestions = filterDiagrams(query);
+      renderSuggestions(suggestions);
+  }
+
+  input.addEventListener('input', updateSuggestions);
+  input.addEventListener('focus', () => { input.value = ""; updateSuggestions(); });
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', (event) => {
+      if (!autocompleteList.contains(event.target) && event.target !== input) {
+          autocompleteList.innerHTML = '';
+      }
+  });
+</script>

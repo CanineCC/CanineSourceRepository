@@ -1,0 +1,71 @@
+﻿
+<div id="editor-wrapper" class="editor hidden">
+  <div class="tab-buttons">
+    <button class="tab-link active" onclick="openTab(event, 'metadata-editor')">Metadata</button>
+    <button class="tab-link" onclick="openTab(event, 'record-type-editor')">Types</button>
+    <button class="tab-link" onclick="openTab(event, 'input-output-editor')">In- & output</button>
+    <button class="tab-link" onclick="openTab(event, 'test-case-editor')">Test Cases</button>
+    <button class="tab-link" onclick="openTab(event, 'csharp-editor')">Logic</button>
+  </div>
+
+  <div id="metadata-editor" class="tab-content active">
+    @await Html.PartialAsync("Metadata")
+  </div>
+  <div id="record-type-editor" class="tab-content">
+    @await Html.PartialAsync("EditRecordType")
+  </div>
+  <div id="input-output-editor" class="tab-content">
+    @await Html.PartialAsync("InputOutput")
+  </div>
+  <div id="test-case-editor" class="tab-content">
+    @await Html.PartialAsync("EditTestCase")
+  </div>
+  <div id="csharp-editor" class="tab-content">
+    @await Html.PartialAsync("EditCSharp")
+  </div>
+
+</div>
+
+
+
+<script>
+  function openTab(evt, tabId) {
+      var i, tabcontent, tablinks;
+
+      // Hide all tab contents
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].classList.remove("active");
+      }
+
+      // Remove the "active" class from all buttons
+      tablinks = document.getElementsByClassName("tab-link");
+      for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].classList.remove("active");
+      }
+
+      // Show the current tab and add "active" class to the button
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+  }
+
+  let currentNode = undefined;
+  const InitializeEditor = (node) => {
+    if (currentNode !== undefined && node !== undefined && currentNode.Id === node.Id) {
+      document.getElementById("editor-wrapper").classList.add("hidden");
+      currentNode = undefined;
+      return;
+    }
+    else if (node)
+    {
+      console.log(node);
+      currentNode = node;
+      document.getElementById("editor-wrapper").classList.remove("hidden");
+      InitializeRecordTypeEditor(node);
+      InitializeCSharpEditor(node);
+      InitializeTestCaseEditor(node);
+      InitializeInputOutput(node);
+      InitializeMetadata(node);
+    }
+  }
+</script>

@@ -1,0 +1,286 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin-bottom: 60px;
+}
+
+.autocomplete-container {
+  position: relative;
+  display: inline-block;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  max-height: 150px;
+  overflow-y: auto;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.autocomplete-item {
+  padding: 8px;
+  cursor: pointer;
+}
+
+  .autocomplete-item:hover {
+    background-color: #f0f0f0;
+  }
+
+.hidden {
+  display: none;
+}
+
+
+.button {
+  border: 1px solid black;
+  border-radius: 12px !important;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 45px;
+  padding: 10px 20px;
+  background-color: rgb(240, 240, 240);
+  border-radius: 1px;
+  cursor: pointer;
+}
+  .button:hover {
+    background-color: rgb(210, 210, 210);
+  }
+.positiveBtn {
+  background-color: #67a173;
+}
+  .positiveBtn:hover {
+    background-color: #4c7855;
+  }
+.warningBtn {
+  background-color: #91615d;
+}
+  .warningBtn:hover {
+    background-color: #6b4745;
+  }
+
+button {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 45px;
+  padding: 10px 20px;
+  background-color: rgb(240, 240, 240);
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+  button:hover {
+    background-color: rgb(210, 210, 210);
+  }
+
+
+h2, h3 {
+  color: #333;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+input[type="checkbox"], input[type="text"], textarea, select {
+  width: 100%;
+  padding: 2px;
+  margin-top: 5px;
+}
+
+textarea {
+  height: 100px;
+}
+
+.padright10 {
+  padding-right:10px;
+}
+
+
+
+/*REGION Home/BusinessProcessNotation.cshtml*/
+#bpnCanvas {
+  width: 100%;
+  height: 500px;
+  border: 1px solid #ccc;
+  position: relative;
+  overflow: hidden;
+}
+
+#connectorLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Prevent the svg layer from blocking clicks */
+  z-index: 1;
+}
+
+
+
+.node {
+  width: 200px;
+  height: 50px;
+  position: absolute;
+  cursor: move;
+  z-index: 2;
+}
+
+.node-header {
+  background: #32595c;
+  padding: 15px 30px 15px 10px;
+  border: 1px solid #162e30;
+  border-bottom: 0px;
+  border-radius: 5px 5px 0px 0px;
+  text-align: left;
+  color: #fff;
+  cursor: move;
+}
+
+.node-edit {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: #597b7d;
+  cursor: pointer;
+}
+
+  .node-edit:hover {
+    color: #FFF;
+  }
+
+.node-description {
+  background: #479a9e;
+  padding: 5px 10px;
+  border: 1px solid #162e30;
+  border-top: 0px;
+  border-radius: 0px 0px 5px 5px;
+  text-align: left;
+  line-height: 22px;
+  color: #fff;
+  cursor: move;
+  font-size: 0.75rem;
+}
+
+.feature-info {
+  font-size: 0.8em;
+  color: #333;
+  border-top: 1px solid #ddd;
+  padding-top: 5px;
+}
+
+  .feature-info p {
+    margin: 0;
+    padding: 2px 0;
+  }
+/*ENDREGION Home/BusinessProcessNotation.cshtml*/
+
+/*REGION BusinessProcessNotation/EditRecordType.cshtml*/
+.record-type {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: auto 200px 90px 90px;
+  grid-gap: 10px;
+}
+/*ENDREGION BusinessProcessNotation/EditRecordType.cshtml*/
+
+/*REGION BusinessProcessNotation/Editor.cshtml*/
+.editor {
+  width: 900px;
+  margin: 0 auto;
+}
+
+
+.tab-buttons {
+  margin-bottom: 10px;
+}
+
+.tab-link {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+  .tab-link.active {
+    background-color: #ccc;
+  }
+
+.tab-content {
+  display: none;
+}
+
+  .tab-content.active {
+    display: block;
+  }
+/*ENDREGION BusinessProcessNotation/Editor.cshtml*/
+
+/*REGION BusinessProcessNotation/EditCSharp.cshtml*/
+#editor {
+}
+
+#pre-editor {
+  pointer-events: none;
+  border-left: 16px solid #f0f0f0;
+}
+
+  #pre-editor .ace_gutter-active-line {
+    background-color: #f0f0f0;
+  }
+
+  #pre-editor .ace_active-line {
+    background: rgba(0, 0, 0, 0.0);
+  }
+
+  #pre-editor .ace_cursor {
+    height: 0px !important;
+  }
+
+#post-editor {
+  pointer-events: none;
+  border-left: 16px solid #f0f0f0;
+}
+
+  #post-editor .ace_gutter-active-line {
+    background-color: #f0f0f0;
+  }
+
+  #post-editor .ace_active-line {
+    background: rgba(0, 0, 0, 0.0);
+  }
+
+  #post-editor .ace_cursor {
+    height: 0px !important;
+  }
+/*ENDREGION BusinessProcessNotation/EditCSharp.cshtml*/

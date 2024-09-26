@@ -1,0 +1,235 @@
+﻿
+@* <button id="compile" class="positiveBtn"><i class="bi bi-lightning padright10"></i>Compile!</button>
+ *@
+<div id="pre-editor" ></div>
+<div id="editor"></div>
+<div id="post-editor">}</div>
+
+<script>
+  ace.require("ace/ext/language_tools");
+  ace.config.set('basePath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/');
+
+  var preeditor = ace.edit("pre-editor");
+  preeditor.setReadOnly(true);
+  preeditor.session.setMode("ace/mode/csharp");
+  preeditor.setOptions({
+      maxLines: 50,
+      showFoldedAnnotations: false,
+      showPrintMargin: false,
+      showFoldWidgets: false,
+      showLineNumbers: false,
+      fixedWidthGutter: true,
+      fontSize: 16,
+  });
+  var posteditor = ace.edit("post-editor");
+  posteditor.setReadOnly(true);
+  posteditor.session.setMode("ace/mode/csharp");
+  posteditor.setOptions({
+      maxLines: 1,
+      showPrintMargin: false,
+      showFoldWidgets: false,
+      showLineNumbers: false,
+      fixedWidthGutter: true,
+      fontSize: 16
+  });
+
+  var editor = ace.edit("editor");
+  editor.session.setMode("ace/mode/csharp");
+  editor.setOptions({
+    enableBasicAutocompletion: true,
+    enableSnippets: true,
+    enableLiveAutocompletion: true,
+    autoScrollEditorIntoView: true,
+    wrap: true,
+    showPrintMargin: false,
+    firstLineNumber: 1,//CALC
+    maxLines: 100,
+    minLines: 25,
+    fixedWidthGutter: true,
+    fontSize: 16
+  });
+
+
+  const InitializeCSharpEditor = (node) => {
+      preeditor.setValue(node.RecordsAsCode + "\r\n\r\n" + node.MethodSignatureAsCode + " {", -1);
+      preeditor.clearSelection();
+      posteditor.clearSelection();
+      editor.setValue(node.Code, -1);
+      editor.on("blur", () => {
+          node.Code = editor.getValue();
+       })
+      var codeHasChanged = false;
+      var inactivityTimeout = null;
+      var lastVerifiedCode = editor.getValue();
+      editor.on('change', function() {
+          codeHasChanged = true;  // Mark that the code has changed
+          resetInactivityTimer(); // Reset the inactivity timer
+      });
+      function resetInactivityTimer() {
+          // Clear the previous inactivity timer if the user is still typing
+          if (inactivityTimeout !== null) {
+              clearTimeout(inactivityTimeout);
+          }
+
+          // Start a new inactivity timer (5 seconds)
+          inactivityTimeout = setTimeout(() => {
+              checkForVerification();
+          }, 1500); // 1500 ms = 1.5 seconds
+      }
+      function checkForVerification() {
+          node.Code = editor.getValue();
+
+          if (codeHasChanged && node.Code !== lastVerifiedCode) {
+              verifyCodeBlock();
+              codeHasChanged = false;  // Reset change flag after verification
+              lastVerifiedCode = node.Code;  // Update last verified code
+          }
+      }
+      function verifyCodeBlock() {
+          fetch('/BusinessProcessNotation/VerifyCodeBlock', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(node)
+          })
+              .then(response => {
+                  if (!response.ok) {
+                      return response.json().then(errors => {
+                          let globalannotations = [];
+                          let annotations = [];
+                          errors.forEach(error => {
+
+                              if (error.lineNumber == 0) {
+                                  globalannotations.push({
+                                      row: error.lineNumber,
+                                      type: "error",//"warning" og "info" !!!
+                                      text: error.errorMessage
+                                      //error.columnNumber
+                                  });
+                              } else {
+                                  annotations.push({
+                                      row: error.lineNumber - 1,
+                                      type: "error",//"warning" og "info" !!!
+                                      text: error.errorMessage
+                                      //error.columnNumber
+                                  });
+                              }
+                          });
+                          editor.session.setAnnotations(annotations);
+                          preeditor.session.setAnnotations(globalannotations);
+                          //alert(errorMessage);  // Show the error messages with line and column numbers
+                      });
+                  } else {
+                    editor.session.setAnnotations([]);
+                    preeditor.session.setAnnotations([]);
+                  }
+                  return response.json();  // If success, parse the response as JSON (or whatever format you expect)
+              })
+              .then(data => {
+                  console.log('Success:', data);
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+              });
+      }
+
+
+      fetch('/BusinessProcessNotation/GetSnippetsForCodeBlock', {
+          method: 'POST', // Set the method to POST
+          headers: {
+              'Content-Type': 'application/json' // Specify the content type
+          },
+          body: JSON.stringify(node) // Send the payload as JSON
+      })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json(); // Parse the JSON from the response
+          })
+          .then(data => {
+              console.log('Code Snippets:', data); // Handle the data (array of CodeSnippets)
+
+              var customCompleter = {
+                  getCompletions: function(editor, session, pos, prefix, callback) {
+                      var completions = [];
+
+                      function addIndentation(snippet) {
+                          return snippet.split('\n').map(line => '\t' + line).join('\n');
+                
+                      } 
+                      
+                      data.forEach(function(snippet) {
+                          completions.push({
+                              caption: snippet.name,   // Use the name of the CodeSnippet
+                              snippet: addIndentation(snippet.snippet), // Use the content of the CodeSnippet
+                              meta: 'snippet',
+                              type: 'snippet'
+                          });
+                      });
+
+                      node.RecordTypes.forEach(function(recordType) {
+                          completions.push({
+                              caption: recordType.Name,
+                              value: recordType.Name,
+                              meta: 'record'
+                          });
+                          recordType.Fields.forEach(function(field) {
+                              completions.push({
+                                  caption: recordType.Name + "." + field.Name,
+                                  value: recordType.Name + "." + field.Name,
+                                  meta: 'field'
+                              });
+                          });
+                      });
+
+                      //snippets unique to DI (ex. SMTP => send email snippet)
+                      callback(null, completions);
+                  }
+              };
+              editor.completers = [customCompleter];
+          })
+          .catch(error => {
+              console.error('Error:', error); // Handle errors
+          });
+
+
+      // document.getElementById('compile').onclick = () => {
+      //     verifyCodeBlock();
+      // };
+
+      //TODO: Record types and their properties:  ex. Input, Input.Name, Input.Id
+      // { caption: 'HelloWorld', value: 'HelloWorld', meta: 'class' },
+      // { caption: 'Main', value: 'Main', meta: 'method' },
+      // {
+      //     caption: "my caption",
+      //     snippet: "content: '$1'",
+      //     meta: "snippet",
+      //     type: "snippet"
+      // }
+
+
+
+
+      // editor.session.setAnnotations([
+      //     {
+      //         row: 1,
+      //         column: 2,
+      //         type: "error",
+      //         text: "My error annotation"
+      //     }, {
+      //         row: 4,
+      //         column: 1,
+      //         type: "warning",
+      //         text: "My warning annotation"
+
+      //     }, {
+      //         row: 20,
+      //         column: 1,
+      //         type: "info",
+      //         text: "My info annotation"
+      //     }
+      // ]);
+  }
+</script>
