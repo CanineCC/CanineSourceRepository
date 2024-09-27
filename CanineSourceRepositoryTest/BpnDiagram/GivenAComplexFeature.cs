@@ -9,27 +9,27 @@ public class GivenAComplexFeature
   private readonly BpnFeature feature;
   public GivenAComplexFeature()
   {
-    var entryBlock = new ApiInputBlock("Create user endpoint", ["Anonymous"]);
+    var entryBlock = new ApiInputTask("Create user endpoint", ["Anonymous"]);
     entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
       new BpnTask.DataDefinition("Name", "string")
-      )) as ApiInputBlock)!;
+      )) as ApiInputTask)!;
     entryBlock = entryBlock with
     {
       Input = "Api",
     };
 
-    var createUserBlock = new CodeBlock("Create user logic");
+    var createUserBlock = new CodeTask("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Output", 
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string"),
       new BpnTask.DataDefinition("Accessscope", "string")
-      )) as CodeBlock)!;
+      )) as CodeTask)!;
     createUserBlock = (createUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Input", 
       new BpnTask.DataDefinition("Name", "string"),
       new BpnTask.DataDefinition("Accessscope", "string")
-      )) as CodeBlock)!;
+      )) as CodeTask)!;
     createUserBlock = createUserBlock with
     {
       Input = "Input",
@@ -41,12 +41,12 @@ public class GivenAComplexFeature
     "
     };
 
-    var logUserBlock = new CodeBlock("Log user");
+    var logUserBlock = new CodeTask("Log user");
     logUserBlock = (logUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Input",
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string")
-      )) as CodeBlock)!;
+      )) as CodeTask)!;
     logUserBlock = logUserBlock with
     {
       Input = "Input",

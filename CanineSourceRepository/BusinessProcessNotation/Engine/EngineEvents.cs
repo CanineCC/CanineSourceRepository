@@ -1,35 +1,27 @@
-﻿using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿namespace EngineEvents;
 
-namespace EngineEvents;
+public interface IEngineEvents;
 
-public interface IEvent;
-
-//TODO: CorrelationId => event?
-//TODO: CausationId => event?
-//TODO: Headers => ?
-//TODO: Archived => ?
-public record FeatureStarted(DateTimeOffset StarTime, Guid FeatureId, long FeatureVersion, Guid CorrelationId) : IEvent;
-public record FeatureError(ErrorEvent Exception) : IEvent;
-public record BpnFeatureCompleted(DateTimeOffset EndTime, TimeSpan Duration) : IEvent;
-public record TaskInitialized(Guid TaskId, string Input) : IEvent;
-public record TaskFailed(Guid TaskId, ErrorEvent Exception, TimeSpan ExecutionDuration) : IEvent;
-public record FailedTaskReInitialized(string NewInput, TimeSpan ExecutionDuration) : IEvent;
-public record TaskSucceeded(Guid TaskId, TimeSpan ExecutionDuration) : IEvent;
-public record TransitionUsed(Guid FromBpn, Guid ToBpn) : IEvent;
-public record TransitionSkipped(Guid FromBpn, Guid ToBpn) : IEvent;
+public record FeatureStarted(DateTimeOffset StarTime, Guid FeatureId, long FeatureVersion, Guid CorrelationId) : IEngineEvents;
+public record FeatureError(ErrorEvent Exception) : IEngineEvents;
+public record BpnFeatureCompleted(DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
+public record TaskInitialized(Guid TaskId, string Input) : IEngineEvents;
+public record TaskFailed(Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
+public record FailedTaskReInitialized(string NewInput, double ExecutionTimeMs) : IEngineEvents;
+public record TaskSucceeded(Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
+public record TransitionUsed(Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record TransitionSkipped(Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record ErrorEvent(string Message, string Details);
 
 
-public class EventLogJsonConverter : JsonConverter<IEvent>
+public class EventLogJsonConverter : JsonConverter<IEngineEvents>
 {
-  public override IEvent Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+  public override IEngineEvents Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
     throw new NotImplementedException(); // You can implement reading if necessary
   }
 
-  public override void Write(Utf8JsonWriter writer, IEvent value, JsonSerializerOptions options)
+  public override void Write(Utf8JsonWriter writer, IEngineEvents value, JsonSerializerOptions options)
   {
     // Determine the actual type of the object
     var type = value.GetType();
@@ -57,7 +49,6 @@ public class EventLogJsonConverter : JsonConverter<IEvent>
     writer.WriteEndObject();
   }
 }
-
 
 public static class InputLogger
 {

@@ -1,11 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using EngineEvents;
-using Marten;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.Reflection;
-using System.Text.Json;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
@@ -72,7 +67,7 @@ public static class BpnEngine
   public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, BpnFeature feature, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
-    var invocationEvents = new List<IEvent>();
+    var invocationEvents = new List<IEngineEvents>();
     var initial = nextTask == null;
     if (correlationId == null)
     {
@@ -118,7 +113,7 @@ public static class BpnEngine
     }
     if (initial && success)
     {
-      invocationEvents.Add(new BpnFeatureCompleted(DateTime.UtcNow, stopwatch.Elapsed));
+      invocationEvents.Add(new BpnFeatureCompleted(DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
       stopwatch.Stop();
     }
 

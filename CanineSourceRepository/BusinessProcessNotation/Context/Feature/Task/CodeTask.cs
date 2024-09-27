@@ -1,8 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
-using System.Collections.Immutable;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using static CanineSourceRepository.DynamicCompiler;
+﻿using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
@@ -48,7 +44,7 @@ public enum AssertOperation
 }
 public record AssertDefinition(string Field, AssertOperation Operation, object? ExpectedValue = null);
 
-public record CodeBlock(string Name) : BpnTask(Guid.CreateVersion7(), Name)
+public record CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
 {
   public string? Output { get; init; }
   public string? Code { get; init; }

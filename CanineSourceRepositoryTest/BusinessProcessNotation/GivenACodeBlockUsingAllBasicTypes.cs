@@ -7,11 +7,11 @@ namespace CanineSourceRepositoryTest.BusinessProcessNotation;
 public class GivenACodeBlockUsingAllBasicTypes
 {
   private readonly Assembly assembly;
-  private readonly CodeBlock block;
+  private readonly CodeTask block;
   public GivenACodeBlockUsingAllBasicTypes()
   {
-    block = new CodeBlock("Check Types");
-    block = (block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Success", "bool"))) as CodeBlock)!;
+    block = new CodeTask("Check Types");
+    block = (block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Success", "bool"))) as CodeTask)!;
     block = (block.AddRecordType(new BpnTask.RecordDefinition("Input",
         new BpnTask.DataDefinition("Text", "string"),
         new BpnTask.DataDefinition("YesNo", "bool"),
@@ -21,7 +21,7 @@ public class GivenACodeBlockUsingAllBasicTypes
         new BpnTask.DataDefinition("StartDate", "DateOnly"),
         new BpnTask.DataDefinition("StartTime", "TimeOnly")
         //        new BPN.DataDefinition("Blob", "byte[]") -- base64 encoded... helper functions needed
-        )) as CodeBlock)!;
+        )) as CodeTask)!;
     block = block with { Input = "Input", Output = "Output", Code = "return new Output(true);" };
     assembly = block.ToAssembly();
   }

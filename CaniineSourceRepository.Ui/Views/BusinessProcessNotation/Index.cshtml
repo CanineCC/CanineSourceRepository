@@ -50,29 +50,25 @@
       let result = {
           nodeId: nodeId,
           status: 'Not found',
-          executionDuration: null
+          ExecutionTimeMs: null
       };
 
     console.log("looking for: " + nodeId);
       // Loop through eventLog to find NodeSucceeded or NodeFailed for the given NodeId
       for (let event of eventLog) {
           console.log(event);
-          console.log("is : " + event.TaskId + " " + event.Type);
-          console.log(event.TaskId === nodeId);
 
           if (event.Type === "TaskSucceeded" &&
               event.TaskId === nodeId) {
               result.status = 'Succeeded';
-              result.executionDuration = event.ExecutionDuration;
-              console.log("Found - success");
+              result.ExecutionTimeMs = event.ExecutionTimeMs;
               break;
           }
 
           if (event.Type === "TaskFailed" &&
               event.TaskId === nodeId) {
               result.status = 'Failed';
-              result.executionDuration = event.ExecutionDuration;
-              console.log("Found - failed");
+              result.ExecutionTimeMs = event.ExecutionTimeMs;
               break;
           }
       }
@@ -102,7 +98,7 @@
         node.Name,
         node.Description,
         status.status,
-        status.executionDuration,
+        status.ExecutionTimeMs,
         definition.Position.X,
         definition.Position.Y,
         (id) => { InitializeEditor(node); },//onClick

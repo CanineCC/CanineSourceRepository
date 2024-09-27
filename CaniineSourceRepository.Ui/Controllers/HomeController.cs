@@ -36,27 +36,27 @@ namespace CanineSourceRepository.Ui.Controllers
     
     public static void GenerateDefaultData(out BpnFeature feature, out BpnFeatureDiagram diagram)
     {
-      var entryBlock = new ApiInputBlock("Create user endpoint", ["Anonymous"]);
+      var entryBlock = new ApiInputTask("Create user endpoint", ["Anonymous"]);
       entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
         new BpnTask.DataDefinition("Name", "string")
-        )) as ApiInputBlock)!;
+        )) as ApiInputTask)!;
       entryBlock = entryBlock with
       {
         Input = "Api",
       };
 
-      var createUserBlock = new CodeBlock("Create user logic");
+      var createUserBlock = new CodeTask("Create user logic");
       createUserBlock = (createUserBlock.AddRecordType(
         new BpnTask.RecordDefinition("Output",
         new BpnTask.DataDefinition("Id", "Guid"),
         new BpnTask.DataDefinition("Name", "string")
      //   new Bpn.DataDefinition("Accessscope", "string")
-        )) as CodeBlock)!;
+        )) as CodeTask)!;
       createUserBlock = (createUserBlock.AddRecordType(
         new BpnTask.RecordDefinition("Input",
         new BpnTask.DataDefinition("Name", "string")
       //  new Bpn.DataDefinition("Accessscope", "string")
-        )) as CodeBlock)!;
+        )) as CodeTask)!;
       createUserBlock = createUserBlock with
       {
         BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",
@@ -70,12 +70,12 @@ namespace CanineSourceRepository.Ui.Controllers
     "
       };
 
-      var logUserBlock = new CodeBlock("Log user");
+      var logUserBlock = new CodeTask("Log user");
       logUserBlock = (logUserBlock.AddRecordType(
         new BpnTask.RecordDefinition("Input",
         new BpnTask.DataDefinition("Id", "Guid"),
         new BpnTask.DataDefinition("Name", "string")
-        )) as CodeBlock)!;
+        )) as CodeTask)!;
       logUserBlock = logUserBlock with
       {
         BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",

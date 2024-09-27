@@ -5,10 +5,10 @@ namespace CanineSourceRepositoryTest.BusinessProcessNotation;
 
 public class GivenACodeBlockThatAccessLocalResources
 {
-  private readonly CodeBlock block;
+  private readonly CodeTask block;
   public GivenACodeBlockThatAccessLocalResources()
   {
-    block = new CodeBlock("Use FileIO");
+    block = new CodeTask("Use FileIO");
     block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Text", "string")));
     block.AddRecordType(new BpnTask.RecordDefinition("Input"));
     block = block with

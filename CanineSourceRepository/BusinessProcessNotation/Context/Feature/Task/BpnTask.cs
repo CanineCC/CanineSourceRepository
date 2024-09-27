@@ -158,8 +158,8 @@ public class BpnConverter : JsonConverter<BpnTask>
 
     return typeProperty switch
     {
-      "CodeBlock" => JsonSerializer.Deserialize<CodeBlock>(jsonObject.GetRawText(), options)!,
-      "ApiInputBlock" => JsonSerializer.Deserialize<ApiInputBlock>(jsonObject.GetRawText(), options)!,
+      "CodeBlock" => JsonSerializer.Deserialize<CodeTask>(jsonObject.GetRawText(), options)!,
+      "ApiInputBlock" => JsonSerializer.Deserialize<ApiInputTask>(jsonObject.GetRawText(), options)!,
       _ => throw new JsonException($"Unknown Bpn type: {typeProperty}")
     };
   }

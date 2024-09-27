@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 
 public static class BpnDiagramRepository
 {

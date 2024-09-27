@@ -1,8 +1,6 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-
-public record ApiInputBlock(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
+public record ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
   public string[] AccessScopes { get; init; } = AccessScopes;
   public override string ToCode(bool includeNamespace = true)

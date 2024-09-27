@@ -1,7 +1,4 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using System.Collections.Immutable;
-using System.Reflection;
-using System.Text;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 public record StackTrace(Guid CorrelationId, StackElement[] Trace, string UserInformation, DateTimeOffset Timestamp);
@@ -95,11 +92,11 @@ public class BpnFeature
     {
       switch (node)
       {
-        case CodeBlock codeBlock:
+        case CodeTask codeBlock:
           sb.Append(codeBlock.ToCode(false));
           sb.Append("\n\r");
           break;
-        case ApiInputBlock apiInputBlock:
+        case ApiInputTask apiInputBlock:
           sb.Append(apiInputBlock.ToCode(false));
           sb.Append("\n\r");
           break;
@@ -122,7 +119,7 @@ public class BpnFeature
   public (bool Valid, string Reason) IsValid()
   {
     if (Tasks.Count == 0) return (false, "No nodes");
-    if (Tasks.First().GetType() != typeof(ApiInputBlock)) return (false, $"First node can not be {Tasks.First().GetType()}");
+    if (Tasks.First().GetType() != typeof(ApiInputTask)) return (false, $"First node can not be {Tasks.First().GetType()}");
     if (Transitions.Count == 0) return (false, "No connections");
     if (OrphanElements().Count > 0) return (false, "Orphan elements: " + string.Join(',', OrphanElements().Select(p => p.Name)));
 

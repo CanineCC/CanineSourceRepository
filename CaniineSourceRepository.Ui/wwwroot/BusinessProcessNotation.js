@@ -31,9 +31,9 @@ function CreateNode(id, text, description, status, executionDuration, x, y, onSe
   node.style.top = y + "px";
 
   if (status === 'Succeeded') {
-    node.style.boxShadow = "0 0 10px 2px green";
+    node.style.boxShadow = "0 0 10px 4px green";
   } else if (status === 'Failed') {
-    node.style.boxShadow = "0 0 10px 2px red";
+    node.style.boxShadow = "0 0 10px 4px red";
   }
 
   const header = document.createElement("div");
@@ -49,8 +49,8 @@ function CreateNode(id, text, description, status, executionDuration, x, y, onSe
   if (executionDuration) {
     const duration = document.createElement("div");
     duration.className = "node-duration";
-    duration.innerText = `Execution Time: ${executionDuration}`;
-    duration.style.fontSize = "10px";
+    duration.innerText = `Execution Time: ${executionDuration} ms`;
+    duration.style.fontSize = "12px";
     duration.style.color = "lightgrey";
     node.appendChild(duration);
   }

@@ -2,10 +2,6 @@
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 using EngineEvents;
-using Marten;
-using Npgsql;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
@@ -36,7 +32,7 @@ public abstract class ServiceInjection
   public abstract Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, BpnTask task, Guid correlationId, Assembly assembly);
   internal async Task<TaskResult> RunAndLog(IDocumentSession session, CancellationToken ct, dynamic input, BpnTask task, Guid correlationId, Assembly assembly)
   {
-    var invocationEvents = new List<IEvent>();
+    var invocationEvents = new List<IEngineEvents>();
     var stopwatch = Stopwatch.StartNew();
     dynamic? result = null;
     try
@@ -48,32 +44,32 @@ public abstract class ServiceInjection
 
       if (isOk == false)
       {
-        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed));
+        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
         await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
 
       switch (task)
       {
-        case CodeBlock codeBlock:
+        case CodeTask codeBlock:
           result = await codeBlock.Execute(input, this, assembly);
           break;
-        case ApiInputBlock apiInputBlock://TODO: USER CONTEXT
+        case ApiInputTask apiInputBlock://TODO: USER CONTEXT
           result = await apiInputBlock.Execute(input, new UserContext("userId", "userName", ["Anonymous"], "ipaddress", true, "auth type", null), assembly);
           break;
         default:
-          invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed));
+          invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
           await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
           return new TaskResult(false, result);
       }
 
-      invocationEvents.Add(new TaskSucceeded(task.Id, stopwatch.Elapsed));
+      invocationEvents.Add(new TaskSucceeded(task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)
     {
       if (ex.InnerException != null)
       {
-        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed));
+        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
         await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
 
         if (ex.InnerException is UnauthorizedAccessException)
@@ -83,7 +79,7 @@ public abstract class ServiceInjection
       }
       else
       {
-        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed));
+        invocationEvents.Add(new TaskFailed(task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
         await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
         throw;
       }

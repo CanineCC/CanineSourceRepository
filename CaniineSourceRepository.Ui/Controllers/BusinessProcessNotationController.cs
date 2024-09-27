@@ -19,7 +19,7 @@ namespace CanineSourceRepository.Ui.Controllers
     public async Task<IActionResult> GetSnippetsForCodeBlock()
     {
       var json = await (new StreamReader(Request.Body).ReadToEndAsync());
-      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnFeatureRepository.bpnJsonSerialize)!;
+      var fromClient = JsonSerializer.Deserialize<CodeTask>(json, BpnFeatureRepository.bpnJsonSerialize)!;
 
       var input = fromClient.RecordTypes.FirstOrDefault(p => p.Name == fromClient.Input);
       var output = fromClient.RecordTypes.FirstOrDefault(p => p.Name == fromClient.Output);
@@ -40,7 +40,7 @@ namespace CanineSourceRepository.Ui.Controllers
     public async Task<IActionResult> VerifyCodeBlock()
     {
       var json = await (new StreamReader(Request.Body).ReadToEndAsync());
-      var fromClient = JsonSerializer.Deserialize<CodeBlock>(json, BpnFeatureRepository.bpnJsonSerialize)!;
+      var fromClient = JsonSerializer.Deserialize<CodeTask>(json, BpnFeatureRepository.bpnJsonSerialize)!;
 
       var res = fromClient.VerifyCode();
       if (res.success)

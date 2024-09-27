@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 public record Map(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
 
 public record Transition(
