@@ -1,4 +1,6 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 public record ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
@@ -6,8 +8,9 @@ public record ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.Cr
   public override string ToCode(bool includeNamespace = true)
   {
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
-    var usingAndNamespace = includeNamespace ? @$"using System;
-namespace {BpnFeature.CodeNamespace};" : string.Empty;
+    var usingAndNamespace = includeNamespace ? @$"using System; 
+using static CanineSourceRepository.BusinessProcessNotation.Engine.BpnEngine;
+namespace {BpnEngine.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
 /* 

@@ -3,12 +3,15 @@ using CanineSourceRepository.BusinessProcessNotation.Engine;
 using CanineSourceRepository.Ui.Controllers;
 using Marten.Events.Daemon.Resiliency;
 using Marten;
+using Marten.Events.Projections;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Npgsql;
 using Weasel.Core;
 using Marten.Events.Projections;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Context;
+using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,22 +29,8 @@ builder.Services.AddNpgsqlDataSource(connectionString.ConnectionString);
 builder.Services.AddMarten(serviceProvider =>
 {
   var options = new StoreOptions();
-  options.Projections.LiveStreamAggregation<FeatureInvocationAggregate>();
-  options.Projections.Add<FeatureInvocationProjection>(ProjectionLifecycle.Async);
-  options.Schema.For<FeatureInvocationProjection.FeatureInvocation>().Index(x => x.FeatureId);
-  //options.Projections.Errors.SkipApplyErrors = true;
-  //options.Projections.Errors.SkipSerializationErrors = true;
-  //options.Projections.Errors.SkipUnknownEvents = true;
-  options.Events.AddEventType<FeatureStarted>();
-  options.Events.AddEventType<FeatureError>();
-  options.Events.AddEventType<TaskInitialized>();
-  options.Events.AddEventType<TaskFailed>();
-  options.Events.AddEventType<FailedTaskReInitialized>();
-  options.Events.AddEventType<TaskSucceeded>();
-  options.Events.AddEventType<TransitionUsed>();
-  options.Events.AddEventType<TransitionSkipped>();
-
-
+  options.RegisterBpnEngine();
+  options.RegisterBpnEventStore();
 
 
   options.Policies.ForAllDocuments(x =>
@@ -122,21 +111,16 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
-BpnFeatureRepository.Load();
-BpnDiagramRepository.Load();
 
-BpnFeature feature;
-BpnFeatureDiagram diagram;
-if (BpnFeatureRepository.All().Count == 0)
+
+
+
+using (var scope = app.Services.CreateScope())
 {
-  HomeController.GenerateDefaultData(out feature, out diagram);
-  BpnFeatureRepository.Add(feature);
-  BpnDiagramRepository.Add(diagram);
-  BpnFeatureRepository.Save();
-  BpnDiagramRepository.Save();
+  var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
+  await session.GenerateDefaultData(CancellationToken.None);
+
+  app.RegisterAll(session);
 }
-
-
-app.RegisterAll();
 
 app.Run();

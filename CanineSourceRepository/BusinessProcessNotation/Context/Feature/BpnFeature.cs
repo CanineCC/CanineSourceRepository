@@ -1,133 +1,128 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
+using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection.BpnFeature;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
-public record StackTrace(Guid CorrelationId, StackElement[] Trace, string UserInformation, DateTimeOffset Timestamp);
-public record StackElement(Guid BpnId, string Name, long Version, DateTimeOffset Timestamp, TimeSpan Duration, string DataInput);
+public enum Environment { Development, Testing, Staging, Production };
 
-public record UserContext(string UserId, string UserName, string[] AccessScopes, string IpAddress, bool IsAuthenticated, string AuthenticationType, DateTime? TokenExpiry);
 
-public class BpnFeature
+public class BpnFeatureAggregate
 {
-  public static readonly string CodeNamespace = "CanineSourceRepository";
-  public enum Environment { Development, Testing, Staging, Production };
-  public Guid Id { get; init; }
-  public string Name { get; init; } = string.Empty;
+  public Guid Id { get; internal set; }
+  public long Revision { get; internal set; } = 1;
+  public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
+  public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
 
-  /// <summary>
-  /// Describe the business purpose of the entire feature in business terms, not technical ones.
-  /// </summary>
-  /// <example>
-  /// Enable users to register, validate their email, and gain access to premium content.
-  /// </example>
-  public string Objective { get; init; } = string.Empty;
-
-  /// <summary>
-  /// A high-level description of the business process from start to finish. 
-  /// </summary>
-  /// <example>
-  /// The user enters their registration details, verifies their email, and is granted access to restricted areas.
-  /// </example>
-  public string FlowOverview { get; init; } = string.Empty;
-
-  public long Version { get; init; } = 0;
-  public DateTimeOffset Timestamp { get; init; }
-  public string User { get; init; } = string.Empty;
-  public ImmutableList<BpnTask> Tasks { get; init; } = [];
-  public ImmutableList<Transition> Transitions { get; init; } = [];
-  public ImmutableList<Environment> TargetEnvironments { get; init; } = [];
-
-  // Parameterless constructor required for model binding
-  public BpnFeature() { }
-
-  public BpnFeature(
-      Guid id,
-      string name,
-      long version,
-      DateTimeOffset timestamp,
-      string user,
-      ImmutableList<BpnTask> nodes,
-      ImmutableList<Transition> connections,
-      ImmutableList<Environment> targetEnvironments
-  )
+  public static void Apply(BpnFeatureAggregate aggregate, IEvent<FeatureReleased> @event)
   {
-    Id = id;
-    Name = name;
-    Version = version;
-    Timestamp = timestamp;
-    User = user;
-    Tasks = nodes;
-    Transitions = connections;
-    TargetEnvironments = targetEnvironments;
+    aggregate.Id = @event.StreamId;
+    aggregate.Revision = @event.Data.Version;
+    aggregate.Tasks = @event.Data.Tasks;
+    aggregate.Transitions = @event.Data.Transitions;
+  }
+}
+
+public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.BpnFeature>
+{
+
+  public class BpnFeatureVersion
+  {
+    public string Name { get; internal set; } = string.Empty;
+    /// <summary>
+    /// Describe the business purpose of the entire feature in business terms, not technical ones.
+    /// </summary>
+    /// <example>
+    /// Enable users to register, validate their email, and gain access to premium content.
+    /// </example>
+    public string Objective { get; internal set; } = string.Empty;
+    /// <summary>
+    /// A high-level description of the business process from start to finish. 
+    /// </summary>
+    /// <example>
+    /// The user enters their registration details, verifies their email, and is granted access to restricted areas.
+    /// </example>
+    public string FlowOverview { get; internal set; } = string.Empty;
+
+    public string ReleasedBy { get; internal set; } = string.Empty;
+    public DateTimeOffset? ReleasedDate { get; internal set; } = null;
+
+    public long Revision { get; internal set; } = 0;
+    public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
+    public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
+    public ImmutableList<Environment> TargetEnvironments { get; internal set; } = [];
   }
 
-  public BpnFeature NewRevision(string user)
+  public class BpnFeature
   {
-    long revision = 0;
-    if (BpnFeatureRepository.Exists(Id))
-      revision = BpnFeatureRepository.Load(Id).Version;
-
-    var nextVersion = revision + 1;
-    var newVersion = new BpnFeature(Id, Name, nextVersion, DateTime.UtcNow, user, Tasks, Transitions, TargetEnvironments);
-
-    return newVersion;
-  }
-  public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(ToCode());
-
-  public string ToCode()
-  {
-    var sb = new StringBuilder();
-
-    sb.AppendLine("using System;");
-    sb.AppendLine("using System.Threading.Tasks;");
-    sb.AppendLine("using System.Linq;");
-    sb.AppendLine("using System.Collections.Generic;");
-    sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context;");
-    sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context.Feature;");
-    sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;");
-    sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Engine;");
-    sb.AppendLine($"namespace {CodeNamespace};");
-    sb.AppendLine();
-    //    sb.AppendLine("public record UserContext(string UserId, string UserName, string[] AccessScopes, string IpAddress, bool IsAuthenticated, string AuthenticationType, DateTime? TokenExpiry);");
-    foreach (var node in Tasks)
+    public static string ToCode(ImmutableList<BpnTask> tasks, ImmutableList<BpnTransition> transitions)
     {
-      switch (node)
+      var sb = new StringBuilder();
+      sb.AppendLine("using System;");
+      sb.AppendLine("using System.Threading.Tasks;");
+      sb.AppendLine("using System.Linq;");
+      sb.AppendLine("using System.Collections.Generic;");
+      sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context;");
+      sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context.Feature;");
+      sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;");
+      sb.AppendLine("using CanineSourceRepository.BusinessProcessNotation.Engine;");
+      sb.AppendLine("using static CanineSourceRepository.BusinessProcessNotation.Engine.BpnEngine;");
+      sb.AppendLine($"namespace {BpnEngine.CodeNamespace};");
+      sb.AppendLine();
+      foreach (var node in tasks)
       {
-        case CodeTask codeBlock:
-          sb.Append(codeBlock.ToCode(false));
-          sb.Append("\n\r");
-          break;
-        case ApiInputTask apiInputBlock:
-          sb.Append(apiInputBlock.ToCode(false));
-          sb.Append("\n\r");
-          break;
-        default:
-          throw new InvalidOperationException("Unsupported node type.");
+        switch (node)
+        {
+          case CodeTask codeBlock:
+            sb.Append(codeBlock.ToCode(false));
+            sb.Append("\n\r");
+            break;
+          case ApiInputTask apiInputBlock:
+            sb.Append(apiInputBlock.ToCode(false));
+            sb.Append("\n\r");
+            break;
+          default:
+            throw new InvalidOperationException("Unsupported node type.");
+        }
+      }
+      foreach (var connection in transitions)
+      {
+        sb.Append(connection.ToCode(false));
+        sb.Append("\n\r");
+      }
+      return sb.ToString();
+    }
+    public record FeatureReleased(string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, long Version);
+    public record EnvironmentsUpdated(long FeatureVersion, Environment[] Environment);
+
+    public Guid Id { get; internal set; }
+    public List<BpnFeatureVersion> Versions { get; private set; } = [];
+    public BpnFeature() { }
+    public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(ToCode(Versions.SelectMany(version => version.Tasks).ToImmutableList(), Versions.SelectMany(version => version.Transitions).ToImmutableList()));
+    public void Apply(BpnFeature projection, EnvironmentsUpdated @event)
+    {
+      var version = projection.Versions.First(p => p.Revision == @event.FeatureVersion);
+      version.TargetEnvironments = @event.Environment.ToImmutableList();
+    }
+    public static void Apply(BpnFeature projection, IEvent<FeatureReleased> @event)
+    {
+      var currentNewest = projection.Versions.Count() == 0 ? 0 : projection.Versions.Max(p => p.Revision);
+      if (currentNewest < @event.Data.Version)
+      {
+        var newVersion = new BpnFeatureVersion()
+        {
+          Name = @event.Data.Name,
+          Objective = @event.Data.Objective,
+          FlowOverview = @event.Data.FlowOverview,
+          Tasks = @event.Data.Tasks,
+          Transitions = @event.Data.Transitions,
+          ReleasedBy = @event.Data.ReleasedBy,
+          ReleasedDate = @event.Timestamp,
+          Revision = @event.Data.Version
+        };
+
+        projection.Id = @event.StreamId;
+        projection.Versions.Add(newVersion);
       }
     }
-    foreach (var connection in Transitions)
-    {
-      sb.Append(connection.ToCode(false));
-      sb.Append("\n\r");
-    }
-    return sb.ToString();
-  }
-
-  public List<BpnTask> OrphanElements()
-  {
-    return Tasks.Where(node => Transitions.Where(c => c.FromBPN == node.Id || c.ToBPN == node.Id).Any() == false).ToList();
-  }
-  public (bool Valid, string Reason) IsValid()
-  {
-    if (Tasks.Count == 0) return (false, "No nodes");
-    if (Tasks.First().GetType() != typeof(ApiInputTask)) return (false, $"First node can not be {Tasks.First().GetType()}");
-    if (Transitions.Count == 0) return (false, "No connections");
-    if (OrphanElements().Count > 0) return (false, "Orphan elements: " + string.Join(',', OrphanElements().Select(p => p.Name)));
-
-
-    return (true, "");
-  }
-  public static BpnFeature CreateNew(string name, ImmutableList<BpnTask> tasks, ImmutableList<Transition> transitions, ImmutableList<Environment> targetEnvironments)
-  {
-    return new BpnFeature(Guid.CreateVersion7(), name, -1, DateTime.MinValue.ToUniversalTime(), "<-IN DEVELOPMENT->", tasks, transitions, targetEnvironments);
   }
 }

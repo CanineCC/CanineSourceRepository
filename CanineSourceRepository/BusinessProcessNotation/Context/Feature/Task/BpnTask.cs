@@ -1,13 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Reflection;
-using CanineSourceRepository.BusinessProcessNotation.Engine;
+﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-
-
-
 
 public abstract record BpnTask(Guid Id, string Name)
 {
@@ -62,7 +55,7 @@ public abstract record BpnTask(Guid Id, string Name)
   }
   public Type GetCompiledType(Assembly assembly)
   {
-    var className = BpnFeature.CodeNamespace + "." + GetTypeName();
+    var className = BpnEngine.CodeNamespace + "." + GetTypeName();
     var res = assembly.GetType(className + "+" + Input) ?? throw new InvalidOperationException($"The inputType '{Input}' does not exist in {Name}'s definition (Node.Id:{Id})");
 
     return res ?? throw new Exception($"The type '{className + "+" + Input}' was not found in the assembly, check code generation for the type.");
@@ -74,7 +67,7 @@ public abstract record BpnTask(Guid Id, string Name)
   {
     return DynamicCompiler.ExecuteUserMethod(
     assembly,
-    BpnFeature.CodeNamespace + "." + GetTypeName(),
+    BpnEngine.CodeNamespace + "." + GetTypeName(),
     "Execute",
     GetCompiledType(assembly),
     inputJson,
@@ -146,8 +139,10 @@ public abstract record BpnTask(Guid Id, string Name)
   }
 }
 
+
 public class BpnConverter : JsonConverter<BpnTask>
 {
+
   public override BpnTask Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
     using var jsonDoc = JsonDocument.ParseValue(ref reader);

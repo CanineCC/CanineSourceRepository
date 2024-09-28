@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 
 /// <summary>
 /// Visual representation of the BpnFeature, annotations for position on UI
@@ -16,13 +14,13 @@ public class BpnFeatureDiagram
   public List<ConnectionWaypoints> BpnConnectionWaypoints { get; set; } = [];
   public record ConnectionWaypoints(Guid FromBPN, Guid ToBPN, params Position[] Waypoints);
 
-  public List<BpnTask> MissingElements()
+ /* public List<BpnTask> MissingElements()
   {
     var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
     var positions = BpnPositions.Select(n => n.Id).ToList();
     return feature.Tasks.Where(node => positions.Contains(node.Id) == false).ToList();
   }
-  public List<Transition> MissingConnections()
+  public List<BpnTransition> MissingConnections()
   {
     var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
     var connectionProjections = feature.Transitions
@@ -45,7 +43,7 @@ public class BpnFeatureDiagram
   {
     var feature = BpnFeatureRepository.Load(FeatureId, FeatureVersion);
     return feature.Tasks.Where(node => feature.Transitions.Where(c => c.FromBPN == node.Id || c.ToBPN == node.Id).Any() == false).ToList();
-  }
+  }*/
 }
 
 

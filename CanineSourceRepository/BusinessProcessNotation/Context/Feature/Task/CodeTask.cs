@@ -1,4 +1,5 @@
-﻿using static CanineSourceRepository.DynamicCompiler;
+﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
@@ -98,7 +99,7 @@ public record CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
     if (Code == null) return "";
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
     var usingAndNamespace = includeNamespace ? @$"using System; using System.Threading.Tasks; using System.Linq; using CanineSourceRepository.BusinessProcessNotation.Engine;
-namespace {BpnFeature.CodeNamespace};" : string.Empty;
+namespace {BpnEngine.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
 /* 

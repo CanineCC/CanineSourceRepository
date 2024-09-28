@@ -1,8 +1,6 @@
 ﻿using EngineEvents;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
-
-
 public static class FeatureInovationEventStore
 {
   public static async Task RegisterEvents(this IDocumentSession session, CancellationToken ct, Guid id, Guid causationId, params IEngineEvents[] @events)
@@ -14,6 +12,7 @@ public static class FeatureInovationEventStore
             id,
             stream => stream .AppendMany(@events),
             ct);
+    await session.SaveChangesAsync();  
   }
 }
 

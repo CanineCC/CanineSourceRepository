@@ -1,7 +1,9 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+
+namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 public record Map(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
 
-public record Transition(
+public record BpnTransition(
     Guid FromBPN,
     Guid ToBPN,
     string Name,
@@ -13,7 +15,7 @@ public record Transition(
   public string ToCode(bool includeNamespace = true)
   {
     var usingAndNamespace = includeNamespace ? @$"using System;
-namespace {BpnFeature.CodeNamespace};" : string.Empty;
+namespace {BpnEngine.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
 public static class {GetTypeName()} {{
@@ -25,7 +27,7 @@ public static class {GetTypeName()} {{
   }
   public bool ConditionIsMeet(dynamic inputObject, Assembly assembly)
   {
-    string typeName = BpnFeature.CodeNamespace + "." + GetTypeName();
+    string typeName = BpnEngine.CodeNamespace + "." + GetTypeName();
 
     var type = assembly.GetType(typeName) ?? throw new Exception($"The type '{typeName}' was not found in the assembly, check code generation for the type.");
     var method = type.GetMethod("Execute", BindingFlags.Static | BindingFlags.Public) ?? throw new Exception($"Method 'Execute' not found in type '{typeName}'."); ;
