@@ -84,7 +84,8 @@ namespace CanineSourceRepository.Ui.Controllers
     {
       var lastRun = session.Query<FeatureInvocation>().Where(p=>p.FeatureId == id).OrderByDescending(p=>p.StarTime).FirstOrDefault();
       var feature = session.Query<BpnFeatureProjection.BpnFeature>().First(p => p.Id == id);
-      return PartialView("Index", new UiModel(id, feature.Versions.Last(), BpnDiagramRepository.Load(id), lastRun));
+      return PartialView("Index", feature);
+      //return PartialView("Index", new UiModel(id, feature.Versions.Last(), BpnDiagramRepository.Load(id), lastRun));
     }
 
 

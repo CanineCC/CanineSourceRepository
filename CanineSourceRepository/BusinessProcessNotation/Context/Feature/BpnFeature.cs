@@ -10,6 +10,7 @@ public class BpnFeatureAggregate
 {
   public Guid Id { get; internal set; }
   public long Revision { get; internal set; } = 1;
+  public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
   public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
   public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
 
@@ -19,6 +20,7 @@ public class BpnFeatureAggregate
     aggregate.Revision = @event.Data.Version;
     aggregate.Tasks = @event.Data.Tasks;
     aggregate.Transitions = @event.Data.Transitions;
+    aggregate.Diagram = @event.Data.Diagram;
   }
 }
 
@@ -27,29 +29,30 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
 
   public class BpnFeatureVersion
   {
-    public string Name { get; internal set; } = string.Empty;
+    public BpnFeatureDiagram Diagram { get; set; } = new BpnFeatureDiagram();
+    public string Name { get; set; } = string.Empty;
     /// <summary>
     /// Describe the business purpose of the entire feature in business terms, not technical ones.
     /// </summary>
     /// <example>
     /// Enable users to register, validate their email, and gain access to premium content.
     /// </example>
-    public string Objective { get; internal set; } = string.Empty;
+    public string Objective { get; set; } = string.Empty;
     /// <summary>
     /// A high-level description of the business process from start to finish. 
     /// </summary>
     /// <example>
     /// The user enters their registration details, verifies their email, and is granted access to restricted areas.
     /// </example>
-    public string FlowOverview { get; internal set; } = string.Empty;
+    public string FlowOverview { get; set; } = string.Empty;
 
-    public string ReleasedBy { get; internal set; } = string.Empty;
-    public DateTimeOffset? ReleasedDate { get; internal set; } = null;
+    public string ReleasedBy { get;  set; } = string.Empty;
+    public DateTimeOffset? ReleasedDate { get;  set; } = null;
 
-    public long Revision { get; internal set; } = 0;
-    public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
-    public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
-    public ImmutableList<Environment> TargetEnvironments { get; internal set; } = [];
+    public long Revision { get;  set; } = 0;
+    public ImmutableList<BpnTask> Tasks { get;  set; } = [];
+    public ImmutableList<BpnTransition> Transitions { get;  set; } = [];
+    public ImmutableList<Environment> TargetEnvironments { get;  set; } = [];
   }
 
   public class BpnFeature
@@ -91,11 +94,11 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
       }
       return sb.ToString();
     }
-    public record FeatureReleased(string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, long Version);
+    public record FeatureReleased(string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions,  BpnFeatureDiagram Diagram, long Version);
     public record EnvironmentsUpdated(long FeatureVersion, Environment[] Environment);
 
-    public Guid Id { get; internal set; }
-    public List<BpnFeatureVersion> Versions { get; private set; } = [];
+    public Guid Id { get; set; }
+    public List<BpnFeatureVersion> Versions { get; set; } = [];
     public BpnFeature() { }
     public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(ToCode(Versions.SelectMany(version => version.Tasks).ToImmutableList(), Versions.SelectMany(version => version.Transitions).ToImmutableList()));
     public void Apply(BpnFeature projection, EnvironmentsUpdated @event)
@@ -117,7 +120,9 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
           Transitions = @event.Data.Transitions,
           ReleasedBy = @event.Data.ReleasedBy,
           ReleasedDate = @event.Timestamp,
-          Revision = @event.Data.Version
+          Revision = @event.Data.Version,
+          Diagram = @event.Data.Diagram,
+          
         };
 
         projection.Id = @event.StreamId;

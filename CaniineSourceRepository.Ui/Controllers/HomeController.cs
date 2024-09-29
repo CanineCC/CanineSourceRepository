@@ -1,14 +1,10 @@
-using CanineSourceRepository.BusinessProcessNotation;
-using CanineSourceRepository.BusinessProcessNotation.Context;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.Ui.Models;
 using Marten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text.Json;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection;
 
 namespace CanineSourceRepository.Ui.Controllers
 {

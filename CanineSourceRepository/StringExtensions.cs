@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace CanineSourceRepository;
+﻿namespace CanineSourceRepository;
 
 public static class StringExtensions
 {

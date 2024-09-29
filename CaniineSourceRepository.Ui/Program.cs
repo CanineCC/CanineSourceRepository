@@ -123,4 +123,6 @@ using (var scope = app.Services.CreateScope())
   app.RegisterAll(session);
 }
 
+app.RegisterBpnEventStore();
+
 app.Run();

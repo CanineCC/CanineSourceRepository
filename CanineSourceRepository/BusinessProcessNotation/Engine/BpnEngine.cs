@@ -35,11 +35,11 @@ public static class BpnEngine
 
   public static WebApplication RegisterAll(this WebApplication app, IDocumentSession session)
   {
+    //TODO: Get context also, use context to group the enpoints!
+    //TODO: Ensure unique names (i.e. no two features are allowed to have same name within a context)
     var features = session.Query<BpnFeatureProjection.BpnFeature>().ToList();
     foreach (var feature in features)
     {
-//      var newestVersion = features.Where(p => feature.Id == p.Id).Max(p => p.Version);
-
       var assembly = feature.ToAssembly();
 
       foreach (var version in feature.Versions)
