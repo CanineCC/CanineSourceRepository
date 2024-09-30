@@ -1,4 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using EngineEvents;
 using Marten.Events.Projections;
@@ -37,29 +38,34 @@ public static class BpnEngine
   {
     //TODO: Get context also, use context to group the enpoints!
     //TODO: Ensure unique names (i.e. no two features are allowed to have same name within a context)
-    var features = session.Query<BpnFeatureProjection.BpnFeature>().ToList();
-    foreach (var feature in features)
+    var contexts = session.Query<BpnContextProjection.BpnContext>().ToList();
+    foreach (var context in contexts)
     {
-      var assembly = feature.ToAssembly();
-
-      foreach (var version in feature.Versions)
+      var features = session.Query<BpnFeatureProjection.BpnFeature>().Where(p=> context.FeatureIds.Contains(p.Id)).ToList();
+      foreach (var feature in features)
       {
-        AddEnpoint(app, $"{version.Name.ToPascalCase()}/v{version.Revision}", feature, version, assembly);
-      }
-      var newest = feature.Versions.Last();
-      AddEnpoint(app, $"{newest.Name.ToPascalCase()}", feature, newest, assembly);
+        var contextName = context.Name.ToPascalCase();
+        var assembly = feature.ToAssembly();
 
-    };
+        foreach (var version in feature.Versions)
+        {
+          AddEnpoint(app, $"Commands/{version.Name.ToPascalCase()}/v{version.Revision}", contextName, feature, version, assembly);
+        }
+        var newest = feature.Versions.Last();
+        AddEnpoint(app, $"Commands/{newest.Name.ToPascalCase()}", contextName, feature, newest, assembly);
+
+      };
+    }
 
 
     return app;
   }
 
-  private static void AddEnpoint(WebApplication app, string name, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly)
+  private static void AddEnpoint(WebApplication app, string name, string groupName, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly)
   {
     var startTask = version.Tasks.First();
     var inputType = startTask.GetCompiledType(assembly);
-    app.MapPut(name, async Task<IResult> (HttpContext context, [FromServices]IDocumentSession session, CancellationToken ct) =>
+    app.MapPost(name, async Task<IResult> (HttpContext context, [FromServices]IDocumentSession session, CancellationToken ct) =>
     {
       object? input = null;
       using (var reader = new StreamReader(context.Request.Body))
@@ -86,6 +92,8 @@ public static class BpnEngine
         return Results.InternalServerError();
       }
     }).WithName(name) // Set the operation ID to the feature's name
+      //.WithGroupName(groupName)
+      .WithTags(groupName)
       .Produces(StatusCodes.Status202Accepted) // Specify return types
       .Produces(StatusCodes.Status401Unauthorized)
       .Produces(StatusCodes.Status400BadRequest)

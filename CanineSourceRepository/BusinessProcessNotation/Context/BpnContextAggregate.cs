@@ -22,6 +22,7 @@ public class BpnContextProjection : SingleStreamProjection<BpnContextProjection.
    // public record FeatureRemoved(Guid FeatureId);
 
     public Guid Id { get; set; } = Guid.Empty;
+    public string Name { get; set; } = "";
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
     public DateTimeOffset CreatedTimestamp { get; set; }
     public List<Guid> FeatureIds { get; set; } = [];
@@ -30,6 +31,7 @@ public class BpnContextProjection : SingleStreamProjection<BpnContextProjection.
     public void Apply(BpnContext projection, IEvent<ContextCreated> @event)
     {
       projection.Id = @event.Data.Id;
+      projection.Name = @event.Data.Name;
       projection.LastUpdatedTimestamp = @event.Timestamp;
       projection.CreatedTimestamp = @event.Timestamp;
     }
