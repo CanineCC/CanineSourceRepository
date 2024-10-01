@@ -1,4 +1,4 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.Context;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnContext;
 
 public class BpnContextAggregate
 {

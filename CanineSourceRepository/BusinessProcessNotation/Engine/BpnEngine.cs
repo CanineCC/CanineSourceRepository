@@ -1,9 +1,9 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext;
+using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using EngineEvents;
 using Marten.Events.Projections;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
@@ -49,16 +49,23 @@ public static class BpnEngine
 
         foreach (var version in feature.Versions)
         {
-          AddEnpoint(app, $"Commands/{version.Name.ToPascalCase()}/v{version.Revision}", contextName, feature, version, assembly);
+          AddEnpoint(app, $"Commands/v{version.Revision}/{version.Name.ToPascalCase()}", contextName, feature, version, assembly);
         }
-        var newest = feature.Versions.Last();
-        AddEnpoint(app, $"Commands/{newest.Name.ToPascalCase()}", contextName, feature, newest, assembly);
+        //var newest = feature.Versions.Last();
+        //AddEnpoint(app, $"Commands/{newest.Name.ToPascalCase()}", contextName, feature, newest, assembly);
 
       };
     }
 
 
     return app;
+  }
+
+  public static string[] PotentialApiVersions => Enumerable.Range(1, 999).Select(i => $"v{i}") .ToArray();  
+
+  public static string[] ApiVersions(IDocumentSession session)
+  {
+    return session.Query<BpnFeatureProjection.BpnFeature>().ToList().SelectMany(feat => feat.Versions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
   }
 
   private static void AddEnpoint(WebApplication app, string name, string groupName, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly)

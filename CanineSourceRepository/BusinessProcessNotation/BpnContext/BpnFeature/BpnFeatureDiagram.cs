@@ -1,5 +1,5 @@
 ﻿
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
 /// <summary>
 /// Visual representation of the BpnFeature, annotations for position on UI

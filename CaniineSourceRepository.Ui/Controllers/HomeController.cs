@@ -22,7 +22,7 @@ namespace CanineSourceRepository.Ui.Controllers
     {
       return View();
     }
-
+    /*
     //[Authorize]
     public IActionResult BusinessProcessNotation([FromServices] IDocumentSession session)
     {
@@ -33,7 +33,7 @@ namespace CanineSourceRepository.Ui.Controllers
       return View();
     }
 
-    
+    */
 
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

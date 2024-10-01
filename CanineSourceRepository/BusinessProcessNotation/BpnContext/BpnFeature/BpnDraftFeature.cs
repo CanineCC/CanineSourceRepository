@@ -1,8 +1,8 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnDraftFeatureProjection.BpnDraftFeature;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureDiagram;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection.BpnDraftFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
 
 public class BpnDraftFeatureAggregate

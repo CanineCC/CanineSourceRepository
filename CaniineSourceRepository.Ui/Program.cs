@@ -1,17 +1,13 @@
-using EngineEvents;
 using CanineSourceRepository.BusinessProcessNotation.Engine;
-using CanineSourceRepository.Ui.Controllers;
 using Marten.Events.Daemon.Resiliency;
 using Marten;
-using Marten.Events.Projections;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Npgsql;
 using Weasel.Core;
-using Marten.Events.Projections;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using CanineSourceRepository.BusinessProcessNotation.Context;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection;
+using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
+using NSwag.Generation.Processors;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,14 +21,11 @@ var connectionString = new NpgsqlConnectionStringBuilder
   Password = "S3cret"
 };
 builder.Services.AddNpgsqlDataSource(connectionString.ConnectionString);
-
 builder.Services.AddMarten(serviceProvider =>
 {
   var options = new StoreOptions();
   options.RegisterBpnEngine();
   options.RegisterBpnEventStore();
-
-
   options.Policies.ForAllDocuments(x =>
   {
     x.Metadata.CausationId.Enabled = true;
@@ -50,65 +43,106 @@ builder.Services.AddMarten(serviceProvider =>
 
 
 
+
+foreach (var version in BpnEventStore.ApiVersions)
+{
+  builder.Services.AddOpenApiDocument(config =>
+  {
+    config.DocumentName = "bpnengine_" + version;
+    config.Title = "BpnEngine API " + version.ToUpper();
+    config.Version = version;
+
+    config.OperationProcessors.Add(new OperationProcessor(ctx =>
+    {
+      // Only include operations with the "BpnEngine" tag
+      return ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + version + "/"); //ctx.OperationDescription.Operation.Tags.Contains("BpnEngine");
+    }));
+  });
+}
+
+foreach (var version in BpnEngine.PotentialApiVersions)
+{
+  builder.Services.AddOpenApiDocument(config =>
+  {
+    config.DocumentName = "bpn_" + version;
+    config.Title = "BPN API " + version.ToUpper();
+    config.Version = version;
+
+    config.OperationProcessors.Add(new OperationProcessor(ctx =>
+    {
+      // Only include operations with the "BpnEngine" tag
+      return !ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + version + "/"); // ctx.OperationDescription.Operation.Tags.Contains("Bpn");
+    }));
+  });
+}
+
 // Add services to the container.
-builder.Services.AddControllersWithViews()
-.AddJsonOptions(options =>
-{
-  options.JsonSerializerOptions.Converters.Add(new BpnConverter());
-});
+//builder.Services.AddControllersWithViews()
+//.AddJsonOptions(options =>
+//{
+//  options.JsonSerializerOptions.Converters.Add(new BpnConverter());
+//});
 
-builder.Services.AddOutputCache();
+//builder.Services.AddOutputCache();
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
-builder.Services.AddOpenApiDocument();      // Adds OpenAPI support for .NET Minimal APIs
+//builder.Services.AddOpenApiDocument();      // Adds OpenAPI support for .NET Minimal APIs
 
-builder.Services.AddHsts(options =>
-{
-  options.Preload = true;
-  options.IncludeSubDomains = true;
-  options.MaxAge = TimeSpan.FromDays(360);
-  //options.ExcludedHosts.Add("example.com");
-  //options.ExcludedHosts.Add("www.example.com");
-});
+//builder.Services.AddHsts(options =>
+//{
+//  options.Preload = true;
+//  options.IncludeSubDomains = true;
+//  options.MaxAge = TimeSpan.FromDays(360);
+//});
 
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-        .AddCookie(options =>
-        {
-          options.LoginPath = "/Account/Login";
-          options.LogoutPath = "/Account/Logout";
-        });
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme);
+//        .AddCookie(options =>
+//        {
+//          options.LoginPath = "/Account/Login";
+//          options.LogoutPath = "/Account/Logout";
+//        });
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-  app.UseExceptionHandler("/Home/Error");
-  app.UseHsts();
-}
+//if (!app.Environment.IsDevelopment())
+//{
+//  app.UseExceptionHandler("/Home/Error");
+//  app.UseHsts();
+//}
 
-app.UseStaticFiles(new StaticFileOptions
-{
-  OnPrepareResponse = ctx =>
-  {
-    // Cache static files like fonts for 1 year
-    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=31536000");
-  }
-});
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//  OnPrepareResponse = ctx =>
+//  {
+//    // Cache static files like fonts for 1 year
+//    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=31536000");
+//  }
+//});
 
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapStaticAssets();
-app.UseOutputCache();
+//app.MapStaticAssets();
+//app.UseOutputCache();
 
 app.UseOpenApi();   // Generates OpenAPI document
-app.UseSwaggerUi(); // Adds Swagger UI
+//app.UseSwagger();
+//app.UseSwaggerUI();
+//c =>
+//{
+//  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BpnEngine API V1");
+//  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BPN API");
+//});
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+
+
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}")
+//    .WithStaticAssets();
 
 
 
@@ -121,8 +155,28 @@ using (var scope = app.Services.CreateScope())
   await session.GenerateDefaultData(CancellationToken.None);
 
   app.RegisterAll(session);
+
+
+
+
+
+  app.UseSwaggerUi(settings =>
+  {
+
+    foreach (var version in BpnEngine.ApiVersions(session))
+    {
+      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"Bpn API {version.ToUpper()}", $"/swagger/bpn_{version}/swagger.json"));
+    }
+    foreach (var version in BpnEventStore.ApiVersions)
+    {
+      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"BpnEngine API {version.ToUpper()}", $"/swagger/bpnengine_{version}/swagger.json"));
+    }
+    settings.TagsSorter = "alpha"; // Alphabetically sorts tags
+    settings.OperationsSorter = "alpha"; // Alphabetically sorts endpoints
+  }); // Adds Swagger UI
 }
 
 app.RegisterBpnEventStore();
+
 
 app.Run();

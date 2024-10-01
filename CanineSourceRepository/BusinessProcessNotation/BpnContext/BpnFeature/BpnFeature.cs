@@ -1,8 +1,8 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Engine;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection.BpnFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection.BpnFeature;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 public enum Environment { Development, Testing, Staging, Production };
 
 
