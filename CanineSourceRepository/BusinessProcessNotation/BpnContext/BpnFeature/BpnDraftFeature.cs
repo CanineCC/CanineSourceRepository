@@ -66,8 +66,8 @@ public class BpnDraftFeatureAggregate
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureTaskRemoved @event)
   {
-    aggregate.Tasks = aggregate.Tasks.Remove(@event.Task);
-    Diagram.BpnPositions.RemoveAll(p => p.Id == @event.Task.Id);
+    aggregate.Tasks = aggregate.Tasks.RemoveAll(task => task.Id == @event.TaskId);
+    Diagram.BpnPositions.RemoveAll(p => p.Id == @event.TaskId);
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureTransitionAdded @event)
   {
@@ -76,8 +76,8 @@ public class BpnDraftFeatureAggregate
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureTransitionRemoved @event)
   {
-    aggregate.Transitions = aggregate.Transitions.Remove(@event.Transition);
-    Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Transition.FromBPN && p.ToBPN == @event.Transition.ToBPN);
+    aggregate.Transitions = aggregate.Transitions.RemoveAll(p => p.FromBPN == @event.FromBpn && p.ToBPN == @event.ToBpn);
+    Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.FromBpn && p.ToBPN == @event.ToBpn);
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureReset @event)
   {
@@ -105,9 +105,9 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
     public record DraftFeatureReset(ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram  Diagram);
     public record DraftFeatureTaskAdded(BpnTask Task);
-    public record DraftFeatureTaskRemoved(BpnTask Task);
+    public record DraftFeatureTaskRemoved(Guid TaskId);
     public record DraftFeatureTransitionAdded(BpnTransition Transition);
-    public record DraftFeatureTransitionRemoved(BpnTransition Transition);
+    public record DraftFeatureTransitionRemoved(Guid FromBpn, Guid ToBpn);
     public Guid Id { get; internal set; }
     public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
     public string Name { get; internal set; } = string.Empty;
@@ -150,8 +150,8 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     }
     public void Apply(BpnDraftFeature projection, DraftFeatureTaskRemoved @event)
     {
-      projection.Tasks = projection.Tasks.Remove(@event.Task);
-      Diagram.BpnPositions.RemoveAll(p => p.Id == @event.Task.Id);
+      projection.Tasks = projection.Tasks.RemoveAll(task => task.Id == @event.TaskId);
+      Diagram.BpnPositions.RemoveAll(p => p.Id == @event.TaskId);
     }
     public void Apply(BpnDraftFeature projection, DraftFeatureTransitionAdded @event)
     {
@@ -160,8 +160,8 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     }
     public void Apply(BpnDraftFeature projection, DraftFeatureTransitionRemoved @event)
     {
-      projection.Transitions = projection.Transitions.Remove(@event.Transition);
-      Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Transition.FromBPN && p.ToBPN == @event.Transition.ToBPN);
+      projection.Transitions = projection.Transitions.RemoveAll(p => p.FromBPN == @event.FromBpn && p.ToBPN == @event.ToBpn);
+      Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.FromBpn && p.ToBPN == @event.ToBpn);
     }
     public static void Apply(BpnDraftFeature projection, IEvent<DraftFeatureReset> @event)
     {
