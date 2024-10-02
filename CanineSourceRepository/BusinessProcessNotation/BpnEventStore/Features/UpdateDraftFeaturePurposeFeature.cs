@@ -27,7 +27,12 @@ public class UpdateDraftFeaturePurposeFeature : IFeature
     var aggregate = await session.Events.AggregateStreamAsync<BpnDraftFeatureAggregate>(featureId, token: ct);
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeaturePurposeChanged(Name: name, Objective: objective, FlowOverview: flowOverview));
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeaturePurposeChanged(
+      ContextId: aggregate.ContextId, 
+      FeatureId: featureId, 
+      Name: name, 
+      Objective: objective, 
+      FlowOverview: flowOverview));
 
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }

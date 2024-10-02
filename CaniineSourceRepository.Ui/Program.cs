@@ -4,10 +4,8 @@ using Marten;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Npgsql;
 using Weasel.Core;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 using NSwag.Generation.Processors;
-using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +38,6 @@ builder.Services.AddMarten(serviceProvider =>
     .UseNpgsqlDataSource()
     .ApplyAllDatabaseChangesOnStartup()
     .AddAsyncDaemon(DaemonMode.HotCold);
-
-
 
 
 foreach (var version in BpnEventStore.ApiVersions)
@@ -83,16 +79,14 @@ foreach (var version in BpnEngine.PotentialApiVersions)
 //  options.JsonSerializerOptions.Converters.Add(new BpnConverter());
 //});
 
-//builder.Services.AddOutputCache();
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
-//builder.Services.AddOpenApiDocument();      // Adds OpenAPI support for .NET Minimal APIs
 
-//builder.Services.AddHsts(options =>
-//{
-//  options.Preload = true;
-//  options.IncludeSubDomains = true;
-//  options.MaxAge = TimeSpan.FromDays(360);
-//});
+builder.Services.AddHsts(options =>
+{
+  options.Preload = true;
+  options.IncludeSubDomains = true;
+  options.MaxAge = TimeSpan.FromDays(360);
+});
 
 
 
@@ -106,11 +100,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-//if (!app.Environment.IsDevelopment())
-//{
+if (!app.Environment.IsDevelopment())
+{
 //  app.UseExceptionHandler("/Home/Error");
-//  app.UseHsts();
-//}
+  app.UseHsts();
+}
 
 //app.UseStaticFiles(new StaticFileOptions
 //{
@@ -129,36 +123,12 @@ app.UseAuthorization();
 //app.UseOutputCache();
 
 app.UseOpenApi();   // Generates OpenAPI document
-//app.UseSwagger();
-//app.UseSwaggerUI();
-//c =>
-//{
-//  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BpnEngine API V1");
-//  c.SwaggerEndpoint("/swagger/v1/swagger.json", "BPN API");
-//});
-
-
-
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Home}/{action=Index}/{id?}")
-//    .WithStaticAssets();
-
-
-
-
-
 
 using (var scope = app.Services.CreateScope())
 {
   var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
   await session.GenerateDefaultData(CancellationToken.None);
-
   app.RegisterAll(session);
-
-
-
-
 
   app.UseSwaggerUi(settings =>
   {

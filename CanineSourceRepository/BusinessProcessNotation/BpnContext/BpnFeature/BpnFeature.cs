@@ -9,7 +9,8 @@ public enum Environment { Development, Testing, Staging, Production };
 public class BpnFeatureAggregate
 {
   public Guid Id { get; internal set; }
-  public long Revision { get; internal set; } = 1;
+  public Guid ContextId { get; internal set; }
+  public long Revision { get; internal set; } = 0;
   public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
   public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
   public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
@@ -17,6 +18,7 @@ public class BpnFeatureAggregate
   public static void Apply(BpnFeatureAggregate aggregate, IEvent<FeatureReleased> @event)
   {
     aggregate.Id = @event.StreamId;
+    aggregate.ContextId = @event.Data.ContextId;
     aggregate.Revision = @event.Data.Version;
     aggregate.Tasks = @event.Data.Tasks;
     aggregate.Transitions = @event.Data.Transitions;
@@ -94,8 +96,8 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
       }
       return sb.ToString();
     }
-    public record FeatureReleased(string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions,  BpnFeatureDiagram Diagram, long Version);
-    public record EnvironmentsUpdated(long FeatureVersion, Environment[] Environment);
+    public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions,  BpnFeatureDiagram Diagram, long Version);
+    public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, Environment[] Environment);
 
     public Guid Id { get; set; }
     public List<BpnFeatureVersion> Versions { get; set; } = [];

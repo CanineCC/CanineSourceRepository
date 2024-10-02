@@ -21,19 +21,21 @@ public class AddDraftFeatureFeature : IFeature
   public static void RegisterBpnEvents(StoreOptions options)
   {
     options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureCreated>();
-    options.Events.AddEventType<BpnContextProjection.BpnContext.FeatureAddedToContext>();
+  //  options.Events.AddEventType<BpnContextProjection.BpnContext.FeatureAddedToContext>();
   }
   public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid bpnContextId, string name, string objective, string flowOverview, CancellationToken ct)
   {
     var featureId = Guid.CreateVersion7();
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureCreated(
+    var @event = new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureCreated(
+    ContextId: bpnContextId,
     FeatureId: featureId,
     Name: name,
     Objective: objective,
-      FlowOverview: flowOverview));
+    FlowOverview: flowOverview);
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, @event);
 
-    await session.RegisterEventsOnBpnContext(ct, bpnContextId, causationId, new BpnContextProjection.BpnContext.FeatureAddedToContext(FeatureId: featureId));
+//    await session.RegisterEventsOnBpnContext(ct, bpnContextId, causationId, new BpnContextProjection.BpnContext.FeatureAddedToContext(FeatureId: featureId, Name: name));
 
     return featureId;
   }

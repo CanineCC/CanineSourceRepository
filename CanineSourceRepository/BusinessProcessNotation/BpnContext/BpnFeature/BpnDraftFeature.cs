@@ -8,7 +8,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 public class BpnDraftFeatureAggregate
 {
   public Guid Id { get; internal set; }
-
+  public Guid ContextId { get; internal set; }
   public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
   public ImmutableList<BpnTask> Tasks { get; internal set; } = [];
   public ImmutableList<BpnTransition> Transitions { get; internal set; } = [];
@@ -47,6 +47,7 @@ public class BpnDraftFeatureAggregate
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureCreated @event)
   {
     aggregate.Id = @event.FeatureId;
+    aggregate.ContextId = @event.ContextId;
     aggregate.Name = @event.Name;
     aggregate.Objective = @event.Objective;
     aggregate.FlowOverview = @event.FlowOverview;
@@ -100,8 +101,8 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
 {
   public class BpnDraftFeature
   {
-    public record DraftFeatureCreated(Guid FeatureId, string Name, string Objective, string FlowOverview);
-    public record DraftFeaturePurposeChanged(string Name, string Objective, string FlowOverview);
+    public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
+    public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
     public record DraftFeatureReset(ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram  Diagram);
     public record DraftFeatureTaskAdded(BpnTask Task);
     public record DraftFeatureTaskRemoved(BpnTask Task);

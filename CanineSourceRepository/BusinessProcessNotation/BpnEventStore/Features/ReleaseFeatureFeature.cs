@@ -16,7 +16,6 @@ public class ReleaseFeatureFeature : IFeature
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature", "Feature")
      .Accepts(typeof(Request), false, "application/json");
-
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
@@ -32,10 +31,12 @@ public class ReleaseFeatureFeature : IFeature
     if (result.IsValid == false) return result;
 
     var feature = await session.Events.AggregateStreamAsync<BpnFeatureAggregate>(featureId, token: ct);
-
+    
     Dictionary<Guid, Guid> newIds = aggregate.Tasks.ToDictionary(task => task.Id, task => Guid.CreateVersion7());
 
     await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new BpnFeatureProjection.BpnFeature.FeatureReleased(
+      ContextId: aggregate.ContextId,
+      FeatureId: featureId,
       ReleasedBy: user,
       Name: aggregate.Name,
       Objective: aggregate.Objective,

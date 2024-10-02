@@ -4,6 +4,7 @@ using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeatur
 using CanineSourceRepository.BusinessProcessNotation.BpnContext;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+using Microsoft.AspNetCore.Builder;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -129,7 +130,6 @@ public static class BpnEventStore
 
   public static void RegisterBpnEventStore(this WebApplication app)
   {
-
     var interfaceType = typeof(IFeature);
     var implementations = Assembly.GetExecutingAssembly().GetTypes()
         .Where(t => interfaceType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
@@ -140,6 +140,22 @@ public static class BpnEventStore
       var registerMethod = implementation.GetMethod("RegisterBpnEventStore", BindingFlags.Public | BindingFlags.Static);
       registerMethod?.Invoke(null, new object[] { app });
     }
+
+    //TODO: Move events to Aggregates (as they are written to aggregates)
+
+    //app.MapGet("/GetContext"); //name and list of feature names+ids (stats for context + features?)
+    //app.MapGet("/GetFeature/{id}"); //all-details
+
+    app.MapGet($"BpnEngine/v1/Context/GetAll", async (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
+    {//TODO: This belongs on the projection!
+      //TODO: Get stats on the projection!
+      var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
+      return Results.Ok(bpnContexts);
+    }).WithName("GetAllContexts")
+      .Produces(StatusCodes.Status200OK, typeof(BpnContextProjection.BpnContext))
+      .WithTags("Context");
+
+
   }
 }
 

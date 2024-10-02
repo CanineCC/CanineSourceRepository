@@ -1,16 +1,21 @@
 ﻿namespace EngineEvents;
 
-public interface IEngineEvents;
+public interface IEngineEvents
+{
+  Guid ContextId { get; }
+  Guid FeatureId { get; }
+  long FeatureVersion { get; }
+}
 
-public record FeatureStarted(DateTimeOffset StarTime, Guid FeatureId, long FeatureVersion, Guid CorrelationId) : IEngineEvents;
-public record FeatureError(ErrorEvent Exception) : IEngineEvents;
-public record BpnFeatureCompleted(DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
-public record TaskInitialized(Guid TaskId, string Input) : IEngineEvents;
-public record TaskFailed(Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
-public record FailedTaskReInitialized(string NewInput, double ExecutionTimeMs) : IEngineEvents;
-public record TaskSucceeded(Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
-public record TransitionUsed(Guid FromBpn, Guid ToBpn) : IEngineEvents;
-public record TransitionSkipped(Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnFeatureStarted(Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset StarTime, Guid CorrelationId) : IEngineEvents;
+public record BpnFeatureError(Guid ContextId, Guid FeatureId, long FeatureVersion, ErrorEvent Exception) : IEngineEvents;
+public record BpnFeatureCompleted(Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
+public record BpnTaskInitialized(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, string Input) : IEngineEvents;
+public record BpnTaskFailed(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
+public record BpnFailedTaskReInitialized(Guid ContextId, Guid FeatureId, long FeatureVersion, string NewInput, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTaskSucceeded(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTransitionUsed(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnTransitionSkipped(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record ErrorEvent(string Message, string Details);
 
 

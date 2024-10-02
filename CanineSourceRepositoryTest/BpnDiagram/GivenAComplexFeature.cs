@@ -1,9 +1,6 @@
-﻿using CanineSourceRepository.BusinessProcessNotation;
-using CanineSourceRepository.BusinessProcessNotation.Context;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnDraftFeatureProjection;
-using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.BpnFeatureProjection;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection;
 
 namespace CanineSourceRepositoryTest.BpnDiagram;
 
@@ -77,7 +74,7 @@ public class GivenAComplexFeature
       );
 
     feature = new BpnDraftFeatureAggregate();
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureCreated(Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
+    feature.Apply(feature, new BpnDraftFeature.DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
     feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(entryBlock));
     feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(createUserBlock));
     feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(logUserBlock));
@@ -119,7 +116,7 @@ public class GivenAComplexFeature
     var result = feature.IsValid();
 
     //ASSERT
-    Assert.True(result.Valid, result.Reason);
+    Assert.True(result.IsValid, result.InvalidReason);
   }
 
 }
