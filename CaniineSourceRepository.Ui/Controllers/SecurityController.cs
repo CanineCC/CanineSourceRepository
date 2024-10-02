@@ -15,6 +15,8 @@ public record ApplicationUser(string Id, string Email, string Initials, string[]
 
 public class SecurityController : Controller
 {
+  //VerifyCodeBlock,GetSnippetsForCodeBlock
+
   private static string GenerateToken(string email)
   {
     var token = Convert.ToBase64String(Guid.CreateVersion7().ToByteArray());

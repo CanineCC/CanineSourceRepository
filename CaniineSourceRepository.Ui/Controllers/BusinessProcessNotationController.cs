@@ -38,7 +38,6 @@ namespace CanineSourceRepository.Ui.Controllers
 
       return Ok(snippets);
     }
-
     [HttpPost]
     public async Task<IActionResult> VerifyCodeBlock()
     {

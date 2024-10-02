@@ -4,7 +4,8 @@ using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeatur
 using CanineSourceRepository.BusinessProcessNotation.BpnContext;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
-using Microsoft.AspNetCore.Builder;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
+using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -141,20 +142,69 @@ public static class BpnEventStore
       registerMethod?.Invoke(null, new object[] { app });
     }
 
+
+    app.MapPost($"BpnEngine/v1/Task/VerifyCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    {
+      var res = codeTask.VerifyCode();
+      if (res.success)
+        return Results.Accepted();
+
+      return Results.BadRequest(res.errors);
+    }).WithName("VerifyCodeBlock")
+      .Produces(StatusCodes.Status202Accepted)
+      .Produces(StatusCodes.Status400BadRequest, typeof(CompileError))
+      .WithTags("DraftFeature"); 
+
+    app.MapPost($"BpnEngine/v1/Task/GetSnippetsForCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    {
+      var input = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Input);
+      var output = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Output);
+
+      var snippets = new List<CodeSnippet>();
+      if (input != null && output != null)
+      {
+        snippets.AddRange([
+          new CodeSnippet("Auto construct output", AutoConstructorGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray())),
+          new CodeSnippet("Auto mapper", AutoMapperGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray()))
+          //TODO: snippets from DI ?!
+        ]);
+      }
+    }).WithName("GetSnippetsForCodeBlock")
+      .Produces(StatusCodes.Status200OK, typeof(List<CodeSnippet>))
+      .WithTags("DraftFeature"); 
+
     //TODO: Move events to Aggregates (as they are written to aggregates)
-
-    //app.MapGet("/GetContext"); //name and list of feature names+ids (stats for context + features?)
-    //app.MapGet("/GetFeature/{id}"); //all-details
-
     app.MapGet($"BpnEngine/v1/Context/GetAll", async (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
     {//TODO: This belongs on the projection!
-      //TODO: Get stats on the projection!
       var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
       return Results.Ok(bpnContexts);
     }).WithName("GetAllContexts")
       .Produces(StatusCodes.Status200OK, typeof(BpnContextProjection.BpnContext))
       .WithTags("Context");
+    
+    app.MapGet("BpnEngine/v1/Feature/Get/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
+    {//TODO: This belongs on the projection!
+      var bpnFeature = await session.Query<BpnFeatureProjection.BpnFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
+      if (bpnFeature == null) return Results.NotFound();
 
+      var bpnVersion = bpnFeature.Versions.FirstOrDefault(ver => ver.Revision == version);
+      if (bpnVersion == null) return Results.NotFound();
+      //TODO: include stats on bpnVersion (same as on context)
+      return Results.Ok(bpnVersion);
+    }).WithName("GetFeatureVersion")
+      .Produces(StatusCodes.Status200OK, typeof(BpnFeatureProjection.BpnFeatureVersion))
+      .WithTags("Feature");
+
+
+    app.MapGet("BpnEngine/v1/DraftFeature/Get/{featureId}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, CancellationToken ct) =>
+    {//TODO: This belongs on the projection!
+      var bpnFeature = await session.Query<BpnDraftFeatureProjection.BpnDraftFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
+      if (bpnFeature == null) return Results.NotFound();
+
+      return Results.Ok(bpnFeature);
+    }).WithName("GetDraftFeature")
+  .Produces(StatusCodes.Status200OK, typeof(BpnDraftFeatureProjection.BpnDraftFeature))
+  .WithTags("DraftFeature");
 
   }
 }
