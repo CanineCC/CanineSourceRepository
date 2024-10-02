@@ -8,6 +8,10 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnContext;
 
 public class BpnContextAggregate
 {
+  public static void RegisterBpnEventStore(WebApplication app)
+  {
+  }
+
   public Guid Id { get; internal set; }
 
   public void Apply(
@@ -22,6 +26,16 @@ public class BpnContextAggregate
 
 public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.BpnContext, Guid>
 {
+  public static void RegisterBpnEventStore(WebApplication app)
+  {
+    app.MapGet($"BpnEngine/v1/Context/GetAll", async (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
+    {
+      var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
+      return Results.Ok(bpnContexts);
+    }).WithName("GetAllContexts")
+      .Produces(StatusCodes.Status200OK, typeof(BpnContextProjection.BpnContext))
+      .WithTags("Context");
+  }
   public BpnContextProjection()
   {
     Identity<ContextCreated>(x => x.Id);

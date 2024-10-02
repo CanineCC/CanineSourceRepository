@@ -9,6 +9,7 @@ using NSwag.Generation.Processors;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddResponseCaching();
 
 var connectionString = new NpgsqlConnectionStringBuilder
 {
@@ -44,7 +45,7 @@ foreach (var version in BpnEventStore.ApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
   {
-    config.DocumentName = "bpnengine_" + version;
+    config.DocumentName = "engine_" + version;
     config.Title = "BpnEngine API " + version.ToUpper();
     config.Version = version;
 
@@ -72,64 +73,38 @@ foreach (var version in BpnEngine.PotentialApiVersions)
   });
 }
 
-// Add services to the container.
-//builder.Services.AddControllersWithViews()
-//.AddJsonOptions(options =>
-//{
-//  options.JsonSerializerOptions.Converters.Add(new BpnConverter());
-//});
-
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
-
 builder.Services.AddHsts(options =>
 {
   options.Preload = true;
   options.IncludeSubDomains = true;
   options.MaxAge = TimeSpan.FromDays(360);
 });
-
-
-
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme);
-//        .AddCookie(options =>
-//        {
-//          options.LoginPath = "/Account/Login";
-//          options.LogoutPath = "/Account/Logout";
-//        });
 
 var app = builder.Build();
-
 if (!app.Environment.IsDevelopment())
 {
 //  app.UseExceptionHandler("/Home/Error");
   app.UseHsts();
 }
 
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//  OnPrepareResponse = ctx =>
-//  {
-//    // Cache static files like fonts for 1 year
-//    ctx.Context.Response.Headers.Append("Cache-Control", "public, max-age=31536000");
-//  }
-//});
 
+app.UseResponseCaching();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-//app.MapStaticAssets();
-//app.UseOutputCache();
-
-app.UseOpenApi();   // Generates OpenAPI document
+app.UseOpenApi();
 
 using (var scope = app.Services.CreateScope())
 {
   var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
   await session.GenerateDefaultData(CancellationToken.None);
-  app.RegisterAll(session);
 
+  #region update dynamic endpoints //TODO: Automatic update whenever new features are released
+  app.RegisterAll(session);
   app.UseSwaggerUi(settings =>
   {
 
@@ -139,14 +114,13 @@ using (var scope = app.Services.CreateScope())
     }
     foreach (var version in BpnEventStore.ApiVersions)
     {
-      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"BpnEngine API {version.ToUpper()}", $"/swagger/bpnengine_{version}/swagger.json"));
+      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"BpnEngine API {version.ToUpper()}", $"/swagger/engine_{version}/swagger.json"));
     }
     settings.TagsSorter = "alpha"; // Alphabetically sorts tags
     settings.OperationsSorter = "alpha"; // Alphabetically sorts endpoints
   }); // Adds Swagger UI
+  #endregion
 }
 
 app.RegisterBpnEventStore();
-
-
 app.Run();

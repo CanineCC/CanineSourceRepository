@@ -1,12 +1,48 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection.BpnDraftFeature;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
+using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
 
 public class BpnDraftFeatureAggregate
 {
+  public static void RegisterBpnEventStore(WebApplication app)
+  {
+    app.MapPost($"BpnEngine/v1/Task/VerifyCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    {
+      var res = codeTask.VerifyCode();
+      if (res.success)
+        return Results.Accepted();
+
+      return Results.BadRequest(res.errors);
+    }).WithName("VerifyCodeBlock")
+      .Produces(StatusCodes.Status202Accepted)
+      .Produces(StatusCodes.Status400BadRequest, typeof(CompileError))
+      .WithTags("DraftFeature");
+
+
+    app.MapPost($"BpnEngine/v1/Task/GetSnippetsForCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    {
+      var input = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Input);
+      var output = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Output);
+
+      var snippets = new List<CodeSnippet>();
+      if (input != null && output != null)
+      {
+        snippets.AddRange([
+          new CodeSnippet("Auto construct output", AutoConstructorGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray())),
+          new CodeSnippet("Auto mapper", AutoMapperGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray()))
+          //TODO: snippets from DI ?!
+        ]);
+      }
+    }).WithName("GetSnippetsForCodeBlock")
+      .Produces(StatusCodes.Status200OK, typeof(List<CodeSnippet>))
+      .WithTags("DraftFeature");
+  }
+
   public Guid Id { get; internal set; }
   public Guid ContextId { get; internal set; }
   public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
@@ -99,6 +135,18 @@ public class BpnDraftFeatureAggregate
 
 public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureProjection.BpnDraftFeature>
 {
+  public static void RegisterBpnEventStore(WebApplication app)
+  {
+    app.MapGet("BpnEngine/v1/DraftFeature/Get/{featureId}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, CancellationToken ct) =>
+    {
+      var bpnFeature = await session.Query<BpnDraftFeatureProjection.BpnDraftFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
+      if (bpnFeature == null) return Results.NotFound();
+
+      return Results.Ok(bpnFeature);
+    }).WithName("GetDraftFeature")
+      .Produces(StatusCodes.Status200OK, typeof(BpnDraftFeatureProjection.BpnDraftFeature))
+      .WithTags("DraftFeature");
+  }
   public class BpnDraftFeature
   {
     public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
