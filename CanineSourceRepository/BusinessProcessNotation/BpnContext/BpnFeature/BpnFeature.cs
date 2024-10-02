@@ -3,9 +3,6 @@ using CanineSourceRepository.BusinessProcessNotation.Engine;
 using EngineEvents;
 using Marten.Events.Projections;
 using Microsoft.Net.Http.Headers;
-using System;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnContextProjection.BpnContext;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection.BpnDraftFeature;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection.BpnFeature;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
@@ -39,7 +36,7 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet("BpnEngine/v1/Feature/Get/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Feature/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
     {
       var bpnFeature = await session.Query<BpnFeatureProjection.BpnFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();
@@ -165,9 +162,48 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
 
 public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProjection.BpnContext, Guid>
 {
+  public record DurationClassification(long FromMs, long ToMs, string HexColor, string Category);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet("BpnEngine/v1/Feature/Get/Stats/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Feature/DurationClassification", (HttpContext context, CancellationToken ct) =>
+    {
+      context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+      {
+        Public = true,
+        MaxAge = TimeSpan.FromDays(1)
+      };
+      return Results.Ok(new List<DurationClassification> { 
+        new DurationClassification(0, 30, PerformanceCategory.WorldClass.GetColor(), PerformanceCategory.WorldClass.ToString()),
+        new DurationClassification(30, 50, PerformanceCategory.Excellent.GetColor(), PerformanceCategory.Excellent.ToString()),
+        new DurationClassification(50, 100, PerformanceCategory.Good.GetColor(), PerformanceCategory.Good.ToString()),
+        new DurationClassification(100, 300, PerformanceCategory.Average.GetColor(), PerformanceCategory.Average.ToString()),
+        new DurationClassification(300, 1000, PerformanceCategory.BelowAverage.GetColor(), PerformanceCategory.BelowAverage.ToString()),
+        new DurationClassification(1000, long.MaxValue, PerformanceCategory.Bad.GetColor(), PerformanceCategory.Bad.ToString()),
+      });
+    }).WithName("GetFeatureDurationClassification")
+      .Produces(StatusCodes.Status200OK, typeof(List<DurationClassification>))
+      .WithTags("Feature");
+
+    app.MapGet("BpnEngine/v1/Task/DurationClassification", (HttpContext context, CancellationToken ct) =>
+    {
+      context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+      {
+        Public = true,
+        MaxAge = TimeSpan.FromDays(1)
+      };
+      return Results.Ok(new List<DurationClassification> {
+        new DurationClassification(0, 10, PerformanceCategory.WorldClass.GetColor(), PerformanceCategory.WorldClass.ToString()),
+        new DurationClassification(10, 20, PerformanceCategory.Excellent.GetColor(), PerformanceCategory.Excellent.ToString()),
+        new DurationClassification(20, 50, PerformanceCategory.Good.GetColor(), PerformanceCategory.Good.ToString()),
+        new DurationClassification(50, 100, PerformanceCategory.Average.GetColor(), PerformanceCategory.Average.ToString()),
+        new DurationClassification(100, 200, PerformanceCategory.BelowAverage.GetColor(), PerformanceCategory.BelowAverage.ToString()),
+        new DurationClassification(200, long.MaxValue, PerformanceCategory.Bad.GetColor(), PerformanceCategory.Bad.ToString()),
+      });
+    }).WithName("GetTaskDurationClassification")
+         .Produces(StatusCodes.Status200OK, typeof(List<DurationClassification>))
+         .WithTags("Feature.Task");
+
+    app.MapGet("BpnEngine/v1/Feature/Stats/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
     {
       var bpnFeature = await session.Query<BpnFeatureStatsProjection.BpnFeatureVersionStat>().Where(p => p.Id == featureId && p.Revision == version).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();

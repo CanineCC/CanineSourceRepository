@@ -6,6 +6,8 @@ using Npgsql;
 using Weasel.Core;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 using NSwag.Generation.Processors;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +76,11 @@ foreach (var version in BpnEngine.PotentialApiVersions)
 }
 
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
+builder.Services.AddSingleton<JsonSerializerOptions>(new JsonSerializerOptions
+{
+  Converters = { new JsonStringEnumConverter() }
+});
+
 builder.Services.AddHsts(options =>
 {
   options.Preload = true;

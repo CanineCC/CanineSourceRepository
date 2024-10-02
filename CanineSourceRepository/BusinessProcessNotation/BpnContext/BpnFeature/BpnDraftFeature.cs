@@ -137,7 +137,7 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet("BpnEngine/v1/DraftFeature/Get/{featureId}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/DraftFeature/{featureId}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, CancellationToken ct) =>
     {
       var bpnFeature = await session.Query<BpnDraftFeatureProjection.BpnDraftFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();

@@ -28,7 +28,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet($"BpnEngine/v1/Context/GetAll", async (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
+    app.MapGet($"BpnEngine/v1/Context/All", async (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
     {
       var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
       return Results.Ok(bpnContexts);
