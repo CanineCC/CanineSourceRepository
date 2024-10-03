@@ -3,22 +3,6 @@ using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
-//TODO: (requires that we have the command=>event (verified by aggregate)=>projection in place, so we can target the projection)
-//TODO: Let projection be more like a view, based on a specific aggregate, having a version number from that aggregate on each line
-//TOOD: Let commands include the version number of the target aggregate(s), in order to be able to enforce idempotency on command execution
-//i.e. always check that the command version number is equal to the aggregate that it want to affect in order to allow it to do so.
-//creating new aggregates might be complex, as "new guid" solution will not be idempotent
-/*
-public record ApiOutputBlock(string Name, string Projection, string[] AccessScopes) : Bpn(Guid.NewGuid(), Name)
-{
-  //public string? Output { get; init; }
-  public string[] AccessScopes { get; init; } = AccessScopes;
-  //in diagram? or defined as annotation to projections?
-  public string Projection { get; init; } = Projection;
-
-  //Testcases / integration test?
-}
-*/
 public record TestCase(string Name, dynamic Input, params AssertDefinition[] Asserts);
 public record TestResult(string Name, bool Success, string Message = "");
 public enum AssertOperation
@@ -135,7 +119,7 @@ public static class {GetTypeName()} {{
 
   public async Task<List<TestResult>> RunTests(object? serviceInjection, Assembly assembly)
   {
-    //TODO: inject "test implementation" of the service-to-be-injected!
+    
     var results = new List<TestResult>();
     foreach (var testcase in TestCases)
     {

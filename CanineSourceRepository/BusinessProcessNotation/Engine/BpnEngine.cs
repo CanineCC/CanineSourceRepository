@@ -36,8 +36,6 @@ public static class BpnEngine
 
   public static WebApplication RegisterAll(this WebApplication app, IDocumentSession session)
   {
-    //TODO: Get context also, use context to group the enpoints!
-    //TODO: Ensure unique names (i.e. no two features are allowed to have same name within a context)
     var contexts = session.Query<BpnContextProjection.BpnContext>().ToList();
     foreach (var context in contexts)
     {
@@ -97,7 +95,7 @@ public static class BpnEngine
       {
         return Results.InternalServerError();
       }
-    }).WithName(name) // Set the operation ID to the feature's name
+    }).WithName($"{bpnContext.Name.ToPascalCase()}/{name}") // Set the operation ID to the feature's name
       //.WithGroupName(groupName)
       .WithTags(groupName)
       .Produces(StatusCodes.Status202Accepted) // Specify return types

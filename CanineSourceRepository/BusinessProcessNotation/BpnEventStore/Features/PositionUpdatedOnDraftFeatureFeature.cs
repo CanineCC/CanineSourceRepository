@@ -5,6 +5,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class PositionUpdatedOnDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureDiagramPositionUpdated(BpnPosition Position);
   public record Request(Guid FeatureId, Guid TaskId, Position Position);
   public static void RegisterBpnEventStore(WebApplication app)
   {

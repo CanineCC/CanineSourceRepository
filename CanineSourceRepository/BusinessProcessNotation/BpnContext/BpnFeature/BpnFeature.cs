@@ -122,8 +122,6 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
       }
       return sb.ToString();
     }
-    public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions,  BpnFeatureDiagram Diagram, long Version);
-    public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, Environment[] Environment);
 
     public Guid Id { get; set; }
     public List<BpnFeatureVersion> Versions { get; set; } = [];

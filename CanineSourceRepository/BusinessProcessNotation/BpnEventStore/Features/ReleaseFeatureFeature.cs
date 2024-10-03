@@ -1,16 +1,19 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class ReleaseFeatureFeature : IFeature
 {
+  public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram, long Version);
   public record Request(Guid FeatureId);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    string user = "TODO";
+    string user = "update to user from bearer";
     app.MapPost($"BpnEngine/v1/DraftFeature/Release", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Release", request.FeatureId, user, ct);
+
       return Results.Ok(id);
     }).WithName("ReleaseFeature")
      .Produces(StatusCodes.Status200OK)
@@ -19,7 +22,7 @@ public class ReleaseFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnFeatureProjection.BpnFeature.FeatureReleased>();
+    options.Events.AddEventType<FeatureReleased>();
   }
 
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, string user, CancellationToken ct)
@@ -34,7 +37,7 @@ public class ReleaseFeatureFeature : IFeature
     
     Dictionary<Guid, Guid> newIds = aggregate.Tasks.ToDictionary(task => task.Id, task => Guid.CreateVersion7());
 
-    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new BpnFeatureProjection.BpnFeature.FeatureReleased(
+    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new FeatureReleased(
       ContextId: aggregate.ContextId,
       FeatureId: featureId,
       ReleasedBy: user,

@@ -59,7 +59,7 @@ public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocat
     public double DurationMs { get; set; } 
     public Guid FeatureId { get; set; }
     public long FeatureVersion { get; set; }
-    public List<IEngineEvents> EventLog { get; set; } = new(); //TODO: Consider NOT using events, instead keep the states "i.e. 'createUserTask, status=success'", instead of an initialized+success event
+    public List<IEngineEvents> EventLog { get; set; } = new(); 
     public FeatureStatus Status { get; set; } = FeatureStatus.Undefined;
     public FeatureInvocation() { }
 

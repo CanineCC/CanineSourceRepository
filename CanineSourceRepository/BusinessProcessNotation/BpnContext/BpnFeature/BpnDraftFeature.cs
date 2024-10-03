@@ -1,7 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection.BpnDraftFeature;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
+
 using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
@@ -35,7 +34,7 @@ public class BpnDraftFeatureAggregate
         snippets.AddRange([
           new CodeSnippet("Auto construct output", AutoConstructorGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray())),
           new CodeSnippet("Auto mapper", AutoMapperGenerator.GenerateMapping(input, output, codeTask.RecordTypes.ToArray()))
-          //TODO: snippets from DI ?!
+         
         ]);
       }
     }).WithName("GetSnippetsForCodeBlock")
@@ -121,12 +120,12 @@ public class BpnDraftFeatureAggregate
     aggregate.Transitions = @event.Transitions;
     aggregate.Diagram = @event.Diagram;
   }
-  public void Apply(BpnDraftFeatureAggregate aggregate, BpnFeatureDiagram.DraftFeatureDiagramPositionUpdated @event)
+  public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureDiagramPositionUpdated @event)
   {
     aggregate.Diagram.BpnPositions.RemoveAll(p => p.Id == @event.Position.Id);
     aggregate.Diagram.BpnPositions.Add(@event.Position);
   }
-  public void Apply(BpnDraftFeatureAggregate aggregate, BpnFeatureDiagram.DraftFeatureDiagramWaypointUpdated @event)
+  public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureDiagramWaypointUpdated @event)
   {
     aggregate.Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Waypoint.FromBPN && p.ToBPN == @event.Waypoint.ToBPN);
     aggregate.Diagram.BpnConnectionWaypoints.Add(@event.Waypoint);
@@ -149,13 +148,6 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
   }
   public class BpnDraftFeature
   {
-    public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-    public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-    public record DraftFeatureReset(ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram  Diagram);
-    public record DraftFeatureTaskAdded(BpnTask Task);
-    public record DraftFeatureTaskRemoved(Guid TaskId);
-    public record DraftFeatureTransitionAdded(BpnTransition Transition);
-    public record DraftFeatureTransitionRemoved(Guid FromBpn, Guid ToBpn);
     public Guid Id { get; internal set; }
     public BpnFeatureDiagram Diagram { get; internal set; } = new BpnFeatureDiagram();
     public string Name { get; internal set; } = string.Empty;
@@ -218,12 +210,12 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
       projection.Diagram = @event.Data.Diagram;
 
     }
-    public void Apply(BpnDraftFeature projection, BpnFeatureDiagram.DraftFeatureDiagramPositionUpdated @event)
+    public void Apply(BpnDraftFeature projection, DraftFeatureDiagramPositionUpdated @event)
     {
       projection.Diagram.BpnPositions.RemoveAll(p => p.Id == @event.Position.Id);
       projection.Diagram.BpnPositions.Add(@event.Position);
     }
-    public void Apply(BpnDraftFeature projection, BpnFeatureDiagram.DraftFeatureDiagramWaypointUpdated @event)
+    public void Apply(BpnDraftFeature projection, DraftFeatureDiagramWaypointUpdated @event)
     {
       projection.Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Waypoint.FromBPN && p.ToBPN == @event.Waypoint.ToBPN);
       projection.Diagram.BpnConnectionWaypoints.Add(@event.Waypoint);

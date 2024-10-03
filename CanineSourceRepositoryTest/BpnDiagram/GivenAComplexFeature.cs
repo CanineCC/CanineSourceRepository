@@ -1,6 +1,5 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection;
 
 namespace CanineSourceRepositoryTest.BpnDiagram;
 
@@ -74,13 +73,13 @@ public class GivenAComplexFeature
       );
 
     feature = new BpnDraftFeatureAggregate();
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(entryBlock));
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(createUserBlock));
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureTaskAdded(logUserBlock));
+    feature.Apply(feature, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
+    feature.Apply(feature, new DraftFeatureTaskAdded(entryBlock));
+    feature.Apply(feature, new DraftFeatureTaskAdded(createUserBlock));
+    feature.Apply(feature, new DraftFeatureTaskAdded(logUserBlock));
 
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureTransitionAdded(transition));
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureTransitionAdded(logTransition));
+    feature.Apply(feature, new DraftFeatureTransitionAdded(transition));
+    feature.Apply(feature, new DraftFeatureTransitionAdded(logTransition));
 
     //BpnFeatureAggregate.Apply(feature, new BpnFeature.EnvironmentsUpdated(feature.Id, [BpnFeature.Environment.Testing]));
 

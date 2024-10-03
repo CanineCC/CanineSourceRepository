@@ -1,8 +1,6 @@
 ﻿using EngineEvents;
 using Marten.Events.Projections;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnContextProjection.BpnContext;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection.BpnDraftFeature;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection.BpnFeature;
+
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext;
 
@@ -16,7 +14,7 @@ public class BpnContextAggregate
 
   public void Apply(
      BpnContextAggregate aggregate,
-     BpnContextProjection.BpnContext.ContextCreated @event
+     ContextCreated @event
   )
   {
     aggregate.Id = @event.Id;
@@ -43,8 +41,6 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     Identity<FeatureReleased>(x => x.ContextId);
     Identity<EnvironmentsUpdated>(x => x.ContextId);
     Identity<DraftFeaturePurposeChanged>(x => x.ContextId);
-
-
     Identity<BpnFeatureStarted>(x => x.ContextId);
     Identity<BpnFeatureError>(x => x.ContextId);
     Identity<BpnFeatureCompleted>(x => x.ContextId);
@@ -200,9 +196,6 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
 
   public class BpnContext
   {
-    public record ContextCreated(Guid Id, string Name);
-//    public record FeatureAddedToContext(Guid FeatureId, string Name);
-
     public Guid Id { get; set; } = Guid.Empty;
     public string Name { get; set; } = "";
     public DateTimeOffset LastUpdatedTimestamp { get; set; }

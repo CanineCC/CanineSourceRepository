@@ -1,9 +1,11 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class ResetDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureReset(ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram);
   public record Request(Guid FeatureId);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -19,7 +21,7 @@ public class ResetDraftFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureReset>();
+    options.Events.AddEventType<DraftFeatureReset>();
   }
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, CancellationToken ct)
   {
@@ -27,7 +29,7 @@ public class ResetDraftFeatureFeature : IFeature
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
     var feature = await session.Events.AggregateStreamAsync<BpnFeatureAggregate>(featureId, token: ct);
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureReset(
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeatureReset(
       Tasks: feature?.Tasks ?? [],
       Transitions: feature?.Transitions ?? [],
       Diagram: feature?.Diagram ?? new BpnFeatureDiagram()

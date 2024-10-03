@@ -2,6 +2,15 @@
 
 **Canine Source Repository** is a revolutionary, web-based development platform that eliminates plumbing code, letting developers focus entirely on business logic. This opinionated tool ensures vertical slicing, functional programming, and automates all the low-level, repetitive tasks like database connections, transactions, logging, and API exposure, enabling developers to deliver clean, maintainable, and versioned features with ease.
 
+## MISSING FEATURES (To be done)
+- User handling, login/token, identity (including storing it in IEvent header)
+- Ensure unique names for endpoints (i.e. no two features are allowed to have same name within a context)
+- GenerateDefaultData from templates: "Hello world" context
+- Create a Master db with templates for BpnEventStore (ex. template for a user-context including features - wizard needed for selecting target services/databases)
+- Named services with settings (ex. Name:"MyPostgresDb", ConnectionString:".....")
+- Add code snippets based on selected service for DI
+- Add 'mock' implementation for selected service (with scenario store) to be used in automated testing.
+
 ## Key Features
 
 - **No More Plumbing Code**:  

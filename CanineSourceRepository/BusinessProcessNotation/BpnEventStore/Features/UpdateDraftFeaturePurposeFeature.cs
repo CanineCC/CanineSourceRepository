@@ -4,6 +4,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class UpdateDraftFeaturePurposeFeature : IFeature
 {
+  public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
   public record Request(Guid FeatureId, string Name, string Objective, string FlowOverview);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -19,7 +20,7 @@ public class UpdateDraftFeaturePurposeFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeaturePurposeChanged>();
+    options.Events.AddEventType<DraftFeaturePurposeChanged>();
   }
 
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, string name, string objective, string flowOverview, CancellationToken ct)
@@ -27,7 +28,7 @@ public class UpdateDraftFeaturePurposeFeature : IFeature
     var aggregate = await session.Events.AggregateStreamAsync<BpnDraftFeatureAggregate>(featureId, token: ct);
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeaturePurposeChanged(
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeaturePurposeChanged(
       ContextId: aggregate.ContextId, 
       FeatureId: featureId, 
       Name: name, 

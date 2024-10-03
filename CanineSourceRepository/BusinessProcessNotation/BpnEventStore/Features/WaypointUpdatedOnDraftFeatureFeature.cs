@@ -5,6 +5,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class WaypointUpdatedOnDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureDiagramWaypointUpdated(ConnectionWaypoints Waypoint);
   public record Request(Guid FeatureId, Guid FromTaskId, Guid ToTaskId, Position[] Positions);
   public static void RegisterBpnEventStore(WebApplication app)
   {

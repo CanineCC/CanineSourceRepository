@@ -8,6 +8,9 @@ using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 using NSwag.Generation.Processors;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Net.Sockets;
+using System.Net;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +43,8 @@ builder.Services.AddMarten(serviceProvider =>
 })
     .UseNpgsqlDataSource()
     .ApplyAllDatabaseChangesOnStartup()
-    .AddAsyncDaemon(DaemonMode.HotCold);
-
+    .AddAsyncDaemon(DaemonMode.HotCold)
+    .UseLightweightSessions();
 
 foreach (var version in BpnEventStore.ApiVersions)
 {
@@ -50,15 +53,14 @@ foreach (var version in BpnEventStore.ApiVersions)
     config.DocumentName = "engine_" + version;
     config.Title = "BpnEngine API " + version.ToUpper();
     config.Version = version;
-
     config.OperationProcessors.Add(new OperationProcessor(ctx =>
     {
       // Only include operations with the "BpnEngine" tag
       return ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + version + "/"); //ctx.OperationDescription.Operation.Tags.Contains("BpnEngine");
     }));
+
   });
 }
-
 foreach (var version in BpnEngine.PotentialApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
@@ -93,7 +95,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
-//  app.UseExceptionHandler("/Home/Error");
   app.UseHsts();
 }
 
@@ -103,15 +104,24 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseOpenApi();
 
 using (var scope = app.Services.CreateScope())
 {
   var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
   await session.GenerateDefaultData(CancellationToken.None);
-
-  #region update dynamic endpoints //TODO: Automatic update whenever new features are released
   app.RegisterAll(session);
+}
+app.RegisterBpnEventStore();
+
+
+
+app.UseOpenApi(options =>
+{
+  options.DocumentName = "My API Documentation";
+});
+using (var scope = app.Services.CreateScope())
+{
+  var session = scope.ServiceProvider.GetRequiredService<IDocumentSession>();
   app.UseSwaggerUi(settings =>
   {
 
@@ -126,8 +136,42 @@ using (var scope = app.Services.CreateScope())
     settings.TagsSorter = "alpha"; // Alphabetically sorts tags
     settings.OperationsSorter = "alpha"; // Alphabetically sorts endpoints
   }); // Adds Swagger UI
-  #endregion
+}
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+var cancellationTokenSource = new CancellationTokenSource(); 
+lifetime.ApplicationStopping.Register(() =>
+{
+  Console.WriteLine("Application is stopping...");
+  cancellationTokenSource.Cancel();  // Signal cancellation
+});
+
+
+
+
+
+while (!IsPortAvailable(7053 /*port*/))//maybe not hardcode
+{
+  Thread.Sleep(10);
+  Console.WriteLine($"Waiting for the port...");
 }
 
-app.RegisterBpnEventStore();
-app.Run();
+Console.WriteLine("Server starting...");//used as signal to existing process that this process is ready to take over (in case of a graceful restart)
+app.Run();  // Start the server
+
+
+bool IsPortAvailable(int port)
+{
+  // Check if the port is available
+  try
+  {
+    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+    {
+      socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
+      return true; // If we can bind to it, the port is available
+    }
+  }
+  catch (SocketException)
+  {
+    return false; // Port is in use
+  }
+}

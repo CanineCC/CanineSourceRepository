@@ -9,7 +9,6 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
 public static class BpnEventStore
 {
-  //TODO: Master db with templates
 
   public static async Task GenerateDefaultData(this IDocumentSession session, CancellationToken ct)
   {
@@ -42,7 +41,7 @@ public static class BpnEventStore
       Output = "Output",
       Code = @$"
     var userId = Guid.CreateVersion7();
-    //TODO: Add the user to the user database
+    //Add the user to the user database
     return new Output(userId, input.Name/*, input.AccessScope*/);
     "
     };
@@ -149,6 +148,94 @@ public static class BpnEventStore
   }
 }
 
+
+public static class LifetimeService
+{
+  //TODO: Release API... so we dont restart every time a feature is released!
+  //TODO: What about updating the envoriments (if prod is selected, or is that just a header? - issue if not on same server)
+  private static bool StartNewInstance()
+  {
+    var newProcessStartInfo = new ProcessStartInfo
+    {
+      FileName = "dotnet",
+      Arguments = Assembly.GetEntryAssembly()!.Location,
+      UseShellExecute = false,
+      RedirectStandardOutput = true,
+      RedirectStandardError = true
+    };
+    try
+    {
+      var newProcess = Process.Start(newProcessStartInfo);
+      if (newProcess == null) return false;
+      using (StreamReader reader = newProcess.StandardOutput)
+      {
+        string? outputLine;
+        while ((outputLine = reader.ReadLine()) != null)
+        {
+          Console.WriteLine($"New process output: {outputLine}"); // Log output for debugging
+          if (outputLine.Contains("Waiting for the port..."))
+          {
+            return true;
+          }
+        }
+      }
+      return false;
+      /*
+            if (newProcess != null)
+            {
+              newProcess.OutputDataReceived += (sender, args) =>
+              {
+                if (args.Data != null)
+                {
+                  Console.WriteLine($"New process output: {args.Data}");
+                  if (args.Data.Contains("Waiting for the port..."))
+                  {
+                    // Handle when the output line indicates readiness
+                  }
+                }
+              };
+              newProcess.BeginOutputReadLine();
+
+              newProcess.ErrorDataReceived += (sender, args) =>
+              {
+                if (args.Data != null)
+                {
+                  Console.WriteLine($"New process error: {args.Data}");
+                }
+              };
+              newProcess.BeginErrorReadLine();
+
+              System.Threading.Thread.Sleep(15000);
+              newProcess.WaitForExit();
+
+              return true;
+            }*/
+    }
+    catch
+    {
+      return false;
+    }
+    //return false;
+  }
+  private static void ShutdownThisInstance(IHostApplicationLifetime lifetime)
+  {
+    lifetime.StopApplication();//Gracefull shutdown - IF CancellationToken have ben properly implemented throughout the system
+  }
+
+  public static void Restart(this IHostApplicationLifetime lifetime)
+  {
+    //do some domain logic, that updates the database, which is used when the process is started to dynamically enable endpoints and document via openapi
+
+    if (StartNewInstance())
+    {
+      ShutdownThisInstance(lifetime);
+    }
+  }
+
+}
+
+
+
 public static class DocumentSessionExtension
 {
 
@@ -205,37 +292,6 @@ public static class DocumentSessionExtension
   
 }
 
-
-/*
-public static class EventRegistrar
-{
-  public static List<Type> RegisterEvents(Assembly assembly)
-  {
-    var eventDefinitions = new List<Type>();
-    // Get all types in the namespace that implement SingleStreamProjection<>
-    var projectionTypes = assembly.GetTypes()
-        .Where(t => t.IsClass && !t.IsAbstract)
-        .Where(t => t.BaseType != null && t.BaseType.IsGenericType &&
-                    t.BaseType.GetGenericTypeDefinition() == typeof(SingleStreamProjection<>))
-        .ToList();
-
-    // Iterate over each projection class found
-    foreach (var projectionType in projectionTypes)
-    {
-      var nestedTypes = projectionType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
-      foreach (var nestedType in nestedTypes)
-      {
-        // Find all records within this nested class
-        var records = nestedType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
-            .Where(t => t.IsClass && t.IsRecord())
-            .ToList();
-
-        eventDefinitions.AddRange(records);
-      }
-    }
-    return eventDefinitions;
-  }
-}*/
 
 public static class TypeExtensions
 {

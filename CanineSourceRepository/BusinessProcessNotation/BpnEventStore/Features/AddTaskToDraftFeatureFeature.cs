@@ -5,6 +5,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class AddTaskToDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureTaskAdded(BpnTask Task);
   public record Request(Guid FeatureId, BpnTask Task);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -20,7 +21,7 @@ public class AddTaskToDraftFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureTaskAdded>();
+    options.Events.AddEventType<DraftFeatureTaskAdded>();
   }
 
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, BpnTask task, CancellationToken ct)
@@ -28,7 +29,7 @@ public class AddTaskToDraftFeatureFeature : IFeature
     var aggregate = await session.Events.AggregateStreamAsync<BpnDraftFeatureAggregate>(featureId, token: ct);
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureTaskAdded(Task: task));
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeatureTaskAdded(Task: task));
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }
 }

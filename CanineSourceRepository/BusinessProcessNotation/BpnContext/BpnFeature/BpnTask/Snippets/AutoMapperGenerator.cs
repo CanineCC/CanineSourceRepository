@@ -44,7 +44,7 @@ public static class AutoMapperGenerator
       }
       else
       {
-        code += "/*todo*/";
+        code += "/*input field for mapping not found*/";
       }
     }
 

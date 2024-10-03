@@ -6,9 +6,6 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 /// </summary>
 public class BpnFeatureDiagram
 {
-  public record DraftFeatureDiagramPositionUpdated(BpnPosition Position);
-  public record DraftFeatureDiagramWaypointUpdated(ConnectionWaypoints Waypoint);
-
 
   public record Position(int X, int Y);
   public record BpnPosition(Guid Id, Position Position);

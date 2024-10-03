@@ -1,9 +1,8 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext;
-
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class CreateContextFeature : IFeature
 {
+  public record ContextCreated(Guid Id, string Name);
   public record Request(string Name);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -19,12 +18,12 @@ public class CreateContextFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnContextProjection.BpnContext.ContextCreated>();
+    options.Events.AddEventType<ContextCreated>();
   }
   public static async Task<Guid> Execute(IDocumentSession session, string causationId, string name, CancellationToken ct)
   {
     var newId = Guid.CreateVersion7();
-    await session.RegisterEventsOnBpnContext(ct, newId, causationId, new BpnContextProjection.BpnContext.ContextCreated(Id: newId, Name: name));
+    await session.RegisterEventsOnBpnContext(ct, newId, causationId, new ContextCreated(Id: newId, Name: name));
     return newId;
   }
 }

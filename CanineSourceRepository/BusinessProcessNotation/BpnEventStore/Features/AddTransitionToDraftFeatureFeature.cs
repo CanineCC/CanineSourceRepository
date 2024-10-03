@@ -5,6 +5,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class AddTransitionToDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureTransitionAdded(BpnTransition Transition);
   public record Request(Guid FeatureId, BpnTransition Transition);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -20,14 +21,14 @@ public class AddTransitionToDraftFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureTransitionAdded>();
+    options.Events.AddEventType<DraftFeatureTransitionAdded>();
   }
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, BpnTransition transition, CancellationToken ct)
   {
     var aggregate = await session.Events.AggregateStreamAsync<BpnDraftFeatureAggregate>(featureId, token: ct);
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureTransitionAdded(Transition: transition));
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeatureTransitionAdded(Transition: transition));
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }
 }

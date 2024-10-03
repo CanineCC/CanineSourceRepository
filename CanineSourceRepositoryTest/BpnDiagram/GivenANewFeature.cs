@@ -1,6 +1,4 @@
-﻿
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnDraftFeatureProjection;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
 namespace CanineSourceRepositoryTest.BpnDiagram;
 
@@ -10,7 +8,7 @@ public class GivenANewFeature
   public GivenANewFeature()
   {
     feature = new BpnDraftFeatureAggregate();
-    feature.Apply(feature, new BpnDraftFeature.DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
+    feature.Apply(feature, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
   }
 
   //[Fact]

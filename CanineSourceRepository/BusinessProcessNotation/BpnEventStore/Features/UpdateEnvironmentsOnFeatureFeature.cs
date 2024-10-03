@@ -4,6 +4,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class UpdateEnvironmentsOnFeatureFeature : IFeature
 {
+  public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
   public record Request(Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -19,7 +20,7 @@ public class UpdateEnvironmentsOnFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnFeatureProjection.BpnFeature.EnvironmentsUpdated>();
+    options.Events.AddEventType<EnvironmentsUpdated>();
   }
 
   public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, long featureVersion, BpnContext.BpnFeature.Environment[] environment, CancellationToken ct)
@@ -30,7 +31,7 @@ public class UpdateEnvironmentsOnFeatureFeature : IFeature
     var aggregate = await session.Events.AggregateStreamAsync<BpnFeatureAggregate>(featureId, token: ct);
     if (aggregate == null) return new ValidationResponse(false, $"Feature '{featureId}' was not found", ResultCode.NotFound);
 
-    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new BpnFeatureProjection.BpnFeature.EnvironmentsUpdated(
+    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new EnvironmentsUpdated(
       ContextId: draftAggregate.ContextId,
       FeatureId: featureId,
       FeatureVersion: featureVersion, 

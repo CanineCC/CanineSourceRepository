@@ -1,10 +1,9 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-
+﻿
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 
 public class AddDraftFeatureFeature : IFeature
 {
+  public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
   public record Request(Guid BpnContextId, string Name, string Objective, string FlowOverview);
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -20,22 +19,19 @@ public class AddDraftFeatureFeature : IFeature
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    options.Events.AddEventType<BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureCreated>();
-  //  options.Events.AddEventType<BpnContextProjection.BpnContext.FeatureAddedToContext>();
+    options.Events.AddEventType<DraftFeatureCreated>();
   }
   public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid bpnContextId, string name, string objective, string flowOverview, CancellationToken ct)
   {
     var featureId = Guid.CreateVersion7();
 
-    var @event = new BpnDraftFeatureProjection.BpnDraftFeature.DraftFeatureCreated(
+    var @event = new DraftFeatureCreated(
     ContextId: bpnContextId,
     FeatureId: featureId,
     Name: name,
     Objective: objective,
     FlowOverview: flowOverview);
     await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, @event);
-
-//    await session.RegisterEventsOnBpnContext(ct, bpnContextId, causationId, new BpnContextProjection.BpnContext.FeatureAddedToContext(FeatureId: featureId, Name: name));
 
     return featureId;
   }
