@@ -11,3 +11,8 @@
 /CanineSourceRepositoryTest/obj
 /CanineSourceRepository.Ui/bin
 /CanineSourceRepository.Ui/obj
+/CanineSourceRepository.Api/bin
+/CanineSourceRepository.Api/obj
+/CanineSourceRepository.Ui/BpnEngineClient
+/CanineSourceRepository.Ui/node_modules
+/CanineSourceRepository.Ui/svelte-app/src/BpnEngineClient
