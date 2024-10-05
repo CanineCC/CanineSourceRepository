@@ -21,9 +21,9 @@
 <div class="content-wrapper">
     <aside class="left-menu">
         <ul>
-            <li><a href="/Dashboard"><i class="fas fa-tachometer-alt"></i></a></li> <!-- Dashboard Icon -->
-            <li><a href="/Settings"><i class="fas fa-cogs"></i></a></li>           <!-- Settings Icon -->
-            <li><a href="/Profile"><i class="fas fa-user"></i></a></li>           <!-- Profile Icon -->
+            <li><a href="/Dashboard" title="Dashboard"><i class="fas fa-tachometer-alt"></i></a></li> <!-- Dashboard Icon -->
+            <li><a href="/Context" title="Context"><i class="fas fa-cogs"></i></a></li>           <!-- Settings Icon -->
+            <li><a href="/Profile" title="Profile"><i class="fas fa-user"></i></a></li>           <!-- Profile Icon -->
         </ul>
     </aside>
 
@@ -34,7 +34,7 @@
 
 <footer>
     <div style="display: inline-flex; align-items: center; column-gap:25px;">
-        <p>© 2024 Canine Development ApS</p>
+        <p class="copyright" title="Canine Source Repository © 2024 Canine Development ApS">© 2024 Canine Development ApS</p>
         <ServerStatus />
     </div>
 </footer>
@@ -46,15 +46,11 @@
         margin: 0;
     }
 
-    /* Container to manage content height and layout */
-    /*.container {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }*/
+
 
     /* Header: Fixed at the top */
     header {
+        user-select: none;
         background: #B0C4DE;
         color: #fff;
         padding: 0em 2em;
@@ -108,6 +104,7 @@
     /* Left Sidebar Menu */
     .left-menu {
         background-color: #f0f0f0;
+        user-select: none;
         left:0px;
         padding: 0px;
         position: fixed;
@@ -158,16 +155,24 @@
         background: #f8f8f8;
         text-align: center;
         line-height: 25px;
-        font-family: 'Arial', sans-serif;
-        color: #555;
-        font-size: 0.75em;
         border-top: 1px solid #ddd;
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         z-index: 1000;
+        height: 50px;
     }
+    .copyright {
+        cursor: pointer;
+        color: #555;
+        user-select: none;
+        font-size: 0.75em;
+    }    
+    .copyright:hover {
+        color:black;
+        font-size: 0.8em;
+    }    
 
     /* Responsive Design */
     @media (max-width: 768px) {

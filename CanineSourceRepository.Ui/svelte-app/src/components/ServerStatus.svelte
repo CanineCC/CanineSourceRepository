@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy  } from 'svelte';
     import { ServerApi } from '../BpnEngineClient/apis'; // Adjust the path if necessary
     import type { ServerHealth } from '../BpnEngineClient';
 
@@ -7,6 +7,7 @@
     let fetchStatusText: string = "Attempt 1: Loading server status...";
     let lastSuccessfulLoadTime: Date | null = null; // Store the last successful load time
     let isLoading: boolean = false; // Track if fetchServerStatus is currently in progress
+    let isDestroying : boolean = false;
     let retryCount: number = 0; // Track the number of retries
     const pollInterval = 45000; // Polling interval in milliseconds (45 seconds)
     const serverApi = new ServerApi();
@@ -46,6 +47,9 @@
     // Function to continuously poll the server status
     async function startPolling() {
         while (true) {
+            if (isDestroying) {
+                break;
+            }
             if (!isLoading) {
                 // Start a new fetch only if no request is in progress
                 await fetchServerStatus(1, 12);
@@ -53,11 +57,13 @@
             await new Promise(resolve => setTimeout(resolve, serverHealthObj?.isHealthy ? pollInterval : 5)); // Wait for 15 seconds before the next fetch
         }
     }
-
+    let polling: any; // This will hold the polling interval ID
     onMount(() => {
         startPolling(); // Start polling when the component mounts
     });
-
+    onDestroy(() => {
+        isDestroying = true;
+    });
     // Function to update the color and tooltip reactively
     function updateStatus() {
         statusColor = getStatusColor();
@@ -81,7 +87,7 @@
             return fetchStatusText; // Show loading/failure message
         }
         if (serverHealthObj) {
-            return `Status: ${serverHealthObj.isHealthy ? 'Healthy' : 'Unhealthy'}\nMemory Usage: ${serverHealthObj.serverMemoryUsageInMegaBytes} MB\nServer Started: ${serverHealthObj.serverStartedTime?.toLocaleTimeString()}\nFetch status: ${fetchStatusText}`;
+            return `Status: ${serverHealthObj.isHealthy ? 'Healthy' : 'Unhealthy'}\nMemory Usage: ${serverHealthObj.serverMemoryUsageInMegaBytes} MB\nServer Started: ${serverHealthObj.serverStartedTime?.toLocaleDateString()} at ${serverHealthObj.serverStartedTime?.toLocaleTimeString()}\nFetch status: ${fetchStatusText}`;
         }
         return fetchStatusText;
     }
@@ -113,6 +119,6 @@
 
     /* Optional: You can add some hover effect if desired */
     .status-circle:hover {
-        border-color: #888;
+        border: 2px solid #666;
     }
 </style>

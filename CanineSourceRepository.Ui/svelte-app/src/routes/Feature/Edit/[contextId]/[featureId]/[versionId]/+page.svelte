@@ -100,6 +100,16 @@ SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
             <span class="value">{feature.revision}</span>
         </div>
     </div>
+
+    (component with readonly state for Feature, and non-readonly for draft)
+    DIAGRAM:
+     -- SVG 
+    TABS: (show on selected node)
+     -- Overview (name, businesspurpose, behavioralGoal, service selection/named configuration)
+     -- Data structures (including input and output definition) ==> TODO: Output from backend
+     -- Verification (given-input, expect-output)
+     -- Code editor
+
 {:else}
     <p>... loading ...</p>
 {/if}
