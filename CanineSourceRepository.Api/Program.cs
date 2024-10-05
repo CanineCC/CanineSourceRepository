@@ -10,22 +10,33 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Net.Sockets;
 using System.Net;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddResponseCaching();
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowAllOrigins",
+      builder =>
+      {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+      });
+});
 
 var connectionString = new NpgsqlConnectionStringBuilder
 {
-  Host = "127.0.0.1",
-  Port = 6432,
-  Database = "CSR",
-  Username = "citizix_user",
-  Password = "S3cret"
+  Host = builder.Configuration.GetSection("Marten:Host").Value, 
+  Port = int.Parse(builder.Configuration.GetSection("Marten:Port").Value!), 
+  Database = builder.Configuration.GetSection("Marten:Database").Value,  
+  Username = builder.Configuration.GetSection("Marten:Username").Value,  
+  Password = builder.Configuration.GetSection("Marten:Password").Value,  
+  MaxPoolSize = int.Parse(builder.Configuration.GetSection("Marten:MaxPoolSize").Value!),  
+  Pooling = bool.Parse(builder.Configuration.GetSection("Marten:Pooling").Value!) 
 };
 builder.Services.AddNpgsqlDataSource(connectionString.ConnectionString);
-builder.Services.AddMarten(serviceProvider =>
+builder.Services.AddMarten(opts =>
 {
   var options = new StoreOptions();
   options.RegisterBpnEngine();
@@ -40,12 +51,11 @@ builder.Services.AddMarten(serviceProvider =>
 
   if (builder.Environment.IsDevelopment()) options.AutoCreateSchemaObjects = AutoCreate.All;
   return options;
-})
-    .UseNpgsqlDataSource()
-    .ApplyAllDatabaseChangesOnStartup()
-    .AddAsyncDaemon(DaemonMode.HotCold)
-    .UseLightweightSessions();
-
+}) .UseNpgsqlDataSource()
+   .ApplyAllDatabaseChangesOnStartup()
+  .AddAsyncDaemon(DaemonMode.HotCold)
+  .BuildSessionsWith<CustomSessionFactory>();
+ // .UseLightweightSessions();
 foreach (var version in BpnEventStore.ApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
@@ -91,16 +101,22 @@ builder.Services.AddHsts(options =>
 });
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme);
+builder.Services.AddLogging(loggingBuilder =>
+{
+  loggingBuilder.AddConsole();
+  loggingBuilder.AddDebug();
+});
 
 var app = builder.Build();
+app.UseMiddleware<ThrottlingMiddleware>(TimeSpan.FromMilliseconds(25));
+
 if (!app.Environment.IsDevelopment())
 {
   app.UseHsts();
 }
-
-
+app.UseCors("AllowAllOrigins");
 app.UseResponseCaching();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -112,8 +128,6 @@ using (var scope = app.Services.CreateScope())
   app.RegisterAll(session);
 }
 app.RegisterBpnEventStore();
-
-
 
 app.UseOpenApi(options =>
 {
@@ -145,23 +159,24 @@ lifetime.ApplicationStopping.Register(() =>
   cancellationTokenSource.Cancel();  // Signal cancellation
 });
 
-
-
-
-
-while (!IsPortAvailable(7053 /*port*/))//maybe not hardcode
-{
-  Thread.Sleep(10);
-  Console.WriteLine($"Waiting for the port...");
-}
-
-Console.WriteLine("Server starting...");//used as signal to existing process that this process is ready to take over (in case of a graceful restart)
+WaitForExistingServerProcessToClose();
 app.Run();  // Start the server
 
 
+void WaitForExistingServerProcessToClose()
+{
+  while (!IsPortAvailable(7053 /*port*/))//maybe not hardcode
+  {
+    Thread.Sleep(10);
+    SignalExistingServerProcessToClose();
+  }
+}
+void SignalExistingServerProcessToClose()
+{
+  Console.WriteLine(LifetimeService.WaitingForPort);
+}
 bool IsPortAvailable(int port)
 {
-  // Check if the port is available
   try
   {
     using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))

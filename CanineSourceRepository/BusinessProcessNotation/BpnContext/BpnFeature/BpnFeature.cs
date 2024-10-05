@@ -36,7 +36,7 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet("BpnEngine/v1/Feature/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Feature/{featureId}/{version}", async (HttpContext context, [FromServices] IQuerySession session, Guid featureId, long version, CancellationToken ct) =>
     {
       var bpnFeature = await session.Query<BpnFeatureProjection.BpnFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();
@@ -201,7 +201,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
          .Produces(StatusCodes.Status200OK, typeof(List<DurationClassification>))
          .WithTags("Feature.Task");
 
-    app.MapGet("BpnEngine/v1/Feature/Stats/{featureId}/{version}", async (HttpContext context, [FromServices] IDocumentSession session, Guid featureId, long version, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Feature/Stats/{featureId}/{version}", async (HttpContext context, [FromServices] IQuerySession session, Guid featureId, long version, CancellationToken ct) =>
     {
       var bpnFeature = await session.Query<BpnFeatureStatsProjection.BpnFeatureVersionStat>().Where(p => p.Id == featureId && p.Revision == version).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();

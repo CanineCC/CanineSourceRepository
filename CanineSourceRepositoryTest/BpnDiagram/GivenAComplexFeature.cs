@@ -60,16 +60,16 @@ public class GivenAComplexFeature
       createUserBlock.Id,
       "Call Accepted",
       "input.Name != string.Empty",
-      new Map("input.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
-      new Map("input.Name ?? \"Anonymous\"", "Accessscope")
+      new MapField("input.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
+      new MapField("input.Name ?? \"Anonymous\"", "Accessscope")
       );
     var logTransition = new BpnTransition(
       createUserBlock.Id,
       logUserBlock.Id,
       "Log info",
       "true",
-      new Map("output.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
-      new Map("output.Id", "Id")
+      new MapField("output.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
+      new MapField("output.Id", "Id")
       );
 
     feature = new BpnDraftFeatureAggregate();

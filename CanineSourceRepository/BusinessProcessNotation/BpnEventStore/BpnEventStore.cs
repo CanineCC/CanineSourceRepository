@@ -67,7 +67,7 @@ public static class BpnEventStore
       createUserBlock.Id,
       "Call Accepted",
       "input.Name != string.Empty",
-      new Map("input.Name", "Name")//,//issue with lists and multiple fields of same type, but with different mappings
+      new MapField("input.Name", "Name")//,//issue with lists and multiple fields of same type, but with different mappings
                                    // new Map("input.Name ?? \"Anonymous\"", "AccessScope")
       );
     var logTransition = new BpnTransition(
@@ -75,8 +75,8 @@ public static class BpnEventStore
       logUserBlock.Id,
       "Log info",
       "true",
-      new Map("output.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
-      new Map("output.Id", "Id")
+      new MapField("output.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
+      new MapField("output.Id", "Id")
       );
 
     var causationId = "GenerateDefaultData";
@@ -151,6 +151,7 @@ public static class BpnEventStore
 
 public static class LifetimeService
 {
+  public const string WaitingForPort = "Waiting for port to be free";
   //TODO: Release API... so we dont restart every time a feature is released!
   //TODO: What about updating the envoriments (if prod is selected, or is that just a header? - issue if not on same server)
   private static bool StartNewInstance()
@@ -173,49 +174,18 @@ public static class LifetimeService
         while ((outputLine = reader.ReadLine()) != null)
         {
           Console.WriteLine($"New process output: {outputLine}"); // Log output for debugging
-          if (outputLine.Contains("Waiting for the port..."))
+          if (outputLine.Contains(LifetimeService.WaitingForPort))
           {
             return true;
           }
         }
       }
       return false;
-      /*
-            if (newProcess != null)
-            {
-              newProcess.OutputDataReceived += (sender, args) =>
-              {
-                if (args.Data != null)
-                {
-                  Console.WriteLine($"New process output: {args.Data}");
-                  if (args.Data.Contains("Waiting for the port..."))
-                  {
-                    // Handle when the output line indicates readiness
-                  }
-                }
-              };
-              newProcess.BeginOutputReadLine();
-
-              newProcess.ErrorDataReceived += (sender, args) =>
-              {
-                if (args.Data != null)
-                {
-                  Console.WriteLine($"New process error: {args.Data}");
-                }
-              };
-              newProcess.BeginErrorReadLine();
-
-              System.Threading.Thread.Sleep(15000);
-              newProcess.WaitForExit();
-
-              return true;
-            }*/
     }
     catch
     {
       return false;
     }
-    //return false;
   }
   private static void ShutdownThisInstance(IHostApplicationLifetime lifetime)
   {

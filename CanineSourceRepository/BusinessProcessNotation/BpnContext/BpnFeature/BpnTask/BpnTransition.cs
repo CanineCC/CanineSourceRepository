@@ -1,14 +1,14 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-public record Map(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
+public record MapField(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
 
 public record BpnTransition(
     Guid FromBPN,
     Guid ToBPN,
     string Name,
     string ConditionExpression,
-    params Map[] Mappings
+    params MapField[] Mappings
 )
 {
   private string GetTypeName() => $"Transition_{FromBPN:N}_{ToBPN:N}";
