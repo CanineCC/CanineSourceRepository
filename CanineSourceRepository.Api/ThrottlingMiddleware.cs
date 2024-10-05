@@ -7,7 +7,7 @@ public class ThrottlingMiddleware
   private readonly TimeSpan _throttleDuration;
 
   private readonly TimeSpan _rateLimitDuration = TimeSpan.FromHours(1);
-  private readonly int _maxRequestsPerHour = 20; // TODO: Based on license (have licensekey as part of the token)
+  private readonly int _maxRequestsPerHour = 2000; // TODO: Based on license (have licensekey as part of the token)
   private readonly ConcurrentDictionary<string, DateTime> _clientsLastRequestTime;
   private readonly ConcurrentDictionary<string, ConcurrentQueue<DateTime>> _clientsRequestTimes;
 

@@ -83,6 +83,7 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
     public ImmutableList<Environment> TargetEnvironments { get;  set; } = [];
   }
 
+  //TODO: published date on feature
   public class BpnFeature
   {
     public static string ToCode(ImmutableList<BpnTask> tasks, ImmutableList<BpnTransition> transitions)
@@ -163,7 +164,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
   public record DurationClassification(long FromMs, long ToMs, string HexColor, string Category);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet("BpnEngine/v1/Feature/DurationClassification", (HttpContext context, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Server/DurationClassification", (HttpContext context, CancellationToken ct) =>
     {
       context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
       {
@@ -178,9 +179,9 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
         new DurationClassification(300, 1000, PerformanceCategory.BelowAverage.GetColor(), PerformanceCategory.BelowAverage.ToString()),
         new DurationClassification(1000, long.MaxValue, PerformanceCategory.Bad.GetColor(), PerformanceCategory.Bad.ToString()),
       });
-    }).WithName("GetFeatureDurationClassification")
+    }).WithName("GetDurationClassification")
       .Produces(StatusCodes.Status200OK, typeof(List<DurationClassification>))
-      .WithTags("Feature");
+      .WithTags("Server");
 
     app.MapGet("BpnEngine/v1/Task/DurationClassification", (HttpContext context, CancellationToken ct) =>
     {

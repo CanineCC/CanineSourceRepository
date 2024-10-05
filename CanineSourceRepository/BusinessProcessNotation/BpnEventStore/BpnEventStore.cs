@@ -85,7 +85,7 @@ public static class BpnEventStore
                           session,
                           causationId: causationId,
                           bpnContextId: contextId,
-                          name: "User",
+                          name: "Create user",
                           objective: "Enable users to register, validate their email, and gain access to premium content.",
                           flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",
                           ct: ct);

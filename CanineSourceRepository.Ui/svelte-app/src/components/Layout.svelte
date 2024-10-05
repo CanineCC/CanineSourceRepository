@@ -1,5 +1,6 @@
 <script>
-    export let isLoggedIn; // Pass this prop to check if the user is logged in
+   import ServerStatus from '../components/ServerStatus.svelte';    
+   export let isLoggedIn; // Pass this prop to check if the user is logged in
 </script>
 
 
@@ -8,10 +9,10 @@
         <ul>
             <li><a href="/">Home</a></li>
             {#if isLoggedIn}
-                <li><a href="/profile">Profile</a></li>
-                <li><a href="/logout">Logout</a></li>
+                <li><a href="/Profile">Profile</a></li>
+                <li><a href="/Logout">Logout</a></li>
             {:else}
-                <li><a href="/login">Login</a></li>
+                <li><a href="/Login">Login</a></li>
             {/if}
         </ul>
     </nav>
@@ -20,9 +21,9 @@
 <div class="content-wrapper">
     <aside class="left-menu">
         <ul>
-            <li><a href="#"><i class="fas fa-tachometer-alt"></i></a></li> <!-- Dashboard Icon -->
-            <li><a href="#"><i class="fas fa-cogs"></i></a></li>           <!-- Settings Icon -->
-            <li><a href="#"><i class="fas fa-user"></i></a></li>           <!-- Profile Icon -->
+            <li><a href="/Dashboard"><i class="fas fa-tachometer-alt"></i></a></li> <!-- Dashboard Icon -->
+            <li><a href="/Settings"><i class="fas fa-cogs"></i></a></li>           <!-- Settings Icon -->
+            <li><a href="/Profile"><i class="fas fa-user"></i></a></li>           <!-- Profile Icon -->
         </ul>
     </aside>
 
@@ -32,7 +33,10 @@
 </div>
 
 <footer>
-    <p>© 2024 Canine Development ApS</p>
+    <div style="display: inline-flex; align-items: center; column-gap:25px;">
+        <p>© 2024 Canine Development ApS</p>
+        <ServerStatus />
+    </div>
 </footer>
 
 <style>/* Body should take full height */
