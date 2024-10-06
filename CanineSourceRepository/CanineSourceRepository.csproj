@@ -9,9 +9,8 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Marten" Version="7.28.2" />
-    <PackageReference Include="Npgsql" Version="8.0.4" />
-    <PackageReference Include="Npgsql.DependencyInjection" Version="8.0.4" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.14" />
+    <PackageReference Include="Marten" Version="7.29.0" />
   </ItemGroup>
 
   <ItemGroup>

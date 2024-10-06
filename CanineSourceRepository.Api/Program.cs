@@ -10,6 +10,8 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Net.Sockets;
 using System.Net;
+using Marten.Events;
+using EngineEvents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,27 +37,26 @@ var connectionString = new NpgsqlConnectionStringBuilder
   MaxPoolSize = int.Parse(builder.Configuration.GetSection("Marten:MaxPoolSize").Value!),  
   Pooling = bool.Parse(builder.Configuration.GetSection("Marten:Pooling").Value!) 
 };
-builder.Services.AddNpgsqlDataSource(connectionString.ConnectionString);
-builder.Services.AddMarten(opts =>
+builder.Services.AddHostedService<EngineEventsBackgroundService>();
+builder.Services.AddMarten(config =>
 {
-  var options = new StoreOptions();
-  options.RegisterBpnEngine();
-  options.RegisterBpnEventStore();
-  options.Policies.ForAllDocuments(x =>
+  config.Connection(connectionString.ConnectionString);
+  config.RegisterBpnEngine();
+  config.RegisterBpnEventStore();
+  config.UseSystemTextJsonForSerialization(BpnEngine.bpnJsonSerialize, enumStorage: EnumStorage.AsString);
+
+  config.Policies.ForAllDocuments(x =>
   {
     x.Metadata.CausationId.Enabled = true;
     x.Metadata.CorrelationId.Enabled = true;
     x.Metadata.Headers.Enabled = true;
   });
-  options.Events.MetadataConfig.EnableAll();
+  config.Events.StreamIdentity = StreamIdentity.AsGuid;
+  config.AutoCreateSchemaObjects = AutoCreate.All;
+})
+  .ApplyAllDatabaseChangesOnStartup()
+  .AddAsyncDaemon(DaemonMode.HotCold);
 
-  if (builder.Environment.IsDevelopment()) options.AutoCreateSchemaObjects = AutoCreate.All;
-  return options;
-}) .UseNpgsqlDataSource()
-   .ApplyAllDatabaseChangesOnStartup()
-  .AddAsyncDaemon(DaemonMode.HotCold)
-  .BuildSessionsWith<CustomSessionFactory>();
- // .UseLightweightSessions();
 foreach (var version in BpnEventStore.ApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
@@ -88,11 +89,7 @@ foreach (var version in BpnEngine.PotentialApiVersions)
 }
 
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
-builder.Services.AddSingleton<JsonSerializerOptions>(new JsonSerializerOptions
-{
-  Converters = { new JsonStringEnumConverter() }
-});
-
+builder.Services.AddSingleton<JsonSerializerOptions>(BpnEngine.bpnJsonSerialize);
 builder.Services.AddHsts(options =>
 {
   options.Preload = true;
@@ -109,7 +106,6 @@ builder.Services.AddLogging(loggingBuilder =>
 
 var app = builder.Build();
 app.UseMiddleware<ThrottlingMiddleware>(TimeSpan.FromMilliseconds(25));
-
 if (!app.Environment.IsDevelopment())
 {
   app.UseHsts();

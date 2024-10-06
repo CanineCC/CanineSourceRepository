@@ -2,6 +2,7 @@
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 using EngineEvents;
+using Hangfire;
 using static CanineSourceRepository.BusinessProcessNotation.Engine.BpnEngine;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
@@ -33,20 +34,25 @@ public abstract class ServiceInjection
   public abstract Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly);
   internal async Task<TaskResult> RunAndLog(IDocumentSession session, CancellationToken ct, dynamic input, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
   {
-    var invocationEvents = new List<IEngineEvents>();
     var stopwatch = Stopwatch.StartNew();
     dynamic? result = null;
     try
     {
-      invocationEvents.Add(new BpnTaskInitialized(contextId, featureId, featureVersion, task.Id, InputLogger.LogInput(input)));
+      var evt = new BpnTaskInitialized(
+          CorrelationId: correlationId,
+          ContextId: contextId,
+          FeatureId: featureId,
+          FeatureVersion: featureVersion,
+          TaskId: task.Id,
+          Input: InputLogger.LogInput(input));
+      BackgroundWorker.EnqueueEngineEvents(evt);
 
       var inputValidation = (ValueTuple<bool, List<string>>)task.VerifyInputData(input, assembly);
       var (isOk, missingFields) = inputValidation;
 
       if (isOk == false)
       {
-        invocationEvents.Add(new BpnTaskFailed(contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
-        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
+        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
 
@@ -59,19 +65,17 @@ public abstract class ServiceInjection
           result = await apiInputBlock.Execute(input, new UserContext("userId", "userName", ["Anonymous"], "ipaddress", true, "auth type", null), assembly);
           break;
         default:
-          invocationEvents.Add(new BpnTaskFailed(contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
-          await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
+          BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
           return new TaskResult(false, result);
       }
 
-      invocationEvents.Add(new BpnTaskSucceeded(contextId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
+      BackgroundWorker.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, contextId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)
     {
       if (ex.InnerException != null)
       {
-        invocationEvents.Add(new BpnTaskFailed(contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
-        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
+        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
 
         if (ex.InnerException is UnauthorizedAccessException)
         {
@@ -80,13 +84,11 @@ public abstract class ServiceInjection
       }
       else
       {
-        invocationEvents.Add(new BpnTaskFailed(contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
-        await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
+        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
         throw;
       }
       return new TaskResult(false, result);
     }
-    await session.RegisterEvents(ct, correlationId, task.Id, invocationEvents.ToArray());
     return new TaskResult(true, result);
   }
 }

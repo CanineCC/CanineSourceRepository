@@ -1,29 +1,108 @@
-﻿namespace EngineEvents;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
+using Hangfire.States;
+using Hangfire;
+using System.Linq.Expressions;
+using System;
+using Hangfire.Storage;
+using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace EngineEvents;
 
 public interface IEngineEvents
 {
+  Guid CorrelationId { get; }
   Guid ContextId { get; }
   Guid FeatureId { get; }
   long FeatureVersion { get; }
 }
 
 public record BpnFeatureStarted(Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset StarTime, Guid CorrelationId) : IEngineEvents;
-public record BpnFeatureError(Guid ContextId, Guid FeatureId, long FeatureVersion, ErrorEvent Exception) : IEngineEvents;
-public record BpnFeatureCompleted(Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
-public record BpnTaskInitialized(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, string Input) : IEngineEvents;
-public record BpnTaskFailed(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
-public record BpnFailedTaskReInitialized(Guid ContextId, Guid FeatureId, long FeatureVersion, string NewInput, double ExecutionTimeMs) : IEngineEvents;
-public record BpnTaskSucceeded(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
-public record BpnTransitionUsed(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
-public record BpnTransitionSkipped(Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnFeatureError(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, ErrorEvent Exception) : IEngineEvents;
+public record BpnFeatureCompleted(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
+public record BpnTaskInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, string Input) : IEngineEvents;
+public record BpnTaskFailed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
+public record BpnFailedTaskReInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, string NewInput, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTaskSucceeded(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTransitionUsed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnTransitionSkipped(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record ErrorEvent(string Message, string Details);
+
+
+public class BackgroundWorker
+{
+  private static System.Collections.Queue jobs = [];
+
+  public static void EnqueueEngineEvents(IEngineEvents jobData)
+  {
+    jobs.Enqueue(jobData);
+  }
+  public static IEngineEvents? DequeueEngineEvents()
+  {
+    if (jobs.Count == 0) return null;
+
+    return (IEngineEvents?)jobs.Dequeue(); 
+  }
+
+
+}
+public class EngineEventsBackgroundService : BackgroundService
+{
+  private readonly IDocumentStore _store;
+  public EngineEventsBackgroundService(IDocumentStore store)
+  {
+    _store = store;
+  }
+  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+  {
+    while (!stoppingToken.IsCancellationRequested)
+    {
+        var data = BackgroundWorker.DequeueEngineEvents();//add to list, while list length < 50 or until data==null.... to bulk insert...
+        if (data != null)
+        {
+          using (var session = _store.LightweightSession())
+          {
+            await session.RegisterEvents(CancellationToken.None, data.CorrelationId, data.FeatureId, data);
+          }
+        }
+        else
+        {
+          await Task.Delay(2500, stoppingToken);
+        //System.Threading.Thread.Sleep(1000);
+        }
+    }
+  }
+}
 
 
 public class EventLogJsonConverter : JsonConverter<IEngineEvents>
 {
   public override IEngineEvents Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
-    throw new NotImplementedException(); // You can implement reading if necessary
+    using var jsonDoc = JsonDocument.ParseValue(ref reader);
+    var jsonObject = jsonDoc.RootElement;
+
+    // Assuming there is a "Type" property to differentiate between Bpn types
+    var typeProperty = jsonObject.GetProperty("Type").GetString();
+
+    // Determine the type to instantiate based on the typeName
+    IEngineEvents engineEvent = typeProperty switch
+    {
+      nameof(BpnFeatureStarted) => JsonSerializer.Deserialize<BpnFeatureStarted>(jsonObject.GetRawText(), options)!,
+      nameof(BpnFeatureError) => JsonSerializer.Deserialize<BpnFeatureError>(jsonObject.GetRawText(), options)!,
+      nameof(BpnFeatureCompleted) => JsonSerializer.Deserialize<BpnFeatureCompleted>(jsonObject.GetRawText(), options)!,
+      nameof(BpnTaskInitialized) => JsonSerializer.Deserialize<BpnTaskInitialized>(jsonObject.GetRawText(), options)!,
+      nameof(BpnTaskFailed) => JsonSerializer.Deserialize<BpnTaskFailed>(jsonObject.GetRawText(), options)!,
+      nameof(BpnFailedTaskReInitialized) => JsonSerializer.Deserialize<BpnFailedTaskReInitialized>(jsonObject.GetRawText(), options)!,
+      nameof(BpnTaskSucceeded) => JsonSerializer.Deserialize<BpnTaskSucceeded>(jsonObject.GetRawText(), options)!,
+      nameof(BpnTransitionUsed) => JsonSerializer.Deserialize<BpnTransitionUsed>(jsonObject.GetRawText(), options)!,
+      nameof(BpnTransitionSkipped) => JsonSerializer.Deserialize<BpnTransitionSkipped>(jsonObject.GetRawText(), options)!,
+
+      _ => throw new JsonException($"Unknown Bpn type: {typeProperty}")
+    };
+
+    return engineEvent;
   }
 
   public override void Write(Utf8JsonWriter writer, IEngineEvents value, JsonSerializerOptions options)

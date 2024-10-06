@@ -1,7 +1,8 @@
 <script lang="ts">
     //import type { PageData } from './$types';
     import Layout from '../../components/Layout.svelte';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy  } from 'svelte';
+    import { writable, derived } from 'svelte/store';
     import { ContextApi, ServerApi } from '../../BpnEngineClient/apis'; // Adjust the path accordingly
     import type { BpnContext, DurationClassification } from '../../BpnEngineClient/models'; // Adjust the path accordingly
     import { slide } from 'svelte/transition';
@@ -13,34 +14,41 @@
   
     const contextApi = new ContextApi();
     const serverApi = new ServerApi();
-  
+    const currentTime = writable(new Date());
+
     // Fetch data on component mount
+    let intervalId: number | undefined;
     onMount(async () => {
         durationClasses = await serverApi.getDurationClassification();
         contexts = await contextApi.getAllContexts();
+
+        intervalId = setInterval(() => {
+            currentTime.set(new Date());
+        }, 1000);
     });
-  
+    onDestroy(() => {
+        clearInterval(intervalId); // Clear interval on component destroy
+    });
     // Function to toggle the expanded row
     function toggleRow(index: number) {
       expandedRow = expandedRow === index ? null : index;
     }
   
     // Function to format date strings
-    function formatDate(date: Date | undefined | null): string {
+    function formatDate(date: Date | undefined | null, now: Date): string {
         if (!date) return "";
-      const now = new Date();
-      const diff = now.getTime() - date.getTime();
-      const seconds = Math.floor(diff / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
-      const years = Math.floor(days / 365);
-  
-      if (seconds < 60) return `${seconds} seconds ago`;
-      if (minutes < 60) return `${minutes} minutes ago`;
-      if (hours < 24) return `${hours} hours ago`;
-      if (days < 365) return `${days} days ago`;
-      return `${years} years ago`;
+        const diff = now.getTime() - date.getTime();
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const years = Math.floor(days / 365);
+
+        if (seconds < 60) return `${seconds} seconds ago`;
+        if (minutes < 60) return `${minutes} minutes ago`;
+        if (hours < 24) return `${hours} hours ago`;
+        if (days < 365) return `${days} days ago`;
+        return `${years} years ago`;
     }
     function getDurationColor(duration: number | undefined): string {
         if (!duration) return "#000";
@@ -234,17 +242,17 @@
                     {summary.minDuration ? Math.round(summary.minDuration) + ' ms' : '-'} 
                 </td>
                 <td class="tooltip date-column" data-tooltip={summary.lastUsed}>
-                    {formatDate(summary.lastUsed)}
+                  { $currentTime ? formatDate(summary.lastUsed, $currentTime): '-' }
                   </td>
             {/await}          
 
 
             <td class="tooltip date-column" data-tooltip={context.lastUpdatedTimestamp}>
-                {formatDate(context.lastUpdatedTimestamp)}
-              </td>
-              <td class="tooltip" data-tooltip={context.createdTimestamp}>
-                {formatDate(context.createdTimestamp)}
-              </td>
+                { $currentTime ? formatDate(context.lastUpdatedTimestamp, $currentTime): '-' }
+            </td>
+            <td class="tooltip" data-tooltip={context.createdTimestamp}>
+                { $currentTime ? formatDate(context.createdTimestamp, $currentTime): '-' }
+            </td>
           </tr>
           {#if expandedRow === index}
             <tr class="expandable-row">
@@ -296,7 +304,7 @@
                                     {version.stats.minDurationMs ? Math.round(version.stats.minDurationMs) + ' ms' : '-'} 
                                 </td>
                                 <td class="tooltip date-column" data-tooltip={version.stats.lastUsed}>
-                                    {formatDate(version.stats.lastUsed)}
+                                  { $currentTime ? formatDate(version.stats.lastUsed, $currentTime): '-' }
                                 </td>
                                 <td>{version.version == -1 ? "draft" : "v"+version.version}</td>
                             </tr>

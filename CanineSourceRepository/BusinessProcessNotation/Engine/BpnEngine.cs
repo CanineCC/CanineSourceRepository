@@ -2,6 +2,7 @@
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using EngineEvents;
+using Hangfire;
 using Marten.Events.Projections;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
 
@@ -69,7 +70,7 @@ public static class BpnEngine
 
     var startTask = version.Tasks.First();
     var inputType = startTask.GetCompiledType(assembly);
-    app.MapPost(name, async Task<IResult> (HttpContext context, [FromServices]IDocumentSession session, CancellationToken ct) =>
+    app.MapPost(name, async Task<IResult> (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
     {
       object? input = null;
       using (var reader = new StreamReader(context.Request.Body))
@@ -108,7 +109,6 @@ public static class BpnEngine
   public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
-    var invocationEvents = new List<IEngineEvents>();
     var initial = nextTask == null;
     if (correlationId == null)
     {
@@ -117,7 +117,7 @@ public static class BpnEngine
     if (nextTask == null)
     {
       nextTask = version.Tasks.First();
-      invocationEvents.Add(new BpnFeatureStarted(contextId, feature.Id, version.Revision, DateTime.UtcNow, correlationId.Value));
+      BackgroundWorker.EnqueueEngineEvents(new BpnFeatureStarted(contextId, feature.Id, version.Revision, DateTime.UtcNow, correlationId.Value));
     }
 
     ServiceInjection DiService = nextTask.GetServiceDependency();
@@ -133,11 +133,11 @@ public static class BpnEngine
 
       if (featureTransition.ConditionIsMeet(response.Result, assembly))
       {
-        invocationEvents.Add(new BpnTransitionUsed(contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
+        BackgroundWorker.EnqueueEngineEvents(new BpnTransitionUsed(correlationId.Value, contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
         var mapToTask = version.Tasks.FirstOrDefault(task => task.Id == featureTransition.ToBPN);
         if (mapToTask == null)
         {
-          invocationEvents.Add(new BpnFeatureError(contextId, feature.Id, version.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
+          BackgroundWorker.EnqueueEngineEvents(new BpnFeatureError(correlationId.Value, contextId, feature.Id, version.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
           continue;
         }
 
@@ -149,16 +149,15 @@ public static class BpnEngine
       }
       else
       {
-        invocationEvents.Add(new BpnTransitionSkipped(contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
+        BackgroundWorker.EnqueueEngineEvents(new BpnTransitionSkipped(correlationId.Value, contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
       }
     }
     if (initial && success)
     {
-      invocationEvents.Add(new BpnFeatureCompleted(contextId, feature.Id, version.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
+      BackgroundWorker.EnqueueEngineEvents(new BpnFeatureCompleted(correlationId.Value, contextId, feature.Id, version.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
       stopwatch.Stop();
     }
 
-    await session.RegisterEvents(ct, correlationId.Value, feature.Id, invocationEvents.ToArray());
     return success;
   }
 }

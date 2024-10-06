@@ -2,6 +2,7 @@
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
+
 public abstract record BpnTask(Guid Id, string Name)
 {
   //public enum ServiceInjection
@@ -153,8 +154,8 @@ public class BpnConverter : JsonConverter<BpnTask>
 
     return typeProperty switch
     {
-      "CodeBlock" => JsonSerializer.Deserialize<CodeTask>(jsonObject.GetRawText(), options)!,
-      "ApiInputBlock" => JsonSerializer.Deserialize<ApiInputTask>(jsonObject.GetRawText(), options)!,
+      "CodeTask" => JsonSerializer.Deserialize<CodeTask>(jsonObject.GetRawText(), options)!,
+      "ApiInputTask" => JsonSerializer.Deserialize<ApiInputTask>(jsonObject.GetRawText(), options)!,
       _ => throw new JsonException($"Unknown Bpn type: {typeProperty}")
     };
   }
