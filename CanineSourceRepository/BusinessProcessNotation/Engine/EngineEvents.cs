@@ -1,5 +1,4 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
-using CanineSourceRepository.BusinessProcessNotation.Engine;
 using Hangfire.States;
 using Hangfire;
 using System.Linq.Expressions;
@@ -28,52 +27,6 @@ public record BpnTaskSucceeded(Guid CorrelationId, Guid ContextId, Guid FeatureI
 public record BpnTransitionUsed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record BpnTransitionSkipped(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record ErrorEvent(string Message, string Details);
-
-
-public class BackgroundWorker
-{
-  private static System.Collections.Queue jobs = [];
-
-  public static void EnqueueEngineEvents(IEngineEvents jobData)
-  {
-    jobs.Enqueue(jobData);
-  }
-  public static IEngineEvents? DequeueEngineEvents()
-  {
-    if (jobs.Count == 0) return null;
-
-    return (IEngineEvents?)jobs.Dequeue(); 
-  }
-
-
-}
-public class EngineEventsBackgroundService : BackgroundService
-{
-  private readonly IDocumentStore _store;
-  public EngineEventsBackgroundService(IDocumentStore store)
-  {
-    _store = store;
-  }
-  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-  {
-    while (!stoppingToken.IsCancellationRequested)
-    {
-        var data = BackgroundWorker.DequeueEngineEvents();//add to list, while list length < 50 or until data==null.... to bulk insert...
-        if (data != null)
-        {
-          using (var session = _store.LightweightSession())
-          {
-            await session.RegisterEvents(CancellationToken.None, data.CorrelationId, data.FeatureId, data);
-          }
-        }
-        else
-        {
-          await Task.Delay(2500, stoppingToken);
-        //System.Threading.Thread.Sleep(1000);
-        }
-    }
-  }
-}
 
 
 public class EventLogJsonConverter : JsonConverter<IEngineEvents>

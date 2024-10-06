@@ -45,14 +45,14 @@ public abstract class ServiceInjection
           FeatureVersion: featureVersion,
           TaskId: task.Id,
           Input: InputLogger.LogInput(input));
-      BackgroundWorker.EnqueueEngineEvents(evt);
+      EngineEventsQueue.EnqueueEngineEvents(evt);
 
       var inputValidation = (ValueTuple<bool, List<string>>)task.VerifyInputData(input, assembly);
       var (isOk, missingFields) = inputValidation;
 
       if (isOk == false)
       {
-        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
 
@@ -65,17 +65,17 @@ public abstract class ServiceInjection
           result = await apiInputBlock.Execute(input, new UserContext("userId", "userName", ["Anonymous"], "ipaddress", true, "auth type", null), assembly);
           break;
         default:
-          BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
+          EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
           return new TaskResult(false, result);
       }
 
-      BackgroundWorker.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, contextId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
+      EngineEventsQueue.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, contextId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)
     {
       if (ex.InnerException != null)
       {
-        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
 
         if (ex.InnerException is UnauthorizedAccessException)
         {
@@ -84,7 +84,7 @@ public abstract class ServiceInjection
       }
       else
       {
-        BackgroundWorker.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
         throw;
       }
       return new TaskResult(false, result);
