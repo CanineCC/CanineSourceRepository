@@ -4,6 +4,8 @@
     import Layout from '../../../../../../components/Layout.svelte';
     import { FeatureApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
 	import type { BpnFeatureVersion } from '../../../../../../BpnEngineClient';
+    import Graph from '../../../../../../components/diagram/Graph.svelte';
+    
 
     const featureApi = new FeatureApi();
 
@@ -12,8 +14,12 @@
     let featureId: string;
     let versionId: string;
 
-    let feature : BpnFeatureVersion | null = null;
 
+    let feature : BpnFeatureVersion | null = null;
+    let tasks : Array<BpnTask> = [];
+    let transitions : Array<BpnTransition> = [];
+    let diagram : BpnFeatureDiagram | undefined;
+  
     // Access the page store to get the dynamic parameters
     $: {
         contextId = $page.params.contextId;
@@ -34,6 +40,9 @@
     async function fetchVersionDetails(contextId: string, featureId: string, versionId: string) {
         let version = parseInt(versionId);
         feature = await featureApi.getFeatureVersion({featureId: featureId, version: version});
+        tasks = feature.tasks;
+        transitions = feature.transitions;
+        diagram = feature.diagram;
         //feature.
         //console.log(`Fetching version details for context ${contextId}, feature ${featureId}, version ${versionId}`);
 
@@ -110,6 +119,7 @@ SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
      -- Verification (given-input, expect-output)
      -- Code editor
 
+     <Graph {tasks} {transitions} {diagram} />
 {:else}
     <p>... loading ...</p>
 {/if}

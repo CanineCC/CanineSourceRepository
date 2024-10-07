@@ -144,14 +144,10 @@
 			return prevVersion > currentVersion ? prev : current;
 		}, versions[0]);
 	}
-	//export let data: PageData;
 	let isLoggedIn = false; // Replace this with your actual login state logic
 </script>
 
 <Layout {isLoggedIn}>
-	<h1>Settings</h1>
-
-	<div>
 		<h1>Contexts Table</h1>
 		<table>
 			<thead>
@@ -250,7 +246,7 @@
 																	<td class="title-column">
 																		<button
 																			on:click={() => toggleFeatureRow(featureindex)}
-																			style="border: none; background: none; cursor: pointer;"
+																			style="border: none; background: none; cursor: pointer; user-select: none;"
 																		>
 																			<i
 																				class={`fas ${expandedFeatureRow === featureindex ? 'fa-chevron-up' : 'fa-chevron-down'}`}
@@ -259,7 +255,9 @@
 																		{highestVersionFeature.name}
 																	</td>
 																	<td class="version-column">
-																		(v{highestVersionFeature.version})
+                                    {highestVersionFeature.version == -1
+                                      ? 'draft'
+                                      : 'v' + highestVersionFeature.version}
 																	</td>
 																	<td class="number-column"
 																		>{highestVersionFeature.stats.invocationCount}</td
@@ -367,7 +365,7 @@
 																											feature.id ?? '',
 																											version.version?.toString() ?? ''
 																										)}
-																									style="border: none; background: none; cursor: pointer;"
+																									style="border: none; background: none; cursor: pointer; user-select: none;"
 																								>
 																									<i class="fas fa-edit"></i>
 																								</button>
@@ -455,7 +453,6 @@
 				{/each}
 			</tbody>
 		</table>
-	</div>
 </Layout>
 
 <style>
