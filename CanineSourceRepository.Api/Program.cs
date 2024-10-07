@@ -6,7 +6,6 @@ using Npgsql;
 using Weasel.Core;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 using NSwag.Generation.Processors;
-using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Net.Sockets;
 using System.Net;
@@ -55,6 +54,7 @@ builder.Services.AddMarten(config =>
   config.AutoCreateSchemaObjects = AutoCreate.All;
 })
   .ApplyAllDatabaseChangesOnStartup()
+  .UseLightweightSessions()
   .AddAsyncDaemon(DaemonMode.HotCold);
 
 foreach (var version in BpnEventStore.ApiVersions)

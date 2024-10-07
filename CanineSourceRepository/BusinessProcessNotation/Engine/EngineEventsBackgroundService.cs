@@ -16,13 +16,8 @@ public class EngineEventsBackgroundService : BackgroundService
     while (!stoppingToken.IsCancellationRequested)
     {//TODO: BUG issue... we might stop logging before the system is finished, thus losing logs (example if the server is restarted)
 
-      var data = EngineEventsQueue.DequeueEngineEvents();//add to list, while list length < 50 or until data==null.... to bulk insert...
-      if (data != null)
-      {
-        batch.Add(data);
-      }
-      
-      if (batch.Count > 50 || (data == null && batch.Count > 0))
+      batch = EngineEventsQueue.DequeueEngineEvents();
+      if (batch.Any())
       {
         using (var session = _store.LightweightSession())
         {
@@ -34,9 +29,7 @@ public class EngineEventsBackgroundService : BackgroundService
 
         }
         batch.Clear();
-      }
-
-      if (data == null)
+      } else
       {
         await Task.Delay(2500, stoppingToken);
       }

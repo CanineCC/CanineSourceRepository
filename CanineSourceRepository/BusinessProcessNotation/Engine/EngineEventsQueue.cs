@@ -1,23 +1,30 @@
-﻿namespace EngineEvents;
+﻿using System.Collections.Concurrent;
 
-public class EngineEventsQueue
+namespace EngineEvents;
+
+public static class EngineEventsQueue
 {
-  private static System.Collections.Queue jobs = [];
+  private static ConcurrentQueue<IEngineEvents> currentQueue = new ConcurrentQueue<IEngineEvents>();
+  private static ConcurrentQueue<IEngineEvents> processingQueue = new ConcurrentQueue<IEngineEvents>();
 
   public static void EnqueueEngineEvents(IEngineEvents jobData)
   {
-    jobs.Enqueue(jobData);
+    currentQueue.Enqueue(jobData);
   }
-  public static IEngineEvents? DequeueEngineEvents()
+  public static List<IEngineEvents> DequeueEngineEvents()
   {
-    if (jobs.Count == 0) return null;
+    List<IEngineEvents> eventsList = new List<IEngineEvents>();
 
-    return (IEngineEvents?)jobs.Dequeue(); 
+    var tempQueue = processingQueue;
+    processingQueue = currentQueue;
+    currentQueue = tempQueue;
+
+    while (processingQueue.TryDequeue(out var job))
+    {
+      eventsList.Add(job);
+    }
+
+    return eventsList;
   }
-
-  public static bool EmptyQueue()
-  {
-    return jobs.Count == 0;
-  }
-
 }
+
