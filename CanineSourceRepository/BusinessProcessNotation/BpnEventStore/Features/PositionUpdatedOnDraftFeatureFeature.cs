@@ -18,7 +18,21 @@ public class PositionUpdatedOnDraftFeatureFeature : IFeature
      .WithTags("DraftFeature.Diagram")
      .Accepts(typeof(Request), false, "application/json");
 
+
+    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionsUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] List<Request> request, CancellationToken ct) =>
+    {
+      foreach (var req in request)
+      {
+        await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Diagram/PositionsUpdated", req.FeatureId, req.TaskId, req.Position, ct);
+      }
+      return Results.NoContent();
+    }).WithName("PositionsUpdatedOnDraftFeature")
+     .Produces(StatusCodes.Status202Accepted)
+     .WithTags("DraftFeature.Diagram")
+     .Accepts(typeof(List<Request>), false, "application/json");
+
   }
+
   public static void RegisterBpnEvents(StoreOptions options)
   {
     options.Events.AddEventType<DraftFeatureDiagramPositionUpdated>();

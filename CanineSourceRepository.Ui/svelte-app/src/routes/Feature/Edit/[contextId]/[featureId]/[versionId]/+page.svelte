@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import Layout from '../../../../../../components/Layout.svelte';
     import { FeatureApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
-	import type { BpnFeatureVersion } from '../../../../../../BpnEngineClient';
+	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat } from '../../../../../../BpnEngineClient';
     import Graph from '../../../../../../components/diagram/Graph.svelte';
     
 
@@ -14,13 +14,15 @@
     let featureId: string;
     let versionId: string;
 
+    let updatedTasks: Array<{ taskId: string, position: { x: number, y: number } }> = [];
 
     let feature : BpnFeatureVersion | null = null;
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
     let diagram : BpnFeatureDiagram | undefined;
+    let stats : BpnFeatureVersionStat | undefined;
   
-    // Access the page store to get the dynamic parameters
+    
     $: {
         contextId = $page.params.contextId;
         featureId = $page.params.featureId;
@@ -28,29 +30,54 @@
     }
 
     onMount(() => {
-        console.log('Loaded Edit Page');
-        console.log(`Context ID: ${contextId}`);
-        console.log(`Feature ID: ${featureId}`);
-        console.log(`Version ID: ${versionId}`);
-
-        // Fetch data based on these IDs if needed
         fetchVersionDetails(contextId, featureId, versionId);
     });
 
     async function fetchVersionDetails(contextId: string, featureId: string, versionId: string) {
         let version = parseInt(versionId);
         feature = await featureApi.getFeatureVersion({featureId: featureId, version: version});
-        tasks = feature.tasks;
-        transitions = feature.transitions;
+        tasks = feature.tasks??[];
+        transitions = feature.transitions??[];
         diagram = feature.diagram;
-        //feature.
-        //console.log(`Fetching version details for context ${contextId}, feature ${featureId}, version ${versionId}`);
 
+        stats = await featureApi.getFeatureVersionStats({featureId: featureId, version: version })
+
+//featureStats?: Stats;
+//taskStats?: { [key: string]: Stats; };        
     }
+
+    // Event handler for task position change
+    function handleTaskPositionChange(event: CustomEvent) {
+        const { taskId, position } = event.detail;
+        const existingTaskIndex = updatedTasks.findIndex(task => task.taskId === taskId);
+        if (existingTaskIndex >= 0) {
+            updatedTasks[existingTaskIndex].position = position;
+        } else {
+            updatedTasks.push({ taskId, position });
+        }
+    }
+
+    async function saveTaskPositions() {
+        if (updatedTasks.length === 0) {
+            console.log("No changes to save.");
+            return;
+        }
+
+        try {
+            updatedTasks = []; // Clear the list once the server responds with HTTP 202
+        } catch (error) {
+            console.error(`Error saving task positions:`, error);
+        }
+    }
+
     let isLoggedIn = false; // Replace this with your actual login state logic   
 </script>
 
 <style>
+    .feature-header {
+        display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 10px;    }
     .key-value-pairs {
         display: flex;
         flex-direction: column;
@@ -77,12 +104,14 @@
     }
 </style>
 
+
 <Layout {isLoggedIn}>
     TODO::: update serverside /feature/stats/featureid/version to return 2d array for presentation as graph
-SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
-SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
-
-{#if feature}
+    SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
+    SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
+    
+<div class="feature-header">
+    {#if feature}
     <div class="key-value-pairs">
         <div class="pair">
             <span class="key">Name:</span>
@@ -109,17 +138,69 @@ SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
             <span class="value">{feature.revision}</span>
         </div>
     </div>
+    {/if}
 
-    (component with readonly state for Feature, and non-readonly for draft)
-    DIAGRAM:
-     -- SVG 
-    TABS: (show on selected node)
-     -- Overview (name, businesspurpose, behavioralGoal, service selection/named configuration)
-     -- Data structures (including input and output definition) ==> TODO: Output from backend
-     -- Verification (given-input, expect-output)
-     -- Code editor
 
-     <Graph {tasks} {transitions} {diagram} />
+    {#if stats?.versionStats}
+    <div class="key-value-pairs">
+        <div class="pair">
+            <span class="key">Max duration (ms):</span>
+            <span class="value">{stats.versionStats.maxDurationMs}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Avg duration (ms):</span>
+            <span class="value">{stats.versionStats.avgDurationMs}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Min duration (ms):</span>
+            <span class="value">{stats.versionStats.minDurationMs}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Total duration (ms):</span>
+            <span class="value">{stats.versionStats.totalDurationMs}</span>
+        </div>
+    </div>
+    <div class="key-value-pairs">
+        <div class="pair">
+            <span class="key">Started:</span>
+            <span class="value">{stats.versionStats.invocationCount}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Completed:</span>
+            <span class="value">{stats.versionStats.invocationCompletedCount}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Failed:</span>
+            <span class="value">{stats.versionStats.invocationErrorCount}</span>
+        </div>
+        <div class="pair">
+            <span class="key">In progresss:</span>
+            <span class="value">{stats.versionStats.invocationsInProgressCount}</span>
+        </div>
+        <div class="pair">
+            <span class="key">Last used:</span>
+            <span class="value">{stats.versionStats.lastUsed}</span>
+        </div>
+    </div>
+{/if}
+</div>
+{#if feature}
+TABS: (show on selected node)
+-- Overview (name, businesspurpose, behavioralGoal, service selection/named configuration)
+-- Data structures (including input and output definition) ==> TODO: Output from backend
+-- Verification (given-input, expect-output)
+-- Code viewer
+
+<Graph 
+    {tasks} 
+    {transitions} 
+    {diagram} 
+    width={1440} 
+    height={1000} 
+    readonly={true}
+    on:taskPositionChange={handleTaskPositionChange}
+    />
+
 {:else}
     <p>... loading ...</p>
 {/if}

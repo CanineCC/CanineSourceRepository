@@ -133,7 +133,11 @@
 	}
 
 	function editVersion(contextId: string, featureId: string, versionId: string) {
-		goto(`/Feature/Edit/${contextId}/${featureId}/${versionId}`);
+    console.log(versionId);
+    if (versionId === "-1")
+		  goto(`/DraftFeature/Edit/${contextId}/${featureId}`);
+		else 
+      goto(`/Feature/Edit/${contextId}/${featureId}/${versionId}`);
 	}
 
 	function getHighestVersion(versions: FeatureVersion[] | undefined): FeatureVersion | undefined {

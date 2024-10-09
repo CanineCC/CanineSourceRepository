@@ -4,7 +4,7 @@ public class ThrottlingMiddleware
 {
   private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
   private readonly RequestDelegate _next;
-  private readonly TimeSpan _throttleDuration;
+ // private readonly TimeSpan _throttleDuration;
 
   private readonly TimeSpan _rateLimitDuration = TimeSpan.FromHours(1);
   private readonly int _maxRequestsPerHour = 2000; // TODO: Based on license (have licensekey as part of the token)
@@ -15,7 +15,7 @@ public class ThrottlingMiddleware
   public ThrottlingMiddleware(RequestDelegate next, TimeSpan throttleDuration)
   {
     _next = next;
-    _throttleDuration = throttleDuration;
+   // _throttleDuration = throttleDuration;
     _clientsLastRequestTime = new ConcurrentDictionary<string, DateTime>();
     _clientsRequestTimes = new ConcurrentDictionary<string, ConcurrentQueue<DateTime>>();
   }
@@ -25,6 +25,8 @@ public class ThrottlingMiddleware
     semaphore.Wait();
     try
     {
+      //context.Connection.Id
+      //context.Request.Headers[""]
       var clientId = context.Connection.RemoteIpAddress?.ToString(); // Use the IP address as a unique identifier
       
       if (clientId == null)
@@ -35,7 +37,7 @@ public class ThrottlingMiddleware
       string requestPath = context.Request.Path.ToString(); // Get the endpoint path
       string clientEndpointKey = $"{clientId}:{requestPath}";
       // Throttle check for the same endpoint
-      if (_clientsLastRequestTime.TryGetValue(clientEndpointKey, out DateTime lastRequestTime))
+      /*if (_clientsLastRequestTime.TryGetValue(clientEndpointKey, out DateTime lastRequestTime))
       {
         var timeSinceLastRequest = DateTime.UtcNow - lastRequestTime;
         if (timeSinceLastRequest < _throttleDuration)
@@ -45,7 +47,7 @@ public class ThrottlingMiddleware
           await context.Response.CompleteAsync();
           return;
         }
-      }
+      }*/
 
       // Update the last request time for the endpoint
       _clientsLastRequestTime[clientEndpointKey] = DateTime.UtcNow;

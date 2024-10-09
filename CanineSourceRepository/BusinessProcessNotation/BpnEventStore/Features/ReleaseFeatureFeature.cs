@@ -37,7 +37,10 @@ public class ReleaseFeatureFeature : IFeature
     
     Dictionary<Guid, Guid> newIds = aggregate.Tasks.ToDictionary(task => task.Id, task => Guid.CreateVersion7());
 
-    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new FeatureReleased(
+    var bpnPositions = aggregate.Diagram.BpnPositions.Select(task => task with { Id = newIds[task.Id] }).ToList();
+    var bpnWaypoints = aggregate.Diagram.BpnConnectionWaypoints.Select(transition => transition with { FromBPN = newIds[transition.FromBPN], ToBPN = newIds[transition.ToBPN] }).ToList();
+
+  await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new FeatureReleased(
       ContextId: aggregate.ContextId,
       FeatureId: featureId,
       ReleasedBy: user,
@@ -46,7 +49,7 @@ public class ReleaseFeatureFeature : IFeature
       FlowOverview: aggregate.FlowOverview,
       Tasks: aggregate.Tasks.Select(task => task with { Id = newIds[task.Id] }).ToImmutableList(),
       Transitions: aggregate.Transitions.Select(transition => transition with { FromBPN = newIds[transition.FromBPN], ToBPN = newIds[transition.ToBPN] }).ToImmutableList(),
-      Diagram: aggregate.Diagram,
+      Diagram: new BpnFeatureDiagram() { BpnPositions = bpnPositions, BpnConnectionWaypoints = bpnWaypoints },
       feature?.Revision + 1 ?? 1));
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }

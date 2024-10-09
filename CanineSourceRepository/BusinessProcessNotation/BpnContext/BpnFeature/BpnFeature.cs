@@ -2,8 +2,9 @@
 using CanineSourceRepository.BusinessProcessNotation.Engine;
 using EngineEvents;
 using Marten.Events.Projections;
+using Microsoft.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection.BpnFeature;
+using System.Threading.Tasks;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 public enum Environment { Development, Testing, Staging, Production };
@@ -40,7 +41,6 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
     {
       var bpnFeature = await session.Query<BpnFeatureProjection.BpnFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();
-
       var bpnVersion = bpnFeature.Versions.FirstOrDefault(ver => ver.Revision == version);
       if (bpnVersion == null) return Results.NotFound();
 
@@ -152,14 +152,14 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
           
         };
 
-        projection.Id = @event.StreamId;
+        projection.Id = @event.Data.FeatureId;
         projection.Versions.Add(newVersion);
       }
     }
   }
 }
 
-public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProjection.BpnContext, Guid>
+public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsProjection.BpnFeatureStat, Guid>
 {
   public record DurationClassification(long FromMs, long ToMs, string HexColor, string Category);
   public static void RegisterBpnEventStore(WebApplication app)
@@ -204,7 +204,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
 
     app.MapGet("BpnEngine/v1/Feature/Stats/{featureId}/{version}", async (HttpContext context, [FromServices] IQuerySession session, Guid featureId, long version, CancellationToken ct) =>
     {
-      var bpnFeature = await session.Query<BpnFeatureStatsProjection.BpnFeatureVersionStat>().Where(p => p.Id == featureId && p.Revision == version).SingleOrDefaultAsync();
+      var bpnFeature = await session.Query<BpnFeatureStatsProjection.BpnFeatureStat>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();
 
       context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
@@ -212,11 +212,22 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
         Public = true,
         MaxAge = TimeSpan.FromSeconds(10)
       };
-      return Results.Ok(bpnFeature);
+
+      var filterResult = new BpnFeatureVersionStat()
+      {
+        Id = bpnFeature.Id,
+        FeatureStats = bpnFeature.FeatureStats,
+        TaskStats = bpnFeature.TaskStats.FirstOrDefault(p => p.Key.EndsWith("_"+version)).Value,
+        VersionStats = bpnFeature.VersionStats.FirstOrDefault(p => p.Key.EndsWith("_" + version)).Value
+      };
+      
+      
+      return Results.Ok(filterResult);
     }).WithName("GetFeatureVersionStats")
-  .Produces(StatusCodes.Status200OK, typeof(BpnFeatureProjection.BpnFeatureVersion))
+  .Produces(StatusCodes.Status200OK, typeof(BpnFeatureStatsProjection.BpnFeatureVersionStat))
   .WithTags("Feature");
   }
+  private static readonly object _lock = new object();
   public BpnFeatureStatsProjection()
   {
     Identity<BpnFeatureStarted>(x => x.FeatureId);
@@ -227,58 +238,119 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnContextProject
     Identity<BpnFailedTaskReInitialized>(x => x.FeatureId);
     Identity<BpnTaskSucceeded>(x => x.FeatureId);
   }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnFeatureStarted> @event)
+  public static void Apply(BpnFeatureStat view, IEvent<BpnFeatureStarted> @event)
   {
-    view.Id = @event.Data.FeatureId;
-    view.Revision = @event.Data.FeatureVersion;
-    view.FeatureStats.InvocationCount++;
-    view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
-  }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnFeatureError> @event)
-  {
-    view.FeatureStats.InvocationErrorCount++;
-    view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
-  }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnFeatureCompleted> @event)
-  {
-    view.FeatureStats.InvocationCompletedCount++;
-    view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
+    lock (_lock)
+    {
+      var versionKey = VersionId(@event.Data);
+      view.Id = @event.Data.FeatureId;
+      //view.Revision = @event.Data.FeatureVersion;
+      view.FeatureStats.InvocationCount++;
+      view.FeatureStats.LastUsed = @event.Timestamp;
+      view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
 
-    view.FeatureStats.MaxDurationMs = Math.Max(view.FeatureStats.MaxDurationMs, @event.Data.DurationMs);
-    view.FeatureStats.MinDurationMs = view.FeatureStats.MinDurationMs == 0 ? @event.Data.DurationMs : Math.Min(view.FeatureStats.MinDurationMs, @event.Data.DurationMs);
-    view.FeatureStats.TotalDurationMs += (decimal)@event.Data.DurationMs;
-    view.FeatureStats.AvgDurationMs = (double)(view.FeatureStats.TotalDurationMs / view.FeatureStats.InvocationCompletedCount);
-  }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnTaskInitialized> @event)
-  {
-    if (!view.TaskStats.ContainsKey(@event.Data.TaskId))
-      view.TaskStats.Add(@event.Data.TaskId, new Stats());
+      if (!view.VersionStats.ContainsKey(versionKey))
+        view.VersionStats.Add(versionKey, new Stats());
 
-    view.TaskStats[@event.Data.TaskId].InvocationCount++;
-    view.TaskStats[@event.Data.TaskId].InvocationsInProgressCount = view.TaskStats[@event.Data.TaskId].InvocationCount - view.TaskStats[@event.Data.TaskId].InvocationErrorCount - view.TaskStats[@event.Data.TaskId].InvocationCompletedCount;
+      view.VersionStats[versionKey].InvocationCount++;
+      view.VersionStats[versionKey].LastUsed = @event.Timestamp;
+      view.VersionStats[versionKey].InvocationsInProgressCount = view.VersionStats[versionKey].InvocationCount - view.VersionStats[versionKey].InvocationErrorCount - view.VersionStats[versionKey].InvocationCompletedCount;
+    }
   }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnTaskFailed> @event)
+  public static void Apply(BpnFeatureStat view, IEvent<BpnFeatureError> @event)
   {
-    view.TaskStats[@event.Data.TaskId].InvocationErrorCount++;
-    view.TaskStats[@event.Data.TaskId].InvocationsInProgressCount = view.TaskStats[@event.Data.TaskId].InvocationCount - view.TaskStats[@event.Data.TaskId].InvocationErrorCount - view.TaskStats[@event.Data.TaskId].InvocationCompletedCount;
+      var versionKey = VersionId(@event.Data);
+      view.FeatureStats.InvocationErrorCount++;
+      view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
+
+      view.VersionStats[versionKey].InvocationCount++;
+      view.VersionStats[versionKey].InvocationsInProgressCount = view.VersionStats[versionKey].InvocationCount - view.VersionStats[versionKey].InvocationErrorCount - view.VersionStats[versionKey].InvocationCompletedCount;
   }
-  public static void Apply(BpnFeatureVersionStat view, IEvent<BpnTaskSucceeded> @event)
+  public static void Apply(BpnFeatureStat view, IEvent<BpnFeatureCompleted> @event)
   {
-    view.TaskStats[@event.Data.TaskId].InvocationCompletedCount++;
-    view.TaskStats[@event.Data.TaskId].InvocationsInProgressCount = view.TaskStats[@event.Data.TaskId].InvocationCount - view.TaskStats[@event.Data.TaskId].InvocationErrorCount - view.TaskStats[@event.Data.TaskId].InvocationCompletedCount;
+      var versionKey = VersionId(@event.Data);
+      view.FeatureStats.InvocationCompletedCount++;
+      view.FeatureStats.InvocationsInProgressCount = view.FeatureStats.InvocationCount - view.FeatureStats.InvocationErrorCount - view.FeatureStats.InvocationCompletedCount;
+      view.FeatureStats.MaxDurationMs = Math.Max(view.FeatureStats.MaxDurationMs, @event.Data.DurationMs);
+      view.FeatureStats.MinDurationMs = view.FeatureStats.MinDurationMs == 0 ? @event.Data.DurationMs : Math.Min(view.FeatureStats.MinDurationMs, @event.Data.DurationMs);
+      view.FeatureStats.TotalDurationMs += (decimal)@event.Data.DurationMs;
+      view.FeatureStats.AvgDurationMs = (double)(view.FeatureStats.TotalDurationMs / view.FeatureStats.InvocationCompletedCount);
 
-    view.TaskStats[@event.Data.TaskId].MaxDurationMs = Math.Max(view.TaskStats[@event.Data.TaskId].MaxDurationMs, @event.Data.ExecutionTimeMs);
-    view.TaskStats[@event.Data.TaskId].MinDurationMs = view.TaskStats[@event.Data.TaskId].MinDurationMs == 0 ? @event.Data.ExecutionTimeMs : Math.Min(view.TaskStats[@event.Data.TaskId].MinDurationMs, @event.Data.ExecutionTimeMs);
-    view.TaskStats[@event.Data.TaskId].TotalDurationMs += (decimal)@event.Data.ExecutionTimeMs;
-    view.TaskStats[@event.Data.TaskId].AvgDurationMs = (double)(view.TaskStats[@event.Data.TaskId].TotalDurationMs / view.TaskStats[@event.Data.TaskId].InvocationCompletedCount);
+
+      view.VersionStats[versionKey].InvocationCompletedCount++;
+      view.VersionStats[versionKey].InvocationsInProgressCount = view.VersionStats[versionKey].InvocationCount - view.VersionStats[versionKey].InvocationErrorCount - view.VersionStats[versionKey].InvocationCompletedCount;
+      view.VersionStats[versionKey].MaxDurationMs = Math.Max(view.VersionStats[versionKey].MaxDurationMs, @event.Data.DurationMs);
+      view.VersionStats[versionKey].MinDurationMs = view.VersionStats[versionKey].MinDurationMs == 0 ? @event.Data.DurationMs : Math.Min(view.VersionStats[versionKey].MinDurationMs, @event.Data.DurationMs);
+      view.VersionStats[versionKey].TotalDurationMs += (decimal)@event.Data.DurationMs;
+      view.VersionStats[versionKey].AvgDurationMs = (double)(view.VersionStats[versionKey].TotalDurationMs / view.VersionStats[versionKey].InvocationCompletedCount);
+  }
+  public static void Apply(BpnFeatureStat view, IEvent<BpnTaskInitialized> @event)
+  {
+    lock (_lock)
+    {
+      var key = VersionTaskId(@event.Data, @event.Data.TaskId);
+      if (!view.TaskStats.ContainsKey(key))
+        view.TaskStats.Add(key, new Stats());
+
+      view.TaskStats[key].InvocationCount++;
+      view.TaskStats[key].LastUsed = @event.Timestamp;
+      view.TaskStats[key].InvocationsInProgressCount = view.TaskStats[key].InvocationCount - view.TaskStats[key].InvocationErrorCount - view.TaskStats[key].InvocationCompletedCount;
+    }
+  }
+  public static void Apply(BpnFeatureStat view, IEvent<BpnTaskFailed> @event)
+  {
+    var key = VersionTaskId(@event.Data, @event.Data.TaskId);
+    view.TaskStats[key].InvocationErrorCount++;
+    view.TaskStats[key].InvocationsInProgressCount = view.TaskStats[key].InvocationCount - view.TaskStats[key].InvocationErrorCount - view.TaskStats[key].InvocationCompletedCount;
+  }
+  public static void Apply(BpnFeatureStat view, IEvent<BpnTaskSucceeded> @event)
+  {
+    var key = VersionTaskId(@event.Data, @event.Data.TaskId);
+    view.TaskStats[key].InvocationCompletedCount++;
+    view.TaskStats[key].InvocationsInProgressCount = view.TaskStats[key].InvocationCount - view.TaskStats[key].InvocationErrorCount - view.TaskStats[key].InvocationCompletedCount;
+
+    view.TaskStats[key].MaxDurationMs = Math.Max(view.TaskStats[key].MaxDurationMs, @event.Data.ExecutionTimeMs);
+    view.TaskStats[key].MinDurationMs = view.TaskStats[key].MinDurationMs == 0 ? @event.Data.ExecutionTimeMs : Math.Min(view.TaskStats[key].MinDurationMs, @event.Data.ExecutionTimeMs);
+    view.TaskStats[key].TotalDurationMs += (decimal)@event.Data.ExecutionTimeMs;
+    view.TaskStats[key].AvgDurationMs = (double)(view.TaskStats[key].TotalDurationMs / view.TaskStats[key].InvocationCompletedCount);
   }
 
+  private static string VersionTaskId(IEngineEvents @event, Guid taskId)
+  {
+    return $"{@event.FeatureId}_{taskId}_{@event.FeatureVersion}";
+  }
+  private static string VersionId(IEngineEvents @event)
+  {
+    return $"{@event.FeatureId}_{@event.FeatureVersion}";
+  }
+  /*public class VersionKey(Guid FeatureId, long Version)
+  {
+    public Guid FeatureId { get; set; } = FeatureId;
+    public long Version { get; set; } = Version;
+  }
+
+  public class VersionTaskKey(Guid FeatureId, Guid TaskId, long Version)
+  {
+    public Guid FeatureId { get; set; } = FeatureId;
+    public Guid TaskId { get; set; } = TaskId;
+    public long Version { get; set; } = Version;
+  }*/
+
+  public class BpnFeatureStat
+  {
+    public Guid Id { get; set; }
+    //public long Revision { get; set; } = 0;
+    public Stats FeatureStats { get; set; } = new();
+    public Dictionary<string, Stats> VersionStats { get; set; } = [];
+    public Dictionary<string, Stats> TaskStats { get; set; } = [];
+  }
   public class BpnFeatureVersionStat
   {
     public Guid Id { get; set; }
-    public long Revision { get; set; } = 0;
+    //public long Revision { get; set; } = 0;
     public Stats FeatureStats { get; set; } = new();
-    public Dictionary<Guid, Stats> TaskStats { get; set; } = [];
+    public Stats VersionStats { get; set; } = new();
+    public Stats TaskStats { get; set; } = new();
   }
   public class Stats(long InvocationCount = 0, long InvocationErrorCount = 0, long InvocationCompletedCount = 0, long InvocationsInProgressCount = 0, decimal TotalDurationMs = 0, double MaxDurationMs = 0, double AvgDurationMs = 0, double MinDurationMs = 0, DateTimeOffset? LastUsed = null)
   {

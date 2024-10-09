@@ -4,6 +4,7 @@ using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeatur
 using CanineSourceRepository.BusinessProcessNotation.BpnContext;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureStatsProjection;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -94,7 +95,7 @@ public static class BpnEventStore
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);
     await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: transition, ct);
     await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: logTransition, ct);
-    await ReleaseFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, user: "system", ct);
+    //await ReleaseFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, user: "system", ct);
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
   {
@@ -105,6 +106,10 @@ public static class BpnEventStore
     options.Projections.LiveStreamAggregation<BpnFeatureAggregate>();
     options.Projections.Add<BpnFeatureProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnFeature>();
+    options.Projections.Add<BpnFeatureStatsProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<BpnFeatureStatsProjection.BpnFeatureStat>();
+
+
 
     options.Projections.LiveStreamAggregation<BpnDraftFeatureAggregate>();
     options.Projections.Add<BpnDraftFeatureProjection>(ProjectionLifecycle.Async);
