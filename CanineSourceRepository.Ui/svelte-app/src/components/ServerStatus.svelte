@@ -83,11 +83,16 @@
 
     // Tooltip message with status information
     function getTooltipMessage() {
+        if (retryCount >= 8)
+        {
+            return 'Status: Server is unreachable';
+        }
+
         if (isLoading) {
             return fetchStatusText; // Show loading/failure message
         }
         if (serverHealthObj) {
-            return `Status: ${serverHealthObj.isHealthy ? 'Healthy' : 'Unhealthy'}\nMemory Usage: ${serverHealthObj.serverMemoryUsageInMegaBytes} MB\nServer Started: ${serverHealthObj.serverStartedTime?.toLocaleDateString()} at ${serverHealthObj.serverStartedTime?.toLocaleTimeString()}\nFetch status: ${fetchStatusText}`;
+                return `Status: ${serverHealthObj.isHealthy ? 'Healthy' : 'Unhealthy'}\nMemory Usage: ${serverHealthObj.serverMemoryUsageInMegaBytes} MB\nServer Started: ${serverHealthObj.serverStartedTime?.toLocaleDateString()} at ${serverHealthObj.serverStartedTime?.toLocaleTimeString()}\nFetch status: ${fetchStatusText}`;
         }
         return fetchStatusText;
     }
