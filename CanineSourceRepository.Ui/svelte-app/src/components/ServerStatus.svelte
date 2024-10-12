@@ -73,12 +73,12 @@
     // Determine the color based on the number of retries and the fetch status
     function getStatusColor() {
         if (serverHealthObj?.isHealthy && retryCount < 3)
-            return '#d4edda'; // Green if healthy
+            return '#3c6e47'; // Darker muted green for healthy
         if (retryCount < 5)
-            return '#fff3cd'; // Yellow
+            return '#8a7732'; // Muted yellow for warning
         if (retryCount < 8)
-            return '#ffeeba'; // Orange
-        return '#f8d7da'; // Red by default (error state)
+            return '#946e31'; // Muted orange for alert
+        return '#944241'; // Muted red for error
     }
 
     // Tooltip message with status information
