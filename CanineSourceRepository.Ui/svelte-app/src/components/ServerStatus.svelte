@@ -75,9 +75,9 @@
         if (serverHealthObj?.isHealthy && retryCount < 3)
             return '#3c6e47'; // Darker muted green for healthy
         if (retryCount < 5)
-            return '#8a7732'; // Muted yellow for warning
+            return '#c4a000'; // Muted yellow for warning
         if (retryCount < 8)
-            return '#946e31'; // Muted orange for alert
+            return '#d87d00'; // Muted orange for alert
         return '#944241'; // Muted red for error
     }
 

@@ -44,38 +44,7 @@
 		expandedFeatureRow = expandedFeatureRow === index ? null : index;
 	}
 
-	// Function to format date strings
-	/*function formatDate(date: Date | undefined | null, now: Date): string {
-		if (!date) return '';
-		const diff = now.getTime() - date.getTime();
-		const seconds = Math.floor(diff / 1000);
-		const minutes = Math.floor(seconds / 60);
-		const hours = Math.floor(minutes / 60);
-		const days = Math.floor(hours / 24);
-		const years = Math.floor(days / 365);
 
-		if (seconds < 60) return `${seconds} seconds ago`;
-		if (minutes < 60) return `${minutes} minutes ago`;
-		if (hours < 24) return `${hours} hours ago`;
-		if (days < 365) return `${days} days ago`;
-		return `${years} years ago`;
-	}*/
-	/*
-	function getDurationColor(duration: number | undefined): string {
-		if (!duration) return '#000';
-		const classification = durationClasses.find(
-			(dc) => duration >= dc.fromMs! && duration <= dc.toMs!
-		);
-		return classification && classification.hexColor ? classification.hexColor : '#000'; // Default to black if no classification found
-	}
-	function getDurationText(duration: number | undefined): string {
-		if (!duration) return '';
-		const classification = durationClasses.find(
-			(dc) => duration >= dc.fromMs! && duration <= dc.toMs!
-		);
-		return classification && classification.category ? classification.category : '---';
-	}
-*/
 	// Calculate summaries for each context
 	function getFeatureSummaries(context: BpnContext) {
 		let totalInvocations = 0;
@@ -193,13 +162,13 @@
 							<td class="number-column">{summary.totalCompleted}</td>
 							<td class="number-column">{summary.totalInProgress}</td>
 							<td class="number-column">
-								<FeatureDuration duration={summary.maxDuration} />
+								<FeatureDuration duration={summary.maxDuration}   durationClasses={durationClasses}/>
 							</td>
 							<td class="number-column">
-								<FeatureDuration duration={summary.avgOfAverages} />
+								<FeatureDuration duration={summary.avgOfAverages}   durationClasses={durationClasses}/>
 							</td>
 							<td class="number-column">
-								<FeatureDuration duration={summary.minDuration} />
+								<FeatureDuration duration={summary.minDuration}  durationClasses={durationClasses} />
 							</td>
 							<td class="tooltip date-column" data-tooltip={summary.lastUsed}>
 								{$currentTime ? formatDate(summary.lastUsed, $currentTime) : '-'}
@@ -250,9 +219,9 @@
 																		{highestVersionFeature.name}
 																	</td>
 																	<td class="version-column">
-                                    {highestVersionFeature.version == -1
-                                      ? 'draft'
-                                      : 'v' + highestVersionFeature.version}
+																		{highestVersionFeature.version == -1
+																		? 'draft'
+																		: 'v' + highestVersionFeature.version}
 																	</td>
 																	<td class="number-column"
 																		>{highestVersionFeature.stats.invocationCount}</td
@@ -267,13 +236,13 @@
 																		>{highestVersionFeature.stats.invocationsInProgressCount}</td
 																	>
 																	<td class="number-column">
-																		<FeatureDuration duration={highestVersionFeature.stats.maxDurationMs} />
+																		<FeatureDuration duration={highestVersionFeature.stats.maxDurationMs}  durationClasses={durationClasses}  />
 																	</td>
 																	<td class="number-column">
-																		<FeatureDuration duration={highestVersionFeature.stats.avgDurationMs} />
+																		<FeatureDuration duration={highestVersionFeature.stats.avgDurationMs}   durationClasses={durationClasses} />
 																	</td>
 																	<td class="number-column">
-																		<FeatureDuration duration={highestVersionFeature.stats.minDurationMs} />
+																		<FeatureDuration duration={highestVersionFeature.stats.minDurationMs}   durationClasses={durationClasses} />
 																	</td>
 																	<td
 																		class="tooltip date-column"
@@ -348,13 +317,13 @@
 																								>{version.stats.invocationsInProgressCount}</td
 																							>
 																							<td class="number-column">
-																								<FeatureDuration duration={version.stats.maxDurationMs} />
+																								<FeatureDuration duration={version.stats.maxDurationMs}   durationClasses={durationClasses}/>
 																							</td>
 																							<td class="number-column">
-																								<FeatureDuration duration={version.stats.avgDurationMs} />
+																								<FeatureDuration duration={version.stats.avgDurationMs}   durationClasses={durationClasses}/>
 																							</td>
 																							<td class="number-column">
-																								<FeatureDuration duration={version.stats.minDurationMs} />
+																								<FeatureDuration duration={version.stats.minDurationMs}  durationClasses={durationClasses} />
 																							</td>
 																							<td
 																								class="tooltip date-column"

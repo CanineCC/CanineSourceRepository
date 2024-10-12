@@ -2,22 +2,23 @@
     import { page } from '$app/stores';
     import { onMount, onDestroy } from 'svelte';
     import Layout from '../../../../../../components/Layout.svelte';
-    import { FeatureApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
-	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat } from '../../../../../../BpnEngineClient';
+    import { FeatureApi, ServerApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
+	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat, DurationClassification } from '../../../../../../BpnEngineClient';
     import Graph from '../../../../../../components/diagram/Graph.svelte';
     import TaskComponent from '../../../../../../components/TaskComponent.svelte';
-    import { formatDurationShort,formatDurationLong,formatDate  } from '../../../../../../lib/Duration'; // Adjust the path accordingly
+    import { formatDate  } from '../../../../../../lib/Duration'; // Adjust the path accordingly
     import { writable } from 'svelte/store';
     import FeatureDuration from '../../../../../../lib/FeatureDuration.svelte';
-    
     const featureApi = new FeatureApi();
+    const serverApi = new ServerApi();
+
 	const currentTime = writable(new Date());
 
     // Store the route parameters
     let contextId: string;
     let featureId: string;
     let versionId: string;
-
+	let durationClasses: DurationClassification[] = [];
     let updatedTasks: Array<{ taskId: string, position: { x: number, y: number } }> = [];
 
     let feature : BpnFeatureVersion | null = null;
@@ -36,6 +37,7 @@
 
     let intervalId: number | undefined;
 	onMount(async () => {
+        durationClasses = await serverApi.getDurationClassification();
         fetchVersionDetails(contextId, featureId, versionId);
 		//durationClasses = await serverApi.getDurationClassification();
 		//contexts = await contextApi.getAllContexts();
@@ -157,19 +159,19 @@
         <div class="pair">
             <span class="key">Max duration:</span>
             <span class="value">
-                <FeatureDuration duration={stats.versionStats.maxDurationMs}></FeatureDuration>
+                <FeatureDuration duration={stats.versionStats.maxDurationMs}  durationClasses={durationClasses}></FeatureDuration>
             </span>
         </div>
         <div class="pair">
             <span class="key">Avg duration:</span>
             <span class="value">
-                <FeatureDuration duration={stats.versionStats.avgDurationMs}></FeatureDuration>
+                <FeatureDuration duration={stats.versionStats.avgDurationMs}  durationClasses={durationClasses}></FeatureDuration>
             </span>
         </div>
         <div class="pair">
             <span class="key">Min duration:</span>
             <span class="value">
-                <FeatureDuration duration={stats.versionStats.minDurationMs}></FeatureDuration>
+                <FeatureDuration duration={stats.versionStats.minDurationMs}   durationClasses={durationClasses}></FeatureDuration>
             </span>
         </div>
     </div>
