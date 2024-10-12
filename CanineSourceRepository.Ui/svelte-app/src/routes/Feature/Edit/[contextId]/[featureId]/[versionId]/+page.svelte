@@ -1,13 +1,17 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import Layout from '../../../../../../components/Layout.svelte';
     import { FeatureApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
 	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat } from '../../../../../../BpnEngineClient';
     import Graph from '../../../../../../components/diagram/Graph.svelte';
+    import TaskComponent from '../../../../../../components/TaskComponent.svelte';
+    import { formatDurationShort,formatDurationLong,formatDate  } from '../../../../../../lib/Duration'; // Adjust the path accordingly
+    import { writable } from 'svelte/store';
+    import FeatureDuration from '../../../../../../lib/FeatureDuration.svelte';
     
-
     const featureApi = new FeatureApi();
+	const currentTime = writable(new Date());
 
     // Store the route parameters
     let contextId: string;
@@ -21,6 +25,7 @@
     let transitions : Array<BpnTransition> = [];
     let diagram : BpnFeatureDiagram | undefined;
     let stats : BpnFeatureVersionStat | undefined;
+    let selectedTask : BpnTask |null = null;
   
     
     $: {
@@ -29,9 +34,20 @@
         versionId = $page.params.versionId;
     }
 
-    onMount(() => {
+    let intervalId: number | undefined;
+	onMount(async () => {
         fetchVersionDetails(contextId, featureId, versionId);
-    });
+		//durationClasses = await serverApi.getDurationClassification();
+		//contexts = await contextApi.getAllContexts();
+
+		intervalId = setInterval(() => {
+			currentTime.set(new Date());
+		}, 1000);
+	});
+	onDestroy(() => {
+		clearInterval(intervalId); // Clear interval on component destroy
+	});
+
 
     async function fetchVersionDetails(contextId: string, featureId: string, versionId: string) {
         let version = parseInt(versionId);
@@ -41,9 +57,6 @@
         diagram = feature.diagram;
 
         stats = await featureApi.getFeatureVersionStats({featureId: featureId, version: version })
-
-//featureStats?: Stats;
-//taskStats?: { [key: string]: Stats; };        
     }
 
     // Event handler for task position change
@@ -57,9 +70,17 @@
         }
     }
 
+    function handleTaskSelect(event: any) {
+        const { taskId } = event.detail;
+        const existingTaskIndex = tasks.findIndex(task => task.id === taskId);
+        if (existingTaskIndex >= 0) {
+            selectedTask = { ...tasks[existingTaskIndex] };
+
+        } 
+    }
+
     async function saveTaskPositions() {
         if (updatedTasks.length === 0) {
-            console.log("No changes to save.");
             return;
         }
 
@@ -98,7 +119,7 @@
 
     .value {
         padding-left: 25px;
-        color: #333;
+        /*color: #333;*/
         text-align: left; /* Left align the value */
         flex: 1; /* Allow the value to take the remaining space */
     }
@@ -106,17 +127,13 @@
 
 
 <Layout {isLoggedIn}>
-    TODO::: update serverside /feature/stats/featureid/version to return 2d array for presentation as graph
-    SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
-    SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
-    
+{#if feature}
+    <h1>{feature.name} (v.{feature.revision})</h1>
+{/if}
+
 <div class="feature-header">
     {#if feature}
     <div class="key-value-pairs">
-        <div class="pair">
-            <span class="key">Name:</span>
-            <span class="value">{feature.name}</span>
-        </div>
         <div class="pair">
             <span class="key">Objective:</span>
             <span class="value">{feature.objective}</span>
@@ -126,38 +143,34 @@
             <span class="value">{feature.flowOverview}</span>
         </div>
         <div class="pair">
-            <span class="key">Released By:</span>
-            <span class="value">{feature.releasedBy}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Released Date:</span>
-            <span class="value">{feature.releasedDate}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Revision:</span>
-            <span class="value">{feature.revision}</span>
+            <span class="key">Released:</span>
+            <span class="value">{$currentTime ? formatDate(feature.releasedDate, $currentTime): '-'} by '{feature.releasedBy}'</span>
         </div>
     </div>
     {/if}
-
-
     {#if stats?.versionStats}
     <div class="key-value-pairs">
         <div class="pair">
-            <span class="key">Max duration (ms):</span>
-            <span class="value">{stats.versionStats.maxDurationMs}</span>
+            <span class="key">Last used:</span>
+            <span class="value">{$currentTime ? formatDate(stats.versionStats.lastUsed, $currentTime): '-'}</span>
         </div>
         <div class="pair">
-            <span class="key">Avg duration (ms):</span>
-            <span class="value">{stats.versionStats.avgDurationMs}</span>
+            <span class="key">Max duration:</span>
+            <span class="value">
+                <FeatureDuration duration={stats.versionStats.maxDurationMs}></FeatureDuration>
+            </span>
         </div>
         <div class="pair">
-            <span class="key">Min duration (ms):</span>
-            <span class="value">{stats.versionStats.minDurationMs}</span>
+            <span class="key">Avg duration:</span>
+            <span class="value">
+                <FeatureDuration duration={stats.versionStats.avgDurationMs}></FeatureDuration>
+            </span>
         </div>
         <div class="pair">
-            <span class="key">Total duration (ms):</span>
-            <span class="value">{stats.versionStats.totalDurationMs}</span>
+            <span class="key">Min duration:</span>
+            <span class="value">
+                <FeatureDuration duration={stats.versionStats.minDurationMs}></FeatureDuration>
+            </span>
         </div>
     </div>
     <div class="key-value-pairs">
@@ -177,32 +190,31 @@
             <span class="key">In progresss:</span>
             <span class="value">{stats.versionStats.invocationsInProgressCount}</span>
         </div>
-        <div class="pair">
-            <span class="key">Last used:</span>
-            <span class="value">{stats.versionStats.lastUsed}</span>
-        </div>
     </div>
 {/if}
 </div>
 {#if feature}
-TABS: (show on selected node)
--- Overview (name, businesspurpose, behavioralGoal, service selection/named configuration)
--- Data structures (including input and output definition) ==> TODO: Output from backend
--- Verification (given-input, expect-output)
--- Code viewer
-
-<Graph 
+<div style="padding:25px; width:calc(100%-50px); height:750px">
+    <Graph 
     {tasks} 
     {transitions} 
     {diagram} 
-    width={1440} 
-    height={1000} 
     readonly={true}
     on:taskPositionChange={handleTaskPositionChange}
+    on:taskSelect={handleTaskSelect}
     />
+</div>
+
+    {#if selectedTask}
+        <TaskComponent task={selectedTask} />
+    {/if}
 
 {:else}
     <p>... loading ...</p>
 {/if}
+
+TODO::: update serverside /feature/stats/featureid/version to return 2d array for presentation as graph
+SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
+SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
 
 </Layout>

@@ -129,14 +129,14 @@
         </li>
     </ul>
 
-     <Graph 
+    <div style="width:100%; height:1000px">
+        <Graph 
         {tasks} 
         {transitions} 
         {diagram} 
-        width={1440} 
-        height={1000} 
         on:taskPositionChange={handleTaskPositionChange}
         />
+    </div>
         <button on:click={saveTaskPositions}>Save</button>
 
         <button on:click={releaseFeature}>RELEASE </button>

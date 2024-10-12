@@ -11,6 +11,8 @@
 	} from '../../BpnEngineClient/models'; // Adjust the path accordingly
 	import { slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
+	import {formatDurationShort,formatDurationLong, formatDate	} from '../../lib/Duration' 
+	import FeatureDuration from '../../lib/FeatureDuration.svelte' 
 
 	let contexts: BpnContext[] = [];
 	let durationClasses: DurationClassification[] = [];
@@ -43,7 +45,7 @@
 	}
 
 	// Function to format date strings
-	function formatDate(date: Date | undefined | null, now: Date): string {
+	/*function formatDate(date: Date | undefined | null, now: Date): string {
 		if (!date) return '';
 		const diff = now.getTime() - date.getTime();
 		const seconds = Math.floor(diff / 1000);
@@ -57,7 +59,8 @@
 		if (hours < 24) return `${hours} hours ago`;
 		if (days < 365) return `${days} days ago`;
 		return `${years} years ago`;
-	}
+	}*/
+	/*
 	function getDurationColor(duration: number | undefined): string {
 		if (!duration) return '#000';
 		const classification = durationClasses.find(
@@ -72,7 +75,7 @@
 		);
 		return classification && classification.category ? classification.category : '---';
 	}
-
+*/
 	// Calculate summaries for each context
 	function getFeatureSummaries(context: BpnContext) {
 		let totalInvocations = 0;
@@ -179,7 +182,7 @@
 								style="border: none; background: none; cursor: pointer;"
 							>
 								<i
-									class={`fas ${expandedContextRow === index ? 'fa-chevron-up' : 'fa-chevron-down'}`}
+									class={`fas ${expandedContextRow === index ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}
 								></i>
 							</button>
 							{context.name}
@@ -189,26 +192,14 @@
 							<td class="number-column">{summary.totalErrors}</td>
 							<td class="number-column">{summary.totalCompleted}</td>
 							<td class="number-column">{summary.totalInProgress}</td>
-							<td
-								class="tooltip number-column"
-								data-tooltip={getDurationText(summary.maxDuration)}
-								style="color: {getDurationColor(summary.maxDuration)};"
-							>
-								{summary.maxDuration ? Math.round(summary.maxDuration) + ' ms' : '-'}
+							<td class="number-column">
+								<FeatureDuration duration={summary.maxDuration} />
 							</td>
-							<td
-								class="tooltip number-column"
-								data-tooltip={getDurationText(summary.avgOfAverages)}
-								style="color: {getDurationColor(summary.avgOfAverages)};"
-							>
-								{summary.avgOfAverages ? Math.round(summary.avgOfAverages) + ' ms' : '-'}
+							<td class="number-column">
+								<FeatureDuration duration={summary.avgOfAverages} />
 							</td>
-							<td
-								class="tooltip number-column"
-								data-tooltip={getDurationText(summary.minDuration)}
-								style="color: {getDurationColor(summary.minDuration)};"
-							>
-								{summary.minDuration ? Math.round(summary.minDuration) + ' ms' : '-'}
+							<td class="number-column">
+								<FeatureDuration duration={summary.minDuration} />
 							</td>
 							<td class="tooltip date-column" data-tooltip={summary.lastUsed}>
 								{$currentTime ? formatDate(summary.lastUsed, $currentTime) : '-'}
@@ -253,7 +244,7 @@
 																			style="border: none; background: none; cursor: pointer; user-select: none;"
 																		>
 																			<i
-																				class={`fas ${expandedFeatureRow === featureindex ? 'fa-chevron-up' : 'fa-chevron-down'}`}
+																				class={`fas ${expandedFeatureRow === featureindex ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}
 																			></i>
 																		</button>
 																		{highestVersionFeature.name}
@@ -275,47 +266,14 @@
 																	<td class="number-column"
 																		>{highestVersionFeature.stats.invocationsInProgressCount}</td
 																	>
-																	<td
-																		class="tooltip number-column"
-																		data-tooltip={getDurationText(
-																			highestVersionFeature.stats.maxDurationMs
-																		)}
-																		style="color: {getDurationColor(
-																			highestVersionFeature.stats.maxDurationMs
-																		)};"
-																	>
-																		{highestVersionFeature.stats.maxDurationMs
-																			? Math.round(highestVersionFeature.stats.maxDurationMs) +
-																				' ms'
-																			: '-'}
+																	<td class="number-column">
+																		<FeatureDuration duration={highestVersionFeature.stats.maxDurationMs} />
 																	</td>
-																	<td
-																		class="tooltip number-column"
-																		data-tooltip={getDurationText(
-																			highestVersionFeature.stats.avgDurationMs
-																		)}
-																		style="color: {getDurationColor(
-																			highestVersionFeature.stats.avgDurationMs
-																		)};"
-																	>
-																		{highestVersionFeature.stats.avgDurationMs
-																			? Math.round(highestVersionFeature.stats.avgDurationMs) +
-																				' ms'
-																			: '-'}
+																	<td class="number-column">
+																		<FeatureDuration duration={highestVersionFeature.stats.avgDurationMs} />
 																	</td>
-																	<td
-																		class="tooltip number-column"
-																		data-tooltip={getDurationText(
-																			highestVersionFeature.stats.minDurationMs
-																		)}
-																		style="color: {getDurationColor(
-																			highestVersionFeature.stats.minDurationMs
-																		)};"
-																	>
-																		{highestVersionFeature.stats.minDurationMs
-																			? Math.round(highestVersionFeature.stats.minDurationMs) +
-																				' ms'
-																			: '-'}
+																	<td class="number-column">
+																		<FeatureDuration duration={highestVersionFeature.stats.minDurationMs} />
 																	</td>
 																	<td
 																		class="tooltip date-column"
@@ -371,7 +329,7 @@
 																										)}
 																									style="border: none; background: none; cursor: pointer; user-select: none;"
 																								>
-																									<i class="fas fa-edit"></i>
+																									<i class="fas fa-edit light-icon"></i>
 																								</button>
 																								{version.version == -1
 																									? 'draft'
@@ -389,44 +347,14 @@
 																							<td class="number-column"
 																								>{version.stats.invocationsInProgressCount}</td
 																							>
-																							<td
-																								class="tooltip number-column"
-																								data-tooltip={getDurationText(
-																									version.stats.maxDurationMs
-																								)}
-																								style="color: {getDurationColor(
-																									version.stats.maxDurationMs
-																								)};"
-																							>
-																								{version.stats.maxDurationMs
-																									? Math.round(version.stats.maxDurationMs) + ' ms'
-																									: '-'}
+																							<td class="number-column">
+																								<FeatureDuration duration={version.stats.maxDurationMs} />
 																							</td>
-																							<td
-																								class="tooltip number-column"
-																								data-tooltip={getDurationText(
-																									version.stats.avgDurationMs
-																								)}
-																								style="color: {getDurationColor(
-																									version.stats.avgDurationMs
-																								)};"
-																							>
-																								{version.stats.avgDurationMs
-																									? Math.round(version.stats.avgDurationMs) + ' ms'
-																									: '-'}
+																							<td class="number-column">
+																								<FeatureDuration duration={version.stats.avgDurationMs} />
 																							</td>
-																							<td
-																								class="tooltip number-column"
-																								data-tooltip={getDurationText(
-																									version.stats.minDurationMs
-																								)}
-																								style="color: {getDurationColor(
-																									version.stats.minDurationMs
-																								)};"
-																							>
-																								{version.stats.minDurationMs
-																									? Math.round(version.stats.minDurationMs) + ' ms'
-																									: '-'}
+																							<td class="number-column">
+																								<FeatureDuration duration={version.stats.minDurationMs} />
 																							</td>
 																							<td
 																								class="tooltip date-column"
@@ -460,6 +388,9 @@
 </Layout>
 
 <style>
+	.light-icon {
+		color: #fff; /* or any light color */
+	}
 	table {
 		width: 100%;
 		border-collapse: collapse;
@@ -472,7 +403,7 @@
 	}
 
 	.expandable-row {
-		background-color: #f9f9f9;
+		/*background-color: #f9f9f9;*/
 	}
 
 	.hidden {
@@ -509,7 +440,6 @@
 		position: relative;
 		cursor: pointer;
 	}
-
 	.tooltip:hover::after {
 		content: attr(data-tooltip);
 		position: absolute;
@@ -520,7 +450,9 @@
 		color: white;
 		padding: 5px;
 		border-radius: 3px;
-		white-space: nowrap;
+		width: auto;
+		white-space:  pre; /* Interpret \n as a line break */
+		text-align: center;
 		z-index: 10;
 	}
 

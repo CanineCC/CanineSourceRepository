@@ -41,7 +41,9 @@
       if (readonly) return;
       dragging = false;
     }
-
+  function handleClick() {
+    dispatch('taskSelect', { id });
+  }
 
   // Utility function to break text into lines
   function wrapText(text : string, maxWidth : number, lineHeight = 20) {
@@ -79,7 +81,7 @@
 </script>
   
   <!-- SVG group for task box and text -->
-  <g on:mousedown={startDrag} on:mousemove={drag} on:mouseup={stopDrag} role="group" aria-label="Task: {name}">
+  <g on:mousedown={startDrag} on:mousemove={drag} on:mouseup={stopDrag}  on:click={handleClick} role="group" aria-label="Task: {name}">
     <rect
       x={position.x} y={position.y} width="300" height="150"
       fill="#B0C4DE" stroke="grey" />
