@@ -136,6 +136,7 @@
      .main-content {
          margin-left: 95px; /* Make room for the left sidebar */
          flex: 1;
+         width: calc(100% - 135px);
          padding: 20px;
          background-color: #1e1e1e; /* Dark background for content */
          color: #e0e0e0; /* Light text for content */
@@ -144,7 +145,7 @@
  
      /* Footer: Fixed at the bottom */
      footer {
-         background: #1f1f1f;
+         background: #20353f;
          color: #e0e0e0;
          text-align: center;
          line-height: 25px;

@@ -37,6 +37,7 @@ public abstract record BpnTask(Guid Id, string Name)
   public string BehavioralGoal { get; init; } = string.Empty;
 
   public string? Input { get; init; }
+  public string? Output { get; init; }
   public string ServiceDependency { get; init; } = typeof(NoService).Name;
   public string NamedConfiguration { get; init; } = string.Empty;
   public ServiceInjection GetServiceDependency()

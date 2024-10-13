@@ -3,9 +3,10 @@
     import { onMount, onDestroy } from 'svelte';
     import Layout from '../../../../../../components/Layout.svelte';
     import { FeatureApi, ServerApi  } from '../../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
-	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat, DurationClassification } from '../../../../../../BpnEngineClient';
+	import type { BpnTask, BpnTransition, TaskStats, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat, DurationClassification } from '../../../../../../BpnEngineClient';
     import Graph from '../../../../../../components/diagram/Graph.svelte';
     import TaskComponent from '../../../../../../components/TaskComponent.svelte';
+    import Accordion from '../../../../../../lib/Accordion.svelte';
     import { formatDate  } from '../../../../../../lib/Duration'; // Adjust the path accordingly
     import { writable } from 'svelte/store';
     import FeatureDuration from '../../../../../../lib/FeatureDuration.svelte';
@@ -19,13 +20,13 @@
     let featureId: string;
     let versionId: string;
 	let durationClasses: DurationClassification[] = [];
-    let updatedTasks: Array<{ taskId: string, position: { x: number, y: number } }> = [];
 
     let feature : BpnFeatureVersion | null = null;
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
     let diagram : BpnFeatureDiagram | undefined;
     let stats : BpnFeatureVersionStat | undefined;
+    let taskStats: Array<TaskStats> | undefined = undefined;
     let selectedTask : BpnTask |null = null;
   
     
@@ -39,9 +40,6 @@
 	onMount(async () => {
         durationClasses = await serverApi.getDurationClassification();
         fetchVersionDetails(contextId, featureId, versionId);
-		//durationClasses = await serverApi.getDurationClassification();
-		//contexts = await contextApi.getAllContexts();
-
 		intervalId = setInterval(() => {
 			currentTime.set(new Date());
 		}, 1000);
@@ -58,18 +56,10 @@
         transitions = feature.transitions??[];
         diagram = feature.diagram;
 
-        stats = await featureApi.getFeatureVersionStats({featureId: featureId, version: version })
-    }
-
-    // Event handler for task position change
-    function handleTaskPositionChange(event: CustomEvent) {
-        const { taskId, position } = event.detail;
-        const existingTaskIndex = updatedTasks.findIndex(task => task.taskId === taskId);
-        if (existingTaskIndex >= 0) {
-            updatedTasks[existingTaskIndex].position = position;
-        } else {
-            updatedTasks.push({ taskId, position });
-        }
+        stats = await featureApi.getFeatureVersionStats({featureId: featureId, version: version });
+        console.log(stats);
+        taskStats = stats.taskStats ?? [];
+        console.log(taskStats);
     }
 
     function handleTaskSelect(event: any) {
@@ -81,26 +71,15 @@
         } 
     }
 
-    async function saveTaskPositions() {
-        if (updatedTasks.length === 0) {
-            return;
-        }
-
-        try {
-            updatedTasks = []; // Clear the list once the server responds with HTTP 202
-        } catch (error) {
-            console.error(`Error saving task positions:`, error);
-        }
-    }
-
     let isLoggedIn = false; // Replace this with your actual login state logic   
 </script>
 
 <style>
     .feature-header {
         display: grid;
-    grid-template-columns: auto auto auto;
-    gap: 10px;    }
+        grid-template-columns: auto auto auto;
+        gap: 10px;    
+    }
     .key-value-pairs {
         display: flex;
         flex-direction: column;
@@ -115,6 +94,7 @@
 
     .key {
         font-weight: bold;
+        color:white;
         text-align: right; /* Right align the key */
         width: 150px; /* Fixed width to allow space for the keys */
     }
@@ -125,6 +105,22 @@
         text-align: left; /* Left align the value */
         flex: 1; /* Allow the value to take the remaining space */
     }
+
+    .graph-wrapper {
+        padding: 0px; 
+        width: calc(100vw - 170px); 
+        height:600px; 
+        overflow-x: auto; 
+        overflow-y: auto; 
+        box-sizing: border-box; 
+        position: relative;
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: #888 #3c3c3c; 
+        background-color: #232323;
+    }
+    .task-wrapper {
+        padding-top: 25px;
+    }
 </style>
 
 
@@ -133,90 +129,100 @@
     <h1>{feature.name} (v.{feature.revision})</h1>
 {/if}
 
-<div class="feature-header">
-    {#if feature}
-    <div class="key-value-pairs">
-        <div class="pair">
-            <span class="key">Objective:</span>
-            <span class="value">{feature.objective}</span>
+<Accordion title="Feature Details" isOpen={true}>
+    <div class="feature-header">
+        {#if feature}
+        <div class="key-value-pairs">
+            <div class="pair">
+                <span class="key">Objective:</span>
+                <span class="value">{feature.objective}</span>
+            </div>
+            <div class="pair">
+                <span class="key">Flow Overview:</span>
+                <span class="value">{feature.flowOverview}</span>
+            </div>
+            <div class="pair">
+                <span class="key">Released:</span>
+                <span class="value">{$currentTime ? formatDate(feature.releasedDate, $currentTime): '-'} by '{feature.releasedBy}'</span>
+            </div>
         </div>
-        <div class="pair">
-            <span class="key">Flow Overview:</span>
-            <span class="value">{feature.flowOverview}</span>
+        {/if}
+        {#if stats?.versionStats}
+        <div class="key-value-pairs">
+            <div class="pair">
+                <span class="key">Last used:</span>
+                <span class="value">{$currentTime ? formatDate(stats.versionStats.lastUsed, $currentTime): '-'}</span>
+            </div>
+            <div class="pair">
+                <span class="key">Max duration:</span>
+                <span class="value">
+                    <FeatureDuration duration={stats.versionStats.maxDurationMs}  durationClasses={durationClasses}></FeatureDuration>
+                </span>
+            </div>
+            <div class="pair">
+                <span class="key">Avg duration:</span>
+                <span class="value">
+                    <FeatureDuration duration={stats.versionStats.avgDurationMs}  durationClasses={durationClasses}></FeatureDuration>
+                </span>
+            </div>
+            <div class="pair">
+                <span class="key">Min duration:</span>
+                <span class="value">
+                    <FeatureDuration duration={stats.versionStats.minDurationMs}   durationClasses={durationClasses}></FeatureDuration>
+                </span>
+            </div>
         </div>
-        <div class="pair">
-            <span class="key">Released:</span>
-            <span class="value">{$currentTime ? formatDate(feature.releasedDate, $currentTime): '-'} by '{feature.releasedBy}'</span>
+        <div class="key-value-pairs">
+            <div class="pair">
+                <span class="key">Started:</span>
+                <span class="value">{stats.versionStats.invocationCount}</span>
+            </div>
+            <div class="pair">
+                <span class="key">Completed:</span>
+                <span class="value">{stats.versionStats.invocationCompletedCount}</span>
+            </div>
+            <div class="pair">
+                <span class="key">Failed:</span>
+                <span class="value">{stats.versionStats.invocationErrorCount}</span>
+            </div>
+            <div class="pair">
+                <span class="key">In progresss:</span>
+                <span class="value">{stats.versionStats.invocationsInProgressCount}</span>
+            </div>
         </div>
+        {/if}
     </div>
-    {/if}
-    {#if stats?.versionStats}
-    <div class="key-value-pairs">
-        <div class="pair">
-            <span class="key">Last used:</span>
-            <span class="value">{$currentTime ? formatDate(stats.versionStats.lastUsed, $currentTime): '-'}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Max duration:</span>
-            <span class="value">
-                <FeatureDuration duration={stats.versionStats.maxDurationMs}  durationClasses={durationClasses}></FeatureDuration>
-            </span>
-        </div>
-        <div class="pair">
-            <span class="key">Avg duration:</span>
-            <span class="value">
-                <FeatureDuration duration={stats.versionStats.avgDurationMs}  durationClasses={durationClasses}></FeatureDuration>
-            </span>
-        </div>
-        <div class="pair">
-            <span class="key">Min duration:</span>
-            <span class="value">
-                <FeatureDuration duration={stats.versionStats.minDurationMs}   durationClasses={durationClasses}></FeatureDuration>
-            </span>
-        </div>
+</Accordion>
+<Accordion title="Telemetry" isOpen={false}>
+    TODO::: update serverside /feature/stats/featureid/version to return 2d array for presentation as graph
+    SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
+    SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
+</Accordion>
+
+{#if feature && taskStats}
+<Accordion title="BPN" isOpen={false}>
+    <div class="graph-wrapper">
+            <Graph 
+            {tasks} 
+            {transitions} 
+            {diagram} 
+            readonly={true}
+            taskStats={taskStats}
+            on:taskSelect={handleTaskSelect}
+            />
     </div>
-    <div class="key-value-pairs">
-        <div class="pair">
-            <span class="key">Started:</span>
-            <span class="value">{stats.versionStats.invocationCount}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Completed:</span>
-            <span class="value">{stats.versionStats.invocationCompletedCount}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Failed:</span>
-            <span class="value">{stats.versionStats.invocationErrorCount}</span>
-        </div>
-        <div class="pair">
-            <span class="key">In progresss:</span>
-            <span class="value">{stats.versionStats.invocationsInProgressCount}</span>
-        </div>
-    </div>
-{/if}
-</div>
-{#if feature}
-<div style="padding:25px; width:calc(100%-50px); height:750px">
-    <Graph 
-    {tasks} 
-    {transitions} 
-    {diagram} 
-    readonly={true}
-    on:taskPositionChange={handleTaskPositionChange}
-    on:taskSelect={handleTaskSelect}
-    />
-</div>
 
     {#if selectedTask}
-        <TaskComponent task={selectedTask} />
+        <div class="task-wrapper">
+        <TaskComponent readonly={true} task={selectedTask} />
+        </div>
     {/if}
+</Accordion>
 
 {:else}
     <p>... loading ...</p>
 {/if}
 
-TODO::: update serverside /feature/stats/featureid/version to return 2d array for presentation as graph
-SEE:: https://apexcharts.com/javascript-chart-demos/dashboards/
-SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
+
 
 </Layout>

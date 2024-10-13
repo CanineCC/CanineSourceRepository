@@ -1,12 +1,18 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-  
+    import { onMount } from "svelte";
+    import type {  TaskStats, DurationClassification } from "../../BpnEngineClient/models";
+    import { formatDurationShort, formatDurationLong } from '../../lib/Duration';
+    import { FeatureTaskApi, FeatureApi, ServerApi  } from '../../BpnEngineClient/apis'; // Adjust the path accordingly
+
+    const featureTaskApi = new FeatureTaskApi();
     // Props
     export let id: string;
     export let name: string;
     export let businessPurpose: string;
     export let position: { x?: number, y?: number };
     export let readonly : boolean;
+    export let stats : TaskStats | undefined;
   
     // Variables to track dragging state
     let dragging = false;
@@ -16,6 +22,21 @@
     // Create a dispatcher for emitting events
     const dispatch = createEventDispatcher();
   
+    export let durationClasses: DurationClassification[] = []; // Receive as a prop
+
+// Reactive statement to update color and text when data and duration are available
+    function getColor(duration : number)
+    {
+      const classification = durationClasses.find(
+            (dc) => duration >= dc.fromMs! && duration <= dc.toMs!
+        );
+        return classification?.hexColor || '#eee'; // Default to black if no classification found
+    }
+
+    onMount(async () => {
+      durationClasses = await featureTaskApi.getTaskDurationClassification();
+    });
+
     // Function to handle when dragging starts
     function startDrag(event: MouseEvent) {
       if (readonly) return;
@@ -40,6 +61,7 @@
     function stopDrag() {
       if (readonly) return;
       dragging = false;
+      dispatch('dragstopped', { id }); // Dispatch custom event with the new position
     }
   function handleClick() {
     dispatch('taskSelect', { id });
@@ -81,6 +103,7 @@
 </script>
   
   <!-- SVG group for task box and text -->
+{#if durationClasses.length > 0}
   <g on:mousedown={startDrag} on:mousemove={drag} on:mouseup={stopDrag}  on:click={handleClick} role="group" aria-label="Task: {name}">
     <rect
       x={position.x} y={position.y} width="300" height="150"
@@ -95,8 +118,23 @@
         <tspan  x={(position.x??0) + 10} dy={index === 0 ? 0 : 20}>{line}</tspan>
       {/each}        
     </text>
-  </g>
-  
+    {#if stats}
+      <text style="user-select: none;"  x={(position.x??0)} y={(position.y??0)+150} font-size="12">
+          <tspan style='fill:{getColor(stats.maxDurationMs??0)};' x={(position.x??0)} dy={10}>
+            Max: {stats.maxDurationMs ? formatDurationShort(stats.maxDurationMs) : '-'}
+          </tspan>
+          <tspan style='fill:{getColor(stats.avgDurationMs??0)};' x={(position.x??0)+150- (getTextWidth('Avg: ' + (stats.avgDurationMs ? formatDurationShort(stats.avgDurationMs) : '-'))/2)} dy={0}>
+            Avg: {stats.avgDurationMs ? formatDurationShort(stats.avgDurationMs) : '-'}
+          </tspan>
+          <tspan style='fill:{getColor(stats.minDurationMs??0)};'x={(position.x??0)+300-getTextWidth('Min: ' + (stats.minDurationMs ? formatDurationShort(stats.minDurationMs) : '-'))} dy={0}>
+            Min: {stats.minDurationMs ? formatDurationShort(stats.minDurationMs) : '-'}
+          </tspan>
+        </text>
+    {/if}        
+</g>
+{:else}
+  <p>loading...</p>
+{/if}
   <style>
     rect {
       cursor: move;

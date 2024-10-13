@@ -2,6 +2,8 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import Layout from '../../../../../components/Layout.svelte';
+    import TaskComponent from '../../../../../components/TaskComponent.svelte';
+    import Accordion from '../../../../../lib/Accordion.svelte';
     import { DraftFeatureApi, DraftFeatureDiagramApi  } from '../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
 	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnDraftFeature, BpnPosition, PositionsUpdatedOnDraftFeatureRequest } from '../../../../../BpnEngineClient';
     import Graph from '../../../../../components/diagram/Graph.svelte';
@@ -19,7 +21,8 @@
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
     let diagram : BpnFeatureDiagram | undefined;
-  
+    let selectedTask : BpnTask |null = null;
+
     $: {
         contextId = $page.params.contextId;
         featureId = $page.params.featureId;
@@ -47,6 +50,16 @@
         }
     }
 
+    function handleTaskSelect(event: any) {
+        const { taskId } = event.detail;
+        const existingTaskIndex = tasks.findIndex(task => task.id === taskId);
+        if (existingTaskIndex >= 0) {
+            selectedTask = { ...tasks[existingTaskIndex] };
+
+        } 
+    }
+
+
     async function saveTaskPositions() {
         if (updatedTasks.length === 0) {
             console.log("No changes to save.");
@@ -57,14 +70,20 @@
         updatedTasks = []; // Clear the list once the server responds with HTTP 202
     }
     async function releaseFeature() {
+        await saveTaskPositions(); //save other changes too
         draftFeatureApi.releaseFeature({ request6: { featureId: featureId}})
-
     }
 
     let isLoggedIn = false; // Replace this with your actual login state logic   
 </script>
 
 <style>
+    .feature-header {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 10px;    
+    }
+    
     .key-value-pairs {
         display: flex;
         flex-direction: column;
@@ -79,24 +98,41 @@
 
     .key {
         font-weight: bold;
+        color:white;
         text-align: right; /* Right align the key */
         width: 150px; /* Fixed width to allow space for the keys */
     }
 
     .value {
         padding-left: 25px;
-        color: #333;
         text-align: left; /* Left align the value */
         flex: 1; /* Allow the value to take the remaining space */
+    }
+    .graph-wrapper {
+        padding: 0px; 
+        width: calc(100vw - 170px); 
+        height:600px; 
+        overflow-x: auto; 
+        overflow-y: auto; 
+        box-sizing: border-box; 
+        position: relative;
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: #888 #3c3c3c; 
+        background-color: #232323;
+    }
+    .task-wrapper {
+        padding-top: 25px;
     }
 </style>
 
 <Layout {isLoggedIn}>
+<Accordion title="Feature Details" isOpen={true}>
 {#if feature}
+<div class="feature-header">
     <div class="key-value-pairs">
         <div class="pair">
             <span class="key">Name:</span>
-            <span class="value">{feature.name}</span>
+            <span class="value">{feature.name} (Draft)</span>
         </div>
         <div class="pair">
             <span class="key">Objective:</span>
@@ -106,41 +142,37 @@
             <span class="key">Flow Overview:</span>
             <span class="value">{feature.flowOverview}</span>
         </div>
-        <div class="pair">
-            <span class="key">Revision:</span>
-            <span class="value">DRAFT</span>
-        </div>
     </div>
 
+    <div style="display: flex; gap:25px; flex-flow: row-reverse;">
+        <a href="#" title="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
+        <a href="#" title="Save" class="button" on:click={saveTaskPositions}><i class="fas fa-save"></i></a>
+    </div>
+   <!-- (TODO: including review/approval? approval flow?)-->
+</div>
+{/if}
+</Accordion>
 
-    TABS: (show on selected node)
-    <ul>
-        <li>
-            -- Overview (name, businesspurpose, behavioralGoal, service selection/named configuration)
-        </li>
-        <li>
-            -- Data structures (including input and output definition) ==> TODO: Output from backend
-        </li>
-        <li>
-            -- Verification (given-input, expect-output)
-        </li>
-        <li>
-            -- Code editor
-        </li>
-    </ul>
 
-    <div style="width:100%; height:1000px">
+{#if feature}
+<Accordion title="BPN" isOpen={true}>
+    <div class="graph-wrapper">
         <Graph 
         {tasks} 
         {transitions} 
         {diagram} 
         on:taskPositionChange={handleTaskPositionChange}
+        on:taskSelect={handleTaskSelect}
         />
     </div>
-        <button on:click={saveTaskPositions}>Save</button>
 
-        <button on:click={releaseFeature}>RELEASE </button>
-        (TODO: including review/approval? approval flow?)
+    {#if selectedTask}
+        <div class="task-wrapper">
+        <TaskComponent readonly={false} task={selectedTask} />
+        </div>
+    {/if}
+    </Accordion>
+
 {:else}
     <p>... loading ...</p>
 {/if}

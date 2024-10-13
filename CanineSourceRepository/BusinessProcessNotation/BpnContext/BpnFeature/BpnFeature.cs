@@ -4,7 +4,6 @@ using EngineEvents;
 using Marten.Events.Projections;
 using Microsoft.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
-using System.Threading.Tasks;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 public enum Environment { Development, Testing, Staging, Production };
@@ -217,7 +216,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
       {
         Id = bpnFeature.Id,
         FeatureStats = bpnFeature.FeatureStats,
-        TaskStats = bpnFeature.TaskStats.FirstOrDefault(p => p.Key.EndsWith("_"+version)).Value,
+        TaskStats = bpnFeature.TaskStats.Where(p => p.Key.EndsWith("_"+version)).Select(p=> p.Value).ToList(),
         VersionStats = bpnFeature.VersionStats.FirstOrDefault(p => p.Key.EndsWith("_" + version)).Value
       };
       
@@ -290,7 +289,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
     {
       var key = VersionTaskId(@event.Data, @event.Data.TaskId);
       if (!view.TaskStats.ContainsKey(key))
-        view.TaskStats.Add(key, new Stats());
+        view.TaskStats.Add(key, new TaskStats(@event.Data.TaskId));
 
       view.TaskStats[key].InvocationCount++;
       view.TaskStats[key].LastUsed = @event.Timestamp;
@@ -342,7 +341,7 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
     //public long Revision { get; set; } = 0;
     public Stats FeatureStats { get; set; } = new();
     public Dictionary<string, Stats> VersionStats { get; set; } = [];
-    public Dictionary<string, Stats> TaskStats { get; set; } = [];
+    public Dictionary<string, TaskStats> TaskStats { get; set; } = [];
   }
   public class BpnFeatureVersionStat
   {
@@ -350,10 +349,23 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
     //public long Revision { get; set; } = 0;
     public Stats FeatureStats { get; set; } = new();
     public Stats VersionStats { get; set; } = new();
-    public Stats TaskStats { get; set; } = new();
+    public List<TaskStats> TaskStats { get; set; } = new();
   }
   public class Stats(long InvocationCount = 0, long InvocationErrorCount = 0, long InvocationCompletedCount = 0, long InvocationsInProgressCount = 0, decimal TotalDurationMs = 0, double MaxDurationMs = 0, double AvgDurationMs = 0, double MinDurationMs = 0, DateTimeOffset? LastUsed = null)
   {
+    public long InvocationCount { get; set; } = InvocationCount;
+    public long InvocationErrorCount { get; set; } = InvocationErrorCount;
+    public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
+    public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
+    public decimal TotalDurationMs { get; set; } = TotalDurationMs;
+    public double MaxDurationMs { get; set; } = MaxDurationMs;
+    public double AvgDurationMs { get; set; } = AvgDurationMs;
+    public double MinDurationMs { get; set; } = MinDurationMs;
+    public DateTimeOffset? LastUsed { get; set; } = LastUsed;
+  }
+  public class TaskStats(Guid Task, long InvocationCount = 0, long InvocationErrorCount = 0, long InvocationCompletedCount = 0, long InvocationsInProgressCount = 0, decimal TotalDurationMs = 0, double MaxDurationMs = 0, double AvgDurationMs = 0, double MinDurationMs = 0, DateTimeOffset? LastUsed = null)
+  {
+    public Guid Task { get; set; } = Task;
     public long InvocationCount { get; set; } = InvocationCount;
     public long InvocationErrorCount { get; set; } = InvocationErrorCount;
     public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;

@@ -2,19 +2,25 @@
     import Task from "./Task.svelte";
     import { createEventDispatcher } from "svelte";
     import { onMount } from "svelte";
-    import type { BpnTask, BpnTransition, BpnFeatureDiagram, Position } from "../../BpnEngineClient/models";
+    import type { BpnTask, BpnTransition, BpnFeatureDiagram, Position, TaskStats } from "../../BpnEngineClient/models";
   
     export let tasks: Array<BpnTask> = [];
     export let transitions: Array<BpnTransition> = [];
     export let diagram: BpnFeatureDiagram | undefined;
- //   export let width: number = 800;
- //   export let height: number = 600;
     export let readonly: boolean = false;
-  
-    let paths: Array<{ d: string; stroke: string; key: string }> = []; // Include a unique key for each path
-    const dispatch = createEventDispatcher(); // Create event dispatcher
 
-    // Function to handle drag and drop
+    export let taskStats: Array<TaskStats> = [];
+
+    let width: number = 800;
+    let height: number = 600;
+    let paths: Array<{ d: string; stroke: string; key: string }> = []; // Include a unique key for each path
+
+    const dispatch = createEventDispatcher(); // Create event dispatcher
+    async function handleTaskStopDrag(event :any)
+    {
+      if (readonly) return;
+      calcSize();
+    }
     async function handleTaskDrag(event: any) {
       if (readonly) return;
       const { id, position } = event.detail;
@@ -24,11 +30,12 @@
         await preparePaths(); // Recalculate paths after moving a task
 
         dispatch('taskPositionChange', { taskId: id, position });
-      }
+      } else {
+        calcSize();
+      } 
     }
   
     function handleTaskSelect(event: any) {
-      console.log("handleTaskSelect");
       const { id } = event.detail;
       dispatch('taskSelect', { taskId: id }); // Dispatch a new custom event
     }
@@ -49,6 +56,13 @@
       const task = diagram?.bpnPositions?.find(t => t.id === taskId);
       return task && task.position ? task.position : { x: 0, y: 0 };
     }
+    function getTaskStats(taskId: string) : TaskStats | undefined {
+      console.log("look for: " + taskId);
+      console.log(taskStats);
+      const task = taskStats?.find(t => t.task === taskId);
+      return task;
+    }
+
   
     // Helper function to create SVG path data from waypoints
     function createPathData(waypoints: Array<{ x?: number; y?: number }>, from: { x?: number; y?: number }, to: { x?: number; y?: number }) {
@@ -114,33 +128,72 @@
 
     // Prepare paths for SVG rendering
     async function preparePaths() {
-    paths = []; // Reset paths
-    for (const transition of diagram?.bpnConnectionWaypoints ?? []) {
-        if (transition.fromBPN && transition.toBPN) {
-        const fromPosition = getTaskPosition(transition.fromBPN);
-        const toPosition = getTaskPosition(transition.toBPN);
+      paths = []; // Reset paths
+      for (const transition of diagram?.bpnConnectionWaypoints ?? []) {
+          if (transition.fromBPN && transition.toBPN) {
+          const fromPosition = getTaskPosition(transition.fromBPN);
+          const toPosition = getTaskPosition(transition.toBPN);
 
-        // Calculate the intersection points
-        const { fromEdge, toEdge } = calculateIntersection(fromPosition, toPosition);
+          // Calculate the intersection points
+          const { fromEdge, toEdge } = calculateIntersection(fromPosition, toPosition);
 
-        const pathData = createPathData(transition.waypoints ?? [], fromEdge, toEdge);
+          const pathData = createPathData(transition.waypoints ?? [], fromEdge, toEdge);
 
-        // Create a unique key based on fromBPN and toBPN
-        const uniqueKey = `${transition.fromBPN}-${transition.toBPN}`;
+          // Create a unique key based on fromBPN and toBPN
+          const uniqueKey = `${transition.fromBPN}-${transition.toBPN}`;
 
-        paths.push({ d: pathData, stroke: "grey", key: uniqueKey });
-        }
+          paths.push({ d: pathData, stroke: "grey", key: uniqueKey });
+          }
+      }
     }
+    function calcSize()
+    {
+      var arr = diagram?.bpnPositions ?? [{ id:"", position:{x:0, y:0}}];
+      const maxXObj = arr.reduce((max, current) => {
+          const currentX = current.position?.x;
+          const maxX = max.position?.x;
+
+          // Only compare if both x values are defined, otherwise skip
+          if (currentX === undefined) {
+            return max; // Skip current if x is undefined
+          }
+
+          if (maxX === undefined || currentX > maxX) {
+            return current; // Update max if current has a larger or first defined x
+          }
+
+          return max; // Otherwise, keep the current max
+        }, arr[0]);
+        const maxYObj = arr.reduce((max, current) => {
+          const currentY = current.position?.y;
+          const maxY = max.position?.y;
+
+          // Only compare if both x values are defined, otherwise skip
+          if (currentY === undefined) {
+            return max; // Skip current if x is undefined
+          }
+
+          if (maxY === undefined || currentY > maxY) {
+            return current; // Update max if current has a larger or first defined x
+          }
+
+          return max; // Otherwise, keep the current max
+        }, arr[0]);
+
+
+      width = Math.max(1000, (maxXObj.position?.x ?? 5000) + 325);
+      height = Math.max(500, (maxYObj.position?.y ?? 5000) + 175);
     }
   
     // Run preparePaths when the component mounts
     onMount(async () => {
       await preparePaths();
+      calcSize();
     });
   </script>
   
-  <div style="width:100%; height:100%; position:relative">
-    <svg style="width:100%; height:100%" xmlns="http://www.w3.org/2000/svg">
+<div style="position:relative">
+    <svg style="width:{width}px; height:{height}px" xmlns="http://www.w3.org/2000/svg">
       <!-- Define the arrow marker -->
       <defs>
         <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
@@ -159,39 +212,27 @@
           businessPurpose={task.businessPurpose ?? ""}
           position={getTaskPosition(task.id ?? "")}
           readonly={readonly}
+          stats={getTaskStats(task.id ?? "")}
           on:dragmove={handleTaskDrag}
+          on:dragstopped={handleTaskStopDrag}
           on:taskSelect={handleTaskSelect}
         />
       {/each}
     </svg>
     
-    <a href="#" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
+    <a href="#" title="Download svg" class="button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
 </div>
   
   <style>
     svg {
-      border: 1px  solid #2c2c2c;
-    }
-    a {
-      display: flex;
-      align-items: center;
-      justify-content: center;      
-      text-align: center;
-      border-radius: 25%;
-      position: absolute;
-      font-size: 24px;
-      top:10px;
-      right:10px;
-      width:50px;
-      height: 50px;
-      color: #e0e0e0;
-      background-color: #3c3c3c;
-      transition: background-color 0.3s, color 0.3s;
+    /*  border: 1px  solid #2c2c2c;*/
     }
 
-     a:hover {
-         background-color: #575757; /* Hover effect */
-         color: #fff;
-     }    
+    .button {
+      position: absolute;
+      top:10px;
+      right:10px;
+    }
+  
   </style>
   
