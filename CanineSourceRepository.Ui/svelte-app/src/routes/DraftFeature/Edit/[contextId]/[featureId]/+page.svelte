@@ -55,6 +55,15 @@
     async function releaseFeature() {
         await draftFeatureApi.releaseFeature({ releaseFeatureBody: { featureId: featureId}})
     }
+    async function saveFeaturePurpose() {
+        if (!feature) return;
+        await draftFeatureApi.updateDraftFeaturePurpose({ updateDraftFeaturePurposeBody : {
+            featureId: featureId,
+            name: feature.name,
+            objective: feature.objective,
+            flowOverview: feature.flowOverview
+         }});
+    }
 
 
     async function addTask() {
@@ -73,6 +82,9 @@
     }
 
     let isLoggedIn = false; // Replace this with your actual login state logic   
+
+
+
 </script>
 
 <style>
@@ -83,14 +95,20 @@
     }
     
     .key-value-pairs {
-        display: flex;
+
+        /*display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 10px;*/
+      flex: 1; /* Take the remaining space */
+      padding: 20px; /* Padding inside content area */
+      overflow-y: auto; /* Vertical scroll for content if needed */
+      gap:25px;
+      display: grid;
     }
 
     .pair {
-        display: flex;
-        justify-content: space-between;
+     /*   display: flex;
+        justify-content: space-between;*/
         /*max-width: 500px; Adjust based on your layout */
     }
 
@@ -132,17 +150,19 @@
         <div class="feature-header">
             <div class="key-value-pairs">
                 <div class="pair">
-                    <span class="key">Name:</span>
-                    <span class="value">{feature.name} (Draft)</span>
+                    <label for="feature-name">Name:</label>
+                    <input id="feature-name" type="text" bind:value={feature.name} placeholder="Feature Name">
                 </div>
                 <div class="pair">
-                    <span class="key">Objective:</span>
-                    <span class="value">{feature.objective}</span>
+                    <label for="business-purpose">Objective:</label>
+                    <textarea id="business-purpose" rows="5" bind:value={feature.objective} placeholder="Objective"></textarea>
                 </div>
                 <div class="pair">
-                    <span class="key">Flow Overview:</span>
-                    <span class="value">{feature.flowOverview}</span>
+                    <label for="flow-overview">Flow Overview:</label>
+                    <textarea id="flow-overview" rows="5" bind:value={feature.flowOverview} placeholder="Flow overview description"></textarea>
                 </div>
+
+                <a href="#top" title="Save feature purpose" class="button" on:click={saveFeaturePurpose}><i class="fas fa-save "></i></a>
             </div>
 
             <div style="display: flex; gap:25px; flex-flow: row-reverse;">
