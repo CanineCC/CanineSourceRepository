@@ -5,17 +5,17 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class UpdateDraftFeaturePurposeFeature : IFeature
 {
   public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-  public record Request(Guid FeatureId, string Name, string Objective, string FlowOverview);
+  public record UpdateDraftFeaturePurposeBody(Guid FeatureId, string Name, string Objective, string FlowOverview);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPatch($"BpnEngine/v1/DraftFeature/UpdatePurpose", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPatch($"BpnEngine/v1/DraftFeature/UpdatePurpose", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateDraftFeaturePurposeBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/UpdatePurpose", request.FeatureId, request.Name, request.Objective, request.FlowOverview, ct);
       return Results.Ok(id);
     }).WithName("UpdateDraftFeaturePurpose")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(UpdateDraftFeaturePurposeBody), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)

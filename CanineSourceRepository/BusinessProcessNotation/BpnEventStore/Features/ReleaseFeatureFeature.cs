@@ -6,11 +6,11 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class ReleaseFeatureFeature : IFeature
 {
   public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram, long Version);
-  public record Request(Guid FeatureId);
+  public record ReleaseFeatureBody(Guid FeatureId);
   public static void RegisterBpnEventStore(WebApplication app)
   {
     string user = "update to user from bearer";
-    app.MapPost($"BpnEngine/v1/DraftFeature/Release", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/DraftFeature/Release", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] ReleaseFeatureBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Release", request.FeatureId, user, ct);
 
@@ -18,7 +18,7 @@ public class ReleaseFeatureFeature : IFeature
     }).WithName("ReleaseFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature", "Feature")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(ReleaseFeatureBody), false, "application/json");
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {

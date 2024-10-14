@@ -6,17 +6,17 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class WaypointUpdatedOnDraftFeatureFeature : IFeature
 {
   public record DraftFeatureDiagramWaypointUpdated(ConnectionWaypoints Waypoint);
-  public record Request(Guid FeatureId, Guid FromTaskId, Guid ToTaskId, Position[] Positions);
+  public record WaypointUpdatedOnDraftFeatureBody(Guid FeatureId, Guid FromTaskId, Guid ToTaskId, Position[] Positions);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/WaypointUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/WaypointUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] WaypointUpdatedOnDraftFeatureBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Diagram/WaypointUpdated", request.FeatureId, request.FromTaskId, request.ToTaskId, request.Positions, ct);
       return Results.Ok(id);
     }).WithName("WaypointUpdatedOnDraftFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature.Diagram")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(WaypointUpdatedOnDraftFeatureBody), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)

@@ -213,7 +213,7 @@
 
     {#if selectedTask}
         <div class="task-wrapper">
-        <TaskComponent readonly={true} task={selectedTask} />
+        <TaskComponent readonly={true} task={selectedTask} featureId={featureId} />
         </div>
     {/if}
 </Accordion>

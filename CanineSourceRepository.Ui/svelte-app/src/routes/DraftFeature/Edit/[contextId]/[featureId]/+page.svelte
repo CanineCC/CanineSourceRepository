@@ -5,7 +5,7 @@
     import TaskComponent from '../../../../../components/TaskComponent.svelte';
     import Accordion from '../../../../../lib/Accordion.svelte';
     import { DraftFeatureApi, DraftFeatureDiagramApi  } from '../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
-	import type { BpnTask, BpnTransition, BpnFeatureDiagram, BpnDraftFeature, BpnPosition, PositionsUpdatedOnDraftFeatureRequest } from '../../../../../BpnEngineClient';
+	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature, type BpnPosition, type PositionsUpdatedOnDraftFeatureRequest, UpdateDraftFeaturePurposeBodyFromJSON } from '../../../../../BpnEngineClient';
     import Graph from '../../../../../components/diagram/Graph.svelte';
     
 
@@ -14,8 +14,6 @@
 
     let contextId: string;
     let featureId: string;
-
-    let updatedTasks: Array<{ featureId: string, taskId: string, position: { x: number, y: number } }> = [];
 
     let feature : BpnDraftFeature | null = null;
     let tasks : Array<BpnTask> = [];
@@ -40,38 +38,38 @@
     }
 
     // Event handler for task position change
-    function handleTaskPositionChange(event: CustomEvent) {
+    async function handleTaskPositionChange(event: CustomEvent) {
         const { taskId, position } = event.detail;
-        const existingTaskIndex = updatedTasks.findIndex(task => task.taskId === taskId);
-        if (existingTaskIndex >= 0) {
-            updatedTasks[existingTaskIndex].position = position;
-        } else {
-            updatedTasks.push({ featureId, taskId, position });
-        }
+        await draftFeatureDiagramApi.positionUpdatedOnDraftFeature({ positionUpdatedOnDraftFeatureBody: { featureId, taskId, position }});
     }
-
     function handleTaskSelect(event: any) {
         const { taskId } = event.detail;
         const existingTaskIndex = tasks.findIndex(task => task.id === taskId);
         if (existingTaskIndex >= 0) {
             selectedTask = { ...tasks[existingTaskIndex] };
-
         } 
     }
-
-
-    async function saveTaskPositions() {
-        if (updatedTasks.length === 0) {
-            console.log("No changes to save.");
-            return;
-        }
-        const request : PositionsUpdatedOnDraftFeatureRequest = { request5 : updatedTasks};
-        await draftFeatureDiagramApi.positionsUpdatedOnDraftFeature( request );
-        updatedTasks = []; // Clear the list once the server responds with HTTP 202
+    async function reset() {
+        await draftFeatureApi.resetDraftFeature({ resetDraftFeatureBody:{ featureId }});
     }
     async function releaseFeature() {
-        await saveTaskPositions(); //save other changes too
-        draftFeatureApi.releaseFeature({ request6: { featureId: featureId}})
+        await draftFeatureApi.releaseFeature({ releaseFeatureBody: { featureId: featureId}})
+    }
+
+
+    async function addTask() {
+        await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: { featureId: featureId, task: {  
+            id: undefined,
+            name: "<task>",
+            businessPurpose: "",
+            behavioralGoal: "",
+            input: null,
+            output: null,
+            serviceDependency: "",
+            namedConfiguration: "",
+            recordTypes: [],
+            validDatatypes: []
+        }} });
     }
 
     let isLoggedIn = false; // Replace this with your actual login state logic   
@@ -123,53 +121,53 @@
     .task-wrapper {
         padding-top: 25px;
     }
+    .bpn-action-bar {
+        padding: 25px 0 0 0;
+    }
 </style>
 
 <Layout {isLoggedIn}>
-<Accordion title="Feature Details" isOpen={true}>
-{#if feature}
-<div class="feature-header">
-    <div class="key-value-pairs">
-        <div class="pair">
-            <span class="key">Name:</span>
-            <span class="value">{feature.name} (Draft)</span>
-        </div>
-        <div class="pair">
-            <span class="key">Objective:</span>
-            <span class="value">{feature.objective}</span>
-        </div>
-        <div class="pair">
-            <span class="key">Flow Overview:</span>
-            <span class="value">{feature.flowOverview}</span>
-        </div>
-    </div>
+    {#if feature}
+    <Accordion title="Feature Details" isOpen={true}>
+        <div class="feature-header">
+            <div class="key-value-pairs">
+                <div class="pair">
+                    <span class="key">Name:</span>
+                    <span class="value">{feature.name} (Draft)</span>
+                </div>
+                <div class="pair">
+                    <span class="key">Objective:</span>
+                    <span class="value">{feature.objective}</span>
+                </div>
+                <div class="pair">
+                    <span class="key">Flow Overview:</span>
+                    <span class="value">{feature.flowOverview}</span>
+                </div>
+            </div>
 
-    <div style="display: flex; gap:25px; flex-flow: row-reverse;">
-        <a href="#top" title="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
-        <a href="#top" title="Save" class="button" on:click={saveTaskPositions}><i class="fas fa-save"></i></a>
-    </div>
-   <!-- (TODO: including review/approval? approval flow?)-->
-</div>
-{/if}
-</Accordion>
-
-
-{#if feature}
-<Accordion title="BPN" isOpen={true}>
-    <div class="graph-wrapper">
-        <Graph 
-        {tasks} 
-        {diagram} 
-        on:taskPositionChange={handleTaskPositionChange}
-        on:taskSelect={handleTaskSelect}
-        />
-    </div>
-
-    {#if selectedTask}
-        <div class="task-wrapper">
-        <TaskComponent readonly={false} task={selectedTask} />
+            <div style="display: flex; gap:25px; flex-flow: row-reverse;">
+                <a href="#top" title="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
+                <a href="#top" title="Restore" class="button" on:click={reset}><i class="fas fa-undo"></i></a>
+                <a href="#top" title="Add code task" class="button" on:click={addTask}><i class="fas fa-code"></i></a>
+             <!--   <a href="#top" title="Add api task" class="button" on:click={addTask}><i class="fas fa-cloud"></i></a>-->
+            </div>
         </div>
-    {/if}
+    </Accordion>
+    <Accordion title="BPN" isOpen={true}>
+        <div class="graph-wrapper">
+            <Graph 
+            {tasks} 
+            {diagram} 
+            on:taskPositionChange={handleTaskPositionChange}
+            on:taskSelect={handleTaskSelect}
+            />
+        </div>
+
+        {#if selectedTask}
+            <div class="task-wrapper">
+                <TaskComponent readonly={false} task={selectedTask} featureId={featureId} />
+            </div>
+        {/if}
     </Accordion>
 
 {:else}

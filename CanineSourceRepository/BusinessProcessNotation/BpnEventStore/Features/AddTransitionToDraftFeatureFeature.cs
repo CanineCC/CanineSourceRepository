@@ -6,17 +6,17 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class AddTransitionToDraftFeatureFeature : IFeature
 {
   public record DraftFeatureTransitionAdded(BpnTransition Transition);
-  public record Request(Guid FeatureId, BpnTransition Transition);
+  public record AddTransitionToDraftFeatureBody(Guid FeatureId, BpnTransition Transition);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPost($"BpnEngine/v1/DraftFeature/AddTransition", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/DraftFeature/AddTransition", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddTransitionToDraftFeatureBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddTransition", request.FeatureId, request.Transition, ct);
       return Results.Ok(id);
     }).WithName("AddTransitionToDraftFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(AddTransitionToDraftFeatureBody), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)

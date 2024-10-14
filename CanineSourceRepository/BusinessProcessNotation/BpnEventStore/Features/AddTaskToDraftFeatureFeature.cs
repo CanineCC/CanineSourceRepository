@@ -6,18 +6,27 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class AddTaskToDraftFeatureFeature : IFeature
 {
   public record DraftFeatureTaskAdded(BpnTask Task);
-  public record Request(Guid FeatureId, BpnTask Task);
+  public record AddCodeTaskToDraftFeatureBody(Guid FeatureId, CodeTask Task);
+  public record AddApiTaskToDraftFeatureBody(Guid FeatureId, ApiInputTask Task);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPost($"BpnEngine/v1/DraftFeature/AddTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/DraftFeature/AddCodeTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddCodeTaskToDraftFeatureBody request, CancellationToken ct) =>
     {
-      var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddTask", request.FeatureId, request.Task, ct);
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddCodeTask", request.FeatureId, request.Task, ct);
       return Results.Ok(id);
-    }).WithName("AddTaskToDraftFeature")
+    }).WithName("AddCodeTaskToDraftFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(AddCodeTaskToDraftFeatureBody), false, "application/json");
 
+    app.MapPost($"BpnEngine/v1/DraftFeature/AddApiTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddApiTaskToDraftFeatureBody request, CancellationToken ct) =>
+    {
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddApiTask", request.FeatureId, request.Task, ct);
+      return Results.Ok(id);
+    }).WithName("AddApiTaskToDraftFeature")
+     .Produces(StatusCodes.Status200OK)
+     .WithTags("DraftFeature")
+     .Accepts(typeof(AddApiTaskToDraftFeatureBody), false, "application/json");
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {

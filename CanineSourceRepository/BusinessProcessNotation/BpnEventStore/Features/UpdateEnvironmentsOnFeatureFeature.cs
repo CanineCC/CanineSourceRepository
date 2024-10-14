@@ -5,17 +5,17 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class UpdateEnvironmentsOnFeatureFeature : IFeature
 {
   public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
-  public record Request(Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
+  public record UpdateEnvironmentsOnFeatureBody(Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPatch($"BpnEngine/v1/Feature/UpdateEnvironment", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPatch($"BpnEngine/v1/Feature/UpdateEnvironment", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateEnvironmentsOnFeatureBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/Feature/UpdateEnvironment", request.FeatureId, request.FeatureVersion, request.Environment, ct);
       return Results.Ok(id);
     }).WithName("UpdateEnvironmentsOnFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("Feature")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(UpdateEnvironmentsOnFeatureBody), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)

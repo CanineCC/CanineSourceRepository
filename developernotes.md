@@ -12,7 +12,9 @@
 - FRONTEND: Feature   :: Telemetry tab graphs showing (aggregate last 5 minutes, last hour, last day, last week, last year)
 -											   Support: Rerun failed executions / debug
 - FRONTEND: Dashboard :: Graphs: Server availability + Context/feature Success rate + Context/feature performance (min, max, avg)
-
+- Include review/approval flow for release draft feature
+- Include logic for release "all features" into new/next api version 
+- FRONTEND: DRAFT Feature :: Add 'Commit' (i.e. snapshot) that can be reverted to
 
 ## LESS BOILERPLATE, SETUP and in general, things to think about
 - Client throttling enabled

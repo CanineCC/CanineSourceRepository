@@ -6,20 +6,20 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class PositionUpdatedOnDraftFeatureFeature : IFeature
 {
   public record DraftFeatureDiagramPositionUpdated(BpnPosition Position);
-  public record Request(Guid FeatureId, Guid TaskId, Position Position);
+  public record PositionUpdatedOnDraftFeatureBody(Guid FeatureId, Guid TaskId, Position Position);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] Request request, CancellationToken ct) =>
+    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] PositionUpdatedOnDraftFeatureBody request, CancellationToken ct) =>
     {
       var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Diagram/PositionUpdated", request.FeatureId, request.TaskId, request.Position, ct);
       return Results.Ok(id);
     }).WithName("PositionUpdatedOnDraftFeature")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature.Diagram")
-     .Accepts(typeof(Request), false, "application/json");
+     .Accepts(typeof(PositionUpdatedOnDraftFeatureBody), false, "application/json");
 
 
-    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionsUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] List<Request> request, CancellationToken ct) =>
+    app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionsUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] List<PositionUpdatedOnDraftFeatureBody> request, CancellationToken ct) =>
     {
       foreach (var req in request)
       {
@@ -29,7 +29,7 @@ public class PositionUpdatedOnDraftFeatureFeature : IFeature
     }).WithName("PositionsUpdatedOnDraftFeature")
      .Produces(StatusCodes.Status202Accepted)
      .WithTags("DraftFeature.Diagram")
-     .Accepts(typeof(List<Request>), false, "application/json");
+     .Accepts(typeof(List<PositionUpdatedOnDraftFeatureBody>), false, "application/json");
 
   }
 

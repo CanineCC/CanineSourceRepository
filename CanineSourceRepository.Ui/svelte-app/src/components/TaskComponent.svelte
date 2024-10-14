@@ -1,8 +1,12 @@
 <script lang="ts">
     import type { BpnTask  } from '../BpnEngineClient'; // Import your types
-  
+    import { FeatureTaskApi  } from '../BpnEngineClient/apis'; // Adjust the path accordingly
+
     export let task: BpnTask; // Accepts a BpnTask as a prop
+    export let featureId: string;
     export let readonly: boolean = false;
+
+    const featureTaskApi = new FeatureTaskApi();
 
     // Helper to initialize recordTypes if it's undefined
     $: task.recordTypes = task.recordTypes || [];
@@ -21,15 +25,35 @@
   
     // Dropdown options for serviceDependency (will come from actual services in future)
     const serviceOptions = ["Database - postgresql", "Message Queue - RabbitMQ"];
-  
     // Placeholder for named configuration (can later be fetched based on serviceDependency)
     const namedConfigOptions = ["customer database", "inventory database"];
   
     let activeTab = 'overview'; // Default active tab
-  
     // Function to set active tab
     function setActiveTab(tab: string) {
       activeTab = tab;
+    }
+
+    async function saveFeaturePurpose() {
+
+        //TODO featureTaskApi.updateTaskPurpose
+        //TODO featureTaskApi.updateServiceDependency
+        //TODO featureTaskApi.AddRecord
+        //TODO featureTaskApi.UpdateRecord
+        //TODO featureTaskApi.DeleteRecord
+        //TODO featureTaskApi.AddAssertion
+        //TODO featureTaskApi.UpdateAssertion
+        //TODO featureTaskApi.DeleteAssertion
+        //TODO featureTaskApi.UpdateCode
+
+        //TODO: Add Assertion-list to task!
+
+       /*await draftFeatureApi.updateDraftFeaturePurpose({ updateDraftFeaturePurposeBody : {
+            featureId: featureId,
+            name: task.name,
+            objective: task.businessPurpose,
+            flowOverview: task.behavioralGoal
+         }});*/
     }
   </script>
   
@@ -37,6 +61,7 @@
   <div class="tab-container">
     <div class="tabs">
       <button class={activeTab === 'overview' ? 'active' : ''} on:click={() => setActiveTab('overview')}>Overview</button>
+      <button class={activeTab === 'service-dependency' ? 'active' : ''} on:click={() => setActiveTab('service-dependency')}>Service dependency</button>
       <button class={activeTab === 'data' ? 'active' : ''} on:click={() => setActiveTab('data')}>Data Structures</button>
       <button class={activeTab === 'verification' ? 'active' : ''} on:click={() => setActiveTab('verification')}>Verification</button>
       <button class={activeTab === 'code' ? 'active' : ''} on:click={() => setActiveTab('code')}>Code Viewer</button>
@@ -56,25 +81,29 @@
           <label for="behavioral-goal">Behavioral Goal:</label>
           <textarea id="behavioral-goal" readonly={readonly} rows="5" bind:value={task.behavioralGoal} placeholder="Behavioral Goal"></textarea>
         </div>
+        <a href="#top" title="Save" class="button" on:click={saveFeaturePurpose}><i class="fas fa-save "></i></a>
+
+      {/if}
+      {#if activeTab === 'service-dependency'}
         <div>
-          <label for="service-dependency">Service Dependency:</label>
-          <select id="service-dependency" disabled={readonly} bind:value={task.serviceDependency}>
+            <label for="service-dependency">Service Dependency:</label>
+            <select id="service-dependency" disabled={readonly} bind:value={task.serviceDependency}>
             <option disabled selected>Select a service</option>
             {#each serviceOptions as service}
-              <option value={service}>{service}</option>
+                <option value={service}>{service}</option>
             {/each}
-          </select>
+            </select>
         </div>
         <div>
-          <label for="named-configuration">Named Configuration:</label>
-          <select id="named-configuration" disabled={readonly} bind:value={task.namedConfiguration}>
+            <label for="named-configuration">Named Configuration:</label>
+            <select id="named-configuration" disabled={readonly} bind:value={task.namedConfiguration}>
             <option disabled selected>Select a configuration</option>
             {#each namedConfigOptions as config}
-              <option value={config}>{config}</option>
+                <option value={config}>{config}</option>
             {/each}
-          </select>
+            </select>
         </div>
-      {/if}
+    {/if}
   
       {#if activeTab === 'data'}
         {#if !readonly}
