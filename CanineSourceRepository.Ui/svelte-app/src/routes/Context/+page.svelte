@@ -370,11 +370,6 @@
 		padding: 8px 12px;
 		border: 1px solid #ddd;
 	}
-
-	.expandable-row {
-		/*background-color: #f9f9f9;*/
-	}
-
 	.hidden {
 		display: none;
 	}

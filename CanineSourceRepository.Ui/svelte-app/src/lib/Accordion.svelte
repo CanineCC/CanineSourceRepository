@@ -36,7 +36,8 @@
   </style>
   
   <div class="accordion">
-    <div class="accordion-header" on:click={toggleAccordion}>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div class="accordion-header" on:click={toggleAccordion} on:keydown={toggleAccordion} role="group">
       <span>{title}</span>
       <span class="arrow" style="transform:rotate({isOpen ? 90 : 0}deg)">▶</span>
     </div>

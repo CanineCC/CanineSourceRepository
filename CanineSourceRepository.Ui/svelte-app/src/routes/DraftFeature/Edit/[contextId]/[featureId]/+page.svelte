@@ -145,8 +145,8 @@
     </div>
 
     <div style="display: flex; gap:25px; flex-flow: row-reverse;">
-        <a href="#" title="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
-        <a href="#" title="Save" class="button" on:click={saveTaskPositions}><i class="fas fa-save"></i></a>
+        <a href="#top" title="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
+        <a href="#top" title="Save" class="button" on:click={saveTaskPositions}><i class="fas fa-save"></i></a>
     </div>
    <!-- (TODO: including review/approval? approval flow?)-->
 </div>
@@ -159,7 +159,6 @@
     <div class="graph-wrapper">
         <Graph 
         {tasks} 
-        {transitions} 
         {diagram} 
         on:taskPositionChange={handleTaskPositionChange}
         on:taskSelect={handleTaskSelect}

@@ -5,7 +5,7 @@
     import type { BpnTask, BpnTransition, BpnFeatureDiagram, Position, TaskStats } from "../../BpnEngineClient/models";
   
     export let tasks: Array<BpnTask> = [];
-    export let transitions: Array<BpnTransition> = [];
+//    export let transitions: Array<BpnTransition> = [];
     export let diagram: BpnFeatureDiagram | undefined;
     export let readonly: boolean = false;
 
@@ -202,7 +202,7 @@
       </defs>
     
       {#each paths as { d, stroke, key }}
-        <path d={d} stroke={stroke} fill="transparent" marker-end="url(#arrow)" key={key} /> <!-- Add marker for arrows -->
+        <path d={d} stroke={stroke} fill="transparent" marker-end="url(#arrow)" /> <!-- Add marker for arrows -->
       {/each}
     
       {#each tasks as task}
@@ -220,14 +220,10 @@
       {/each}
     </svg>
     
-    <a href="#" title="Download svg" class="button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
+    <a href="#top" title="Download svg" class="button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
 </div>
   
   <style>
-    svg {
-    /*  border: 1px  solid #2c2c2c;*/
-    }
-
     .button {
       position: absolute;
       top:10px;

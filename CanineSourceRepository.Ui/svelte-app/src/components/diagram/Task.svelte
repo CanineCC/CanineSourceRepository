@@ -104,7 +104,17 @@
   
   <!-- SVG group for task box and text -->
 {#if durationClasses.length > 0}
-  <g on:mousedown={startDrag} on:mousemove={drag} on:mouseup={stopDrag}  on:click={handleClick} role="group" aria-label="Task: {name}">
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+   <g 
+      on:mousedown={startDrag} 
+      on:mousemove={drag} 
+      on:mouseup={stopDrag}  
+      on:click={handleClick} 
+      on:keypress={handleClick}
+      role="group" 
+      aria-label="Task: {name}"
+    >
     <rect
       x={position.x} y={position.y} width="300" height="150"
       fill="#B0C4DE" stroke="grey" />

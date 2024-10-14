@@ -204,7 +204,6 @@
     <div class="graph-wrapper">
             <Graph 
             {tasks} 
-            {transitions} 
             {diagram} 
             readonly={true}
             taskStats={taskStats}

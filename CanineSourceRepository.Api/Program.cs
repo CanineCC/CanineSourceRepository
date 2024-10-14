@@ -109,6 +109,9 @@ app.UseMiddleware<ThrottlingMiddleware>(TimeSpan.FromMilliseconds(25));
 if (!app.Environment.IsDevelopment())
 {
   app.UseHsts();
+} else
+{
+  app.UseDeveloperExceptionPage();
 }
 app.UseCors("AllowAllOrigins");
 app.UseResponseCaching();
