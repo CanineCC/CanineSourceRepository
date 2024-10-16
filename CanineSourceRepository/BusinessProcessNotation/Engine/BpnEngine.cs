@@ -1,8 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using EngineEvents;
-using Hangfire;
 using Marten.Events.Projections;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
 

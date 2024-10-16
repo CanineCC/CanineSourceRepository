@@ -1,6 +1,5 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
-
 using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
@@ -130,6 +129,41 @@ public class BpnDraftFeatureAggregate
     aggregate.Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Waypoint.FromBPN && p.ToBPN == @event.Waypoint.ToBPN);
     aggregate.Diagram.BpnConnectionWaypoints.Add(@event.Waypoint);
   }
+
+  public void Apply(BpnDraftFeatureAggregate aggregate, TaskPurposeUpdated @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.Name = @event.Name;
+    task.BehavioralGoal = @event.BehavioralGoal;
+    task.BusinessPurpose = @event.BusinessPurpose;
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, RecordAddedToTask @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.RecordTypes.Add(@event.RecordDefinition);
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, RecordUpdatedOnTask @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.RecordTypes.RemoveAll(record => record.Name == @event.RecordDefinition.Name);
+    task.RecordTypes.Add(@event.RecordDefinition);
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, RecordDeletedOnTask @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, CodeUpdatedOnTask @event)
+  {
+    var task = (CodeTask)aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.Code = @event.Code;
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, ServiceDependencyUpdated @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.ServiceDependency = @event.ServiceDependency;
+    task.NamedConfiguration = @event.NamedConfiguration;
+  }
 }
 
 public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureProjection.BpnDraftFeature>
@@ -219,6 +253,42 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     {
       projection.Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Waypoint.FromBPN && p.ToBPN == @event.Waypoint.ToBPN);
       projection.Diagram.BpnConnectionWaypoints.Add(@event.Waypoint);
+    }
+
+
+    public void Apply(BpnDraftFeature projection, TaskPurposeUpdated @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.Name = @event.Name;
+      task.BehavioralGoal = @event.BehavioralGoal;
+      task.BusinessPurpose = @event.BusinessPurpose;
+    }
+    public void Apply(BpnDraftFeature projection, RecordAddedToTask @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.RecordTypes.Add(@event.RecordDefinition);
+    }
+    public void Apply(BpnDraftFeature projection, RecordUpdatedOnTask @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.RecordTypes.RemoveAll(record => record.Name == @event.RecordDefinition.Name);
+      task.RecordTypes.Add(@event.RecordDefinition);
+    }
+    public void Apply(BpnDraftFeature projection, RecordDeletedOnTask @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
+    }
+    public void Apply(BpnDraftFeature projection, CodeUpdatedOnTask @event)
+    {
+      var task = (CodeTask)projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.Code = @event.Code;
+    }
+    public void Apply(BpnDraftFeature projection, ServiceDependencyUpdated @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.ServiceDependency = @event.ServiceDependency;
+      task.NamedConfiguration = @event.NamedConfiguration;
     }
   }
 }

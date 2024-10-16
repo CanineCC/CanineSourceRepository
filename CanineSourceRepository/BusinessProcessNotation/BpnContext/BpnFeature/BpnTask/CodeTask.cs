@@ -29,11 +29,10 @@ public enum AssertOperation
 }
 public record AssertDefinition(string Field, AssertOperation Operation, object? ExpectedValue = null);
 
-public record CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
+public class CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
 {
-  public string? Output { get; init; }
-  public string? Code { get; init; }
-  public ImmutableDictionary<string, TestCase> TestCases { get; private set; } = ImmutableDictionary<string, TestCase>.Empty;
+  public string? Code { get; set; }
+  public ImmutableDictionary<string, TestCase> TestCases { get; set; } = ImmutableDictionary<string, TestCase>.Empty;
 
   public TestCase[] AddTestCase(TestCase record)
   {

@@ -1,5 +1,4 @@
-﻿
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class AddDraftFeatureFeature : IFeature
 {

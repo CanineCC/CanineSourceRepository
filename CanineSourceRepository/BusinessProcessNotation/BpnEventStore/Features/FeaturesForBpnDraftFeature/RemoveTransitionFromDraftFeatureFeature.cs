@@ -2,7 +2,7 @@
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using RTools_NTS.Util;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class RemoveTransitionFromDraftFeatureFeature : IFeature
 {

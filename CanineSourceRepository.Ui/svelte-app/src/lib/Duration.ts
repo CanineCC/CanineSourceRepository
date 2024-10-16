@@ -68,19 +68,3 @@ export function formatDurationLong(ms: number): string {
 
     return result.join(" and ") || "0 milliseconds";
 }
-
-/*
-// Example usage:
-console.log(formatDurationLong(86401.5)); // "1 minute and 26 seconds"
-
-
-// Example usage:
-console.log(formatDurationShort(0.1)); // "100 μs"
-console.log(formatDurationShort(1.0)); // "1 ms"
-console.log(formatDurationShort(1000)); // "1 s"
-console.log(formatDurationShort(1500)); // "~2 s"
-console.log(formatDurationShort(1.5)); // "~2 ms"
-
-console.log(formatDurationLong(1.5)); // "1 millisecond and 500 microseconds"
-console.log(formatDurationLong(86401.5)); // "1 day and 1 second"
-*/

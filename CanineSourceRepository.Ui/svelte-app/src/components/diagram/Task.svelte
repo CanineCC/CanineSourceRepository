@@ -58,10 +58,15 @@
     }
   
     // Function to handle when dragging stops
-    function stopDrag() {
+    function stopDrag(event: MouseEvent) {
       if (readonly) return;
       dragging = false;
-      dispatch('dragstopped', { id }); // Dispatch custom event with the new position
+      position = {
+          x: event.clientX - offsetX,
+          y: event.clientY - offsetY
+        };
+
+      dispatch('dragstopped', { id, position }); // Dispatch custom event with the new position
     }
   function handleClick() {
     dispatch('taskSelect', { id });

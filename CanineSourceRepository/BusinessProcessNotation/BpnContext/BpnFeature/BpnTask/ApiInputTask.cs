@@ -2,9 +2,9 @@
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
-public record ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
+public class ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
-  public string[] AccessScopes { get; init; } = AccessScopes;
+  public string[] AccessScopes { get; set; } = AccessScopes;
   public override string ToCode(bool includeNamespace = true)
   {
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));

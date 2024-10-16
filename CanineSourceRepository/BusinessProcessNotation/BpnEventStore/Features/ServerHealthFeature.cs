@@ -4,17 +4,12 @@
 //TODO: DeprecateOnEnvironment (i.e. return "moved" if called) 
 public class ServerHealthFeature : IFeature
 {
-
   private readonly static DateTimeOffset ServerStartTime = DateTimeOffset.UtcNow;
- // private static SemaphoreSlim semaphore = new SemaphoreSlim(1,1);
   public record ServerHealth(bool IsHealthy, string Message, DateTimeOffset ServerStartedTime, int ServerMemoryUsageInMegaBytes);
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/Health", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
     {
-  //    await semaphore.WaitAsync(ct);
-      try
-      {
         Process currentProcess = Process.GetCurrentProcess();
         long memoryUsage = currentProcess.WorkingSet64;
         int memoryUsageMB = (int)(memoryUsage / (1024.0 * 1024.0));
@@ -42,12 +37,6 @@ public class ServerHealthFeature : IFeature
           ServerStartedTime: ServerStartTime,
           ServerMemoryUsageInMegaBytes: memoryUsageMB
         ));
-      }
-      finally
-      {
-    //    semaphore.Release();  // Release the semaphore slot
-      }
-
     }).WithName("ServerHealth")
      .Produces(StatusCodes.Status200OK, typeof(ServerHealth))
      .Produces(StatusCodes.Status503ServiceUnavailable)

@@ -1,7 +1,7 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class AddTaskToDraftFeatureFeature : IFeature
 {

@@ -1,6 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class UpdateEnvironmentsOnFeatureFeature : IFeature
 {
@@ -34,7 +34,7 @@ public class UpdateEnvironmentsOnFeatureFeature : IFeature
     await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new EnvironmentsUpdated(
       ContextId: draftAggregate.ContextId,
       FeatureId: featureId,
-      FeatureVersion: featureVersion, 
+      FeatureVersion: featureVersion,
       Environment: environment));
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }

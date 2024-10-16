@@ -13,7 +13,9 @@ public class GivenAValidHelloWorldCodeBlock
     block = new CodeTask("Generate hello world");
     block = (block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Greeting", "string"))) as CodeTask)!;
     block = (block.AddRecordType(new BpnTask.RecordDefinition("Input", new BpnTask.DataDefinition("Greet", "string"), new BpnTask.DataDefinition("Name", "string"))) as CodeTask)!;
-    block = block with { Input = "Input", Output = "Output", Code = "return new Output(input.Greet + ' ' + input.Name);" };
+    block.Input = "Input";
+    block.Output = "Output";
+    block.Code = "return new Output(input.Greet + ' ' + input.Name);";
 
 
     block.AddTestCase(new TestCase(

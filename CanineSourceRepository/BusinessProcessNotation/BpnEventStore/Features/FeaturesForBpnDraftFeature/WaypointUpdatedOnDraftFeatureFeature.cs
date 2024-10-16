@@ -1,7 +1,7 @@
 ﻿using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class WaypointUpdatedOnDraftFeatureFeature : IFeature
 {

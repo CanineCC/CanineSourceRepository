@@ -11,12 +11,9 @@ public class GivenACodeBlockThatAccessLocalResources
     block = new CodeTask("Use FileIO");
     block.AddRecordType(new BpnTask.RecordDefinition("Output", new BpnTask.DataDefinition("Text", "string")));
     block.AddRecordType(new BpnTask.RecordDefinition("Input"));
-    block = block with
-    {
-      Input = "Input",
-      Output = "Output",
-      Code = "return new Output(System.IO.File.ReadAllText(\"test.txt\"));"
-    };
+    block.Input = "Input";
+    block.Output = "Output";
+    block.Code = "return new Output(System.IO.File.ReadAllText(\"test.txt\"));";
   }
 
 

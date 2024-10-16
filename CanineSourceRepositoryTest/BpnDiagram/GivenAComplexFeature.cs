@@ -12,10 +12,7 @@ public class GivenAComplexFeature
     entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
       new BpnTask.DataDefinition("Name", "string")
       )) as ApiInputTask)!;
-    entryBlock = entryBlock with
-    {
-      Input = "Api",
-    };
+    entryBlock.Input = "Api";
 
     var createUserBlock = new CodeTask("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
@@ -29,16 +26,13 @@ public class GivenAComplexFeature
       new BpnTask.DataDefinition("Name", "string"),
       new BpnTask.DataDefinition("Accessscope", "string")
       )) as CodeTask)!;
-    createUserBlock = createUserBlock with
-    {
-      Input = "Input",
-      Output = "Output",
-      Code = @$"
+    createUserBlock.Input = "Input";
+    createUserBlock.Output = "Output";
+    createUserBlock.Code = @$"
     var userId = Guid.CreateVersion7();
     //TODO: Add the user to the user database
     return new Output(userId, input.Name, input.Accessscope);
-    "
-    };
+    ";
 
     var logUserBlock = new CodeTask("Log user");
     logUserBlock = (logUserBlock.AddRecordType(
@@ -46,13 +40,10 @@ public class GivenAComplexFeature
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string")
       )) as CodeTask)!;
-    logUserBlock = logUserBlock with
-    {
-      Input = "Input",
-      Code = @$"
+    logUserBlock.Input = "Input";
+    logUserBlock.Code = @$"
     Console.WriteLine(input.Id.ToString() + input.Name);
-    "
-    };
+    ";
 
 
     var transition = new BpnTransition(

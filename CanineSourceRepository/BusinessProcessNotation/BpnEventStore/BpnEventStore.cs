@@ -1,10 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using Marten.Events.Projections;
 using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureStatsProjection;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -19,10 +15,7 @@ public static class BpnEventStore
     entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
       new BpnTask.DataDefinition("Name", "string")
       )) as ApiInputTask)!;
-    entryBlock = entryBlock with
-    {
-      Input = "Api",
-    };
+    entryBlock.Input = "Api";
 
     var createUserBlock = new CodeTask("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
@@ -34,18 +27,15 @@ public static class BpnEventStore
       new BpnTask.RecordDefinition("Input",
       new BpnTask.DataDefinition("Name", "string")
       )) as CodeTask)!;
-    createUserBlock = createUserBlock with
-    {
-      BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",
-      BehavioralGoal = "Ensure the email is verified and allow access to content.",
-      Input = "Input",
-      Output = "Output",
-      Code = @$"
+    createUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
+    createUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
+    createUserBlock.Input = "Input";
+    createUserBlock.Output = "Output";
+    createUserBlock.Code = @$"
     var userId = Guid.CreateVersion7();
     //Add the user to the user database
     return new Output(userId, input.Name/*, input.AccessScope*/);
-    "
-    };
+    ";
 
     var logUserBlock = new CodeTask("Log user");
     logUserBlock = (logUserBlock.AddRecordType(
@@ -53,15 +43,12 @@ public static class BpnEventStore
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string")
       )) as CodeTask)!;
-    logUserBlock = logUserBlock with
-    {
-      BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.",
-      BehavioralGoal = "Ensure the email is verified and allow access to content.",
-      Input = "Input",
-      Code = @$"
+    logUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
+    logUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
+    logUserBlock.Input = "Input";
+    logUserBlock.Code = @$"
     Console.WriteLine(input.Id.ToString() + input.Name);
-    "
-    };
+    ";
 
     var transition = new BpnTransition(
       entryBlock.Id,

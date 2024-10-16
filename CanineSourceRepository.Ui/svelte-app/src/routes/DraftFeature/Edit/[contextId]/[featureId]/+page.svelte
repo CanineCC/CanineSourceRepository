@@ -7,14 +7,13 @@
     import { DraftFeatureApi, DraftFeatureDiagramApi  } from '../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
 	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature, type BpnPosition, type PositionsUpdatedOnDraftFeatureRequest, UpdateDraftFeaturePurposeBodyFromJSON } from '../../../../../BpnEngineClient';
     import Graph from '../../../../../components/diagram/Graph.svelte';
+    import { onModelUpdate, onFeatureUpdate, joinBpnContext,joinBpnFeatureGroup } from '../../../../../lib/signalRService'
     
-
     const draftFeatureApi = new DraftFeatureApi();
     const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
 
     let contextId: string;
     let featureId: string;
-
     let feature : BpnDraftFeature | null = null;
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
@@ -25,19 +24,27 @@
         contextId = $page.params.contextId;
         featureId = $page.params.featureId;
     }
-
     onMount(() => {
+        onModelUpdate((message: string) => {
+            console.log("Received update from SignalR:", message);
+
+
+        });
+        onFeatureUpdate((featureId: string, message: string) => {
+            console.log(`Feature Update for ${featureId}: ${message}`);
+        });
+        
+        joinBpnContext();
+        joinBpnFeatureGroup(featureId);
+
         fetchDetails(contextId, featureId);
     });
-
     async function fetchDetails(contextId: string, featureId: string) {
         feature = await draftFeatureApi.getDraftFeature({featureId: featureId});
         tasks = feature.tasks??[];
         transitions = feature.transitions??[];
         diagram = feature.diagram;
     }
-
-    // Event handler for task position change
     async function handleTaskPositionChange(event: CustomEvent) {
         const { taskId, position } = event.detail;
         await draftFeatureDiagramApi.positionUpdatedOnDraftFeature({ positionUpdatedOnDraftFeatureBody: { featureId, taskId, position }});
@@ -64,8 +71,6 @@
             flowOverview: feature.flowOverview
          }});
     }
-
-
     async function addTask() {
         await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: { featureId: featureId, task: {  
             id: undefined,
@@ -82,9 +87,6 @@
     }
 
     let isLoggedIn = false; // Replace this with your actual login state logic   
-
-
-
 </script>
 
 <style>
@@ -95,34 +97,11 @@
     }
     
     .key-value-pairs {
-
-        /*display: flex;
-        flex-direction: column;
-        gap: 10px;*/
       flex: 1; /* Take the remaining space */
       padding: 20px; /* Padding inside content area */
       overflow-y: auto; /* Vertical scroll for content if needed */
       gap:25px;
       display: grid;
-    }
-
-    .pair {
-     /*   display: flex;
-        justify-content: space-between;*/
-        /*max-width: 500px; Adjust based on your layout */
-    }
-
-    .key {
-        font-weight: bold;
-        color:white;
-        text-align: right; /* Right align the key */
-        width: 150px; /* Fixed width to allow space for the keys */
-    }
-
-    .value {
-        padding-left: 25px;
-        text-align: left; /* Left align the value */
-        flex: 1; /* Allow the value to take the remaining space */
     }
     .graph-wrapper {
         padding: 0px; 
@@ -138,9 +117,6 @@
     }
     .task-wrapper {
         padding-top: 25px;
-    }
-    .bpn-action-bar {
-        padding: 25px 0 0 0;
     }
 </style>
 

@@ -1,12 +1,12 @@
 <script lang="ts">
     import type { BpnTask  } from '../BpnEngineClient'; // Import your types
-    import { FeatureTaskApi  } from '../BpnEngineClient/apis'; // Adjust the path accordingly
+    import { DraftFeatureTaskApi  } from '../BpnEngineClient/apis'; // Adjust the path accordingly
 
     export let task: BpnTask; // Accepts a BpnTask as a prop
     export let featureId: string;
     export let readonly: boolean = false;
 
-    const featureTaskApi = new FeatureTaskApi();
+    const draftFeatureTaskApi = new DraftFeatureTaskApi();
 
     // Helper to initialize recordTypes if it's undefined
     $: task.recordTypes = task.recordTypes || [];
@@ -35,9 +35,24 @@
     }
 
     async function saveFeaturePurpose() {
+        draftFeatureTaskApi.updateTaskPurposeFeature({updateTaskPurposeFeatureBody: {
+            featureId: featureId, 
+            taskId: task.id,
+            name: task.name,
+            businessPurpose: task.businessPurpose,
+            behavioralGoal: task.behavioralGoal
+        }});
+    }
 
-        //TODO featureTaskApi.updateTaskPurpose
-        //TODO featureTaskApi.updateServiceDependency
+    async function saveServiceDependency() {
+        draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: {
+            featureId: featureId, 
+            taskId: task.id,
+            serviceDependency: task.serviceDependency,
+            namedConfiguration: task.namedConfiguration
+        }});
+    }
+    //TODO featureTaskApi.
         //TODO featureTaskApi.AddRecord
         //TODO featureTaskApi.UpdateRecord
         //TODO featureTaskApi.DeleteRecord
@@ -54,8 +69,7 @@
             objective: task.businessPurpose,
             flowOverview: task.behavioralGoal
          }});*/
-    }
-  </script>
+        </script>
   
   <!-- Tab component with vertical layout -->
   <div class="tab-container">
@@ -103,6 +117,7 @@
             {/each}
             </select>
         </div>
+        <a href="#top" title="Save" class="button" on:click={saveServiceDependency}><i class="fas fa-save "></i></a>
     {/if}
   
       {#if activeTab === 'data'}
@@ -206,7 +221,6 @@
       overflow-y: auto; /* Vertical scroll for content if needed */
       gap:25px;
       display: grid;
-      
     }
 
     button {

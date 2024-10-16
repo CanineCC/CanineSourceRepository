@@ -22,7 +22,9 @@ public class GivenACodeBlockUsingAllBasicTypes
         new BpnTask.DataDefinition("StartTime", "TimeOnly")
         //        new BPN.DataDefinition("Blob", "byte[]") -- base64 encoded... helper functions needed
         )) as CodeTask)!;
-    block = block with { Input = "Input", Output = "Output", Code = "return new Output(true);" };
+    block.Input = "Input";
+    block.Output = "Output";
+    block.Code = "return new Output(true);";
     assembly = block.ToAssembly();
   }
 

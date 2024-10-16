@@ -1,6 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class UpdateDraftFeaturePurposeFeature : IFeature
 {
@@ -29,10 +29,10 @@ public class UpdateDraftFeaturePurposeFeature : IFeature
     if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
 
     await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeaturePurposeChanged(
-      ContextId: aggregate.ContextId, 
-      FeatureId: featureId, 
-      Name: name, 
-      Objective: objective, 
+      ContextId: aggregate.ContextId,
+      FeatureId: featureId,
+      Name: name,
+      Objective: objective,
       FlowOverview: flowOverview));
 
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);

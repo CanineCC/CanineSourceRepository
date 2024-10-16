@@ -1,7 +1,7 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class ReleaseFeatureFeature : IFeature
 {
@@ -34,23 +34,26 @@ public class ReleaseFeatureFeature : IFeature
     if (result.IsValid == false) return result;
 
     var feature = await session.Events.AggregateStreamAsync<BpnFeatureAggregate>(featureId, token: ct);
-    
+
     Dictionary<Guid, Guid> newIds = aggregate.Tasks.ToDictionary(task => task.Id, task => Guid.CreateVersion7());
 
     var bpnPositions = aggregate.Diagram.BpnPositions.Select(task => task with { Id = newIds[task.Id] }).ToList();
     var bpnWaypoints = aggregate.Diagram.BpnConnectionWaypoints.Select(transition => transition with { FromBPN = newIds[transition.FromBPN], ToBPN = newIds[transition.ToBPN] }).ToList();
 
-  await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new FeatureReleased(
-      ContextId: aggregate.ContextId,
-      FeatureId: featureId,
-      ReleasedBy: user,
-      Name: aggregate.Name,
-      Objective: aggregate.Objective,
-      FlowOverview: aggregate.FlowOverview,
-      Tasks: aggregate.Tasks.Select(task => task with { Id = newIds[task.Id] }).ToImmutableList(),
-      Transitions: aggregate.Transitions.Select(transition => transition with { FromBPN = newIds[transition.FromBPN], ToBPN = newIds[transition.ToBPN] }).ToImmutableList(),
-      Diagram: new BpnFeatureDiagram() { BpnPositions = bpnPositions, BpnConnectionWaypoints = bpnWaypoints },
-      feature?.Revision + 1 ?? 1));
+    await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new FeatureReleased(
+        ContextId: aggregate.ContextId,
+        FeatureId: featureId,
+        ReleasedBy: user,
+        Name: aggregate.Name,
+        Objective: aggregate.Objective,
+        FlowOverview: aggregate.FlowOverview,
+        Tasks: aggregate.Tasks.Select(task => {
+            task.Id = newIds[task.Id];
+            return task;
+        }).ToImmutableList(),
+        Transitions: aggregate.Transitions.Select(transition => transition with { FromBPN = newIds[transition.FromBPN], ToBPN = newIds[transition.ToBPN] }).ToImmutableList(),
+        Diagram: new BpnFeatureDiagram() { BpnPositions = bpnPositions, BpnConnectionWaypoints = bpnWaypoints },
+        feature?.Revision + 1 ?? 1)); 
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }
 }

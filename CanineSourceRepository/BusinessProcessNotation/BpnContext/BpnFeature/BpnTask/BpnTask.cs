@@ -3,7 +3,7 @@
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 
-public abstract record BpnTask(Guid Id, string Name)
+public abstract class BpnTask(Guid Id, string Name)
 {
   //public enum ServiceInjection
   //{
@@ -17,8 +17,8 @@ public abstract record BpnTask(Guid Id, string Name)
   //  //Global settings? (multiple named instances?!)
   //}
 
-  public Guid Id { get; init; } = Id;
-  public string Name { get; init; } = Name; //sanitize?
+  public Guid Id { get; set; } = Id;
+  public string Name { get; set; } = Name; //sanitize?
 
   /// <summary>
   /// Describe why this node exists from a business perspective. What is its value in the broader workflow
@@ -26,7 +26,7 @@ public abstract record BpnTask(Guid Id, string Name)
   /// <example>
   /// Validate that the user has a verified email address before allowing access to premium content.
   /// </example>
-  public string BusinessPurpose { get; init; } = string.Empty;
+  public string BusinessPurpose { get; set; } = string.Empty;
 
   /// <summary>
   /// Focus on what behavior this node should enforce. It should emphasize the expected result or transformation without mentioning technical specifics. This will guide the LLM to create logic that fulfills the business behavior.
@@ -34,18 +34,18 @@ public abstract record BpnTask(Guid Id, string Name)
   /// <example>
   /// Ensure the email is verified and allow access to content.
   /// </example>
-  public string BehavioralGoal { get; init; } = string.Empty;
+  public string BehavioralGoal { get; set; } = string.Empty;
 
-  public string? Input { get; init; }
-  public string? Output { get; init; }
-  public string ServiceDependency { get; init; } = typeof(NoService).Name;
-  public string NamedConfiguration { get; init; } = string.Empty;
+  public string? Input { get; set; }
+  public string? Output { get; set; }
+  public string ServiceDependency { get; set; } = typeof(NoService).Name;
+  public string NamedConfiguration { get; set; } = string.Empty;
   public ServiceInjection GetServiceDependency()
   {
     return ServiceInjection.ServiceLocator(ServiceDependency, NamedConfiguration);
   }
 
-  public ImmutableList<RecordDefinition> RecordTypes { get; init; } = [];
+  public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
   public string[] ValidDatatypes
   {
     get
@@ -102,29 +102,40 @@ public abstract record BpnTask(Guid Id, string Name)
   }
   public BpnTask AddRecordType(RecordDefinition record)
   {
-    record = record with
+    record.Name = record.Name.SanitizeVariableName().ToPascalCase();
+    foreach (var item in record.Fields)
     {
-      Name = record.Name.SanitizeVariableName().ToPascalCase(),
-      Fields = record.Fields.Select(field => field = field with { Name = field.Name.SanitizeVariableName().ToPascalCase(), Type = field.Type }).ToArray()
-    };
+      item.Name = item.Name.SanitizeVariableName().ToPascalCase();
+    }
 
     var records = RecordTypes.RemoveAll(p => p.Name == record.Name);//update instead?
     records = records.Add(record);
+    this.RecordTypes = records; 
 
-    return this with { RecordTypes = records };
+    return this;
   }
 
   public BpnTask RemoveRecordType(RecordDefinition record)
   {
     var name = record.Name.SanitizeVariableName().ToPascalCase();
     var records = RecordTypes.RemoveAll(p => p.Name == record.Name);//update instead?
+    this.RecordTypes = records;
 
-    return this with { RecordTypes = records };
+    return this;
   }
 
-  public record DataDefinition(string Name, string Type, bool IsCollection = false, bool IsMandatory = true) { }
-  public record RecordDefinition(string Name, params DataDefinition[] Fields)
+  public class DataDefinition(string Name, string Type, bool IsCollection = false, bool IsMandatory = true)
   {
+    public string Name { get; set; } = Name;
+    public string Type { get; set; } = Type;
+    public bool IsCollection { get; set; } = IsCollection;
+    public bool IsMandatory { get; set; } = IsMandatory;
+  }
+  public class RecordDefinition(string Name, params DataDefinition[] Fields)
+  {
+    public string Name { get; set; } = Name;
+    public DataDefinition[] Fields { get; set; } = Fields;
+
     public string ToCode()
     {
       var fields = string.Join(",", Fields.Select(p =>

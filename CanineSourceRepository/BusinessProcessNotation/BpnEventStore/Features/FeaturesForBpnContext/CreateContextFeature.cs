@@ -1,4 +1,4 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnContext;
 
 public class CreateContextFeature : IFeature
 {

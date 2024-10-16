@@ -19,7 +19,9 @@
     async function handleTaskStopDrag(event :any)
     {
       if (readonly) return;
+      const { id, position } = event.detail;
       calcSize();
+      dispatch('taskPositionChange', { taskId: id, position });
     }
     async function handleTaskDrag(event: any) {
       if (readonly) return;
@@ -29,7 +31,6 @@
         task.position = position; // Update position of the task
         await preparePaths(); // Recalculate paths after moving a task
 
-        dispatch('taskPositionChange', { taskId: id, position });
       } else {
         calcSize();
       } 
@@ -57,8 +58,6 @@
       return task && task.position ? task.position : { x: 0, y: 0 };
     }
     function getTaskStats(taskId: string) : TaskStats | undefined {
-      console.log("look for: " + taskId);
-      console.log(taskStats);
       const task = taskStats?.find(t => t.task === taskId);
       return task;
     }
