@@ -1,6 +1,25 @@
 <script>
     import ServerStatus from '../components/ServerStatus.svelte';    
+    import { writable } from 'svelte/store';
+    import { onMount } from 'svelte';
+    import { startConnection } from '../lib/signalRService'
+    import { isAppInitialized  } from '../lib/stores'
+
+    let initialized = false;
     export let isLoggedIn; // Pass this prop to check if the user is logged in
+
+    isAppInitialized.subscribe(value => {
+        initialized = value;
+    });
+
+    onMount(() => {
+        if (!initialized) {
+            console.log("App loaded for the first time, running startup logic");
+            startConnection();
+            isAppInitialized.set(true);
+        }
+    });
+
  </script>
  
  <header>

@@ -1,4 +1,6 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
+﻿using Microsoft.Net.Http.Headers;
+
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 //TODO: if not on environment, return "not found"
 //TODO: PromoteToEnvironment (i.e. cant remove, but can add)
 //TODO: DeprecateOnEnvironment (i.e. return "moved" if called) 
@@ -8,7 +10,7 @@ public class ServerHealthFeature : IFeature
   public record ServerHealth(bool IsHealthy, string Message, DateTimeOffset ServerStartedTime, int ServerMemoryUsageInMegaBytes);
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPost($"BpnEngine/v1/Health", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
+    app.MapGet($"BpnEngine/v1/Health", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
     {
         Process currentProcess = Process.GetCurrentProcess();
         long memoryUsage = currentProcess.WorkingSet64;
@@ -30,8 +32,12 @@ public class ServerHealthFeature : IFeature
             instance: context.Request.Path
           );
         }
-
-        return Results.Ok(new ServerHealth(
+      context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+      {
+        Public = true,
+        MaxAge = TimeSpan.FromSeconds(15)
+      };
+      return Results.Ok(new ServerHealth(
           IsHealthy: true,
           Message: "Server is OK.",
           ServerStartedTime: ServerStartTime,

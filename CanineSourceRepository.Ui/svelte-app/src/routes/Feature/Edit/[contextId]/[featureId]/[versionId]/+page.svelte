@@ -205,6 +205,7 @@
             <Graph 
             {tasks} 
             {diagram} 
+            featureId={featureId}
             readonly={true}
             taskStats={taskStats}
             on:taskSelect={handleTaskSelect}

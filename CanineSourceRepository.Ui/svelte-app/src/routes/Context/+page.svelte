@@ -146,7 +146,7 @@
 				{#each contexts as context, index}
 					<tr>
 						<td class="title-column">
-							<button
+							<button title="accordion" aria-label="accordion"
 								on:click={() => toggleContextRow(index)}
 								style="border: none; background: none; cursor: pointer;"
 							>
@@ -208,7 +208,7 @@
 															{#if highestVersionFeature.stats}
 																<tr>
 																	<td class="title-column">
-																		<button
+																		<button title="accordion" aria-label="accordion"
 																			on:click={() => toggleFeatureRow(featureindex)}
 																			style="border: none; background: none; cursor: pointer; user-select: none;"
 																		>
@@ -289,7 +289,7 @@
 																								{version.name}
 																							</td>
 																							<td class="version-column">
-																								<button
+																								<button title="accordion" aria-label="accordion"
 																									on:click={() =>
 																										editVersion(
 																											context.id ?? '',

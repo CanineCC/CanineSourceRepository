@@ -2,8 +2,12 @@
     import Task from "./Task.svelte";
     import { createEventDispatcher } from "svelte";
     import { onMount } from "svelte";
-    import type { BpnTask, BpnTransition, BpnFeatureDiagram, Position, TaskStats } from "../../BpnEngineClient/models";
-  
+    import type { BpnTask, BpnFeatureDiagram, Position, TaskStats, PositionUpdatedOnDraftFeatureBody } from "../../BpnEngineClient/models";
+    import { DraftFeatureDiagramApi  } from '../../BpnEngineClient/apis'; // Adjust the path accordingly
+
+    const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
+
+    export let featureId: string;
     export let tasks: Array<BpnTask> = [];
 //    export let transitions: Array<BpnTransition> = [];
     export let diagram: BpnFeatureDiagram | undefined;
@@ -14,6 +18,7 @@
     let width: number = 800;
     let height: number = 600;
     let paths: Array<{ d: string; stroke: string; key: string }> = []; // Include a unique key for each path
+    let taskPositions: PositionUpdatedOnDraftFeatureBody[] = [];
 
     const dispatch = createEventDispatcher(); // Create event dispatcher
     async function handleTaskStopDrag(event :any)
@@ -21,8 +26,26 @@
       if (readonly) return;
       const { id, position } = event.detail;
       calcSize();
+
+      // Find the index of the object with the same taskId
+      const index = taskPositions.findIndex(task => task.taskId === id);
+
+      if (index !== -1) {
+          // If taskId exists in the array, update the position
+          taskPositions[index].position = position;
+      } else {
+          // If taskId doesn't exist, add a new object to the array
+          taskPositions.push({ featureId, taskId: id, position });
+      }
+
       dispatch('taskPositionChange', { taskId: id, position });
     }
+
+    async function saveFeaturePositions() {
+        if (readonly) return;
+        await draftFeatureDiagramApi.positionsUpdatedOnDraftFeature({ positionUpdatedOnDraftFeatureBody : taskPositions});
+    }
+
     async function handleTaskDrag(event: any) {
       if (readonly) return;
       const { id, position } = event.detail;
@@ -219,14 +242,21 @@
       {/each}
     </svg>
     
-    <a href="#top" title="Download svg" class="button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
-</div>
-  
+    <a href="#top" title="Download svg" class="download button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
+    {#if readonly==false}
+      <a href="#top" title="Save diagram" class="save button" on:click={saveFeaturePositions}><i class="fas fa-save "></i></a>
+    {/if}
+  </div>    
   <style>
-    .button {
+    .download {
       position: absolute;
       top:10px;
       right:10px;
+    }
+    .save {
+      position: absolute;
+      top:10px;
+      right:70px;
     }
   
   </style>

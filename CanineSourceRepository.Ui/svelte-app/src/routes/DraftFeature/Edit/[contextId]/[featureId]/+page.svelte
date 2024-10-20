@@ -1,13 +1,13 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import Layout from '../../../../../components/Layout.svelte';
     import TaskComponent from '../../../../../components/TaskComponent.svelte';
     import Accordion from '../../../../../lib/Accordion.svelte';
     import { DraftFeatureApi, DraftFeatureDiagramApi  } from '../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
-	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature, type BpnPosition, type PositionsUpdatedOnDraftFeatureRequest, UpdateDraftFeaturePurposeBodyFromJSON } from '../../../../../BpnEngineClient';
+	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature } from '../../../../../BpnEngineClient';
     import Graph from '../../../../../components/diagram/Graph.svelte';
-    import { onModelUpdate, onFeatureUpdate, joinBpnContext,joinBpnFeatureGroup } from '../../../../../lib/signalRService'
+    import {  onFeatureUpdate, offFeatureUpdate, joinBpnContext,joinBpnFeatureGroup } from '../../../../../lib/signalRService'
     
     const draftFeatureApi = new DraftFeatureApi();
     const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
@@ -20,35 +20,31 @@
     let diagram : BpnFeatureDiagram | undefined;
     let selectedTask : BpnTask |null = null;
 
+
     $: {
         contextId = $page.params.contextId;
         featureId = $page.params.featureId;
     }
+    const callback = (featureId: string, message: string) => {
+            fetchDetails(contextId, featureId);
+        };
     onMount(() => {
-        onModelUpdate((message: string) => {
-            console.log("Received update from SignalR:", message);
-
-
-        });
-        onFeatureUpdate((featureId: string, message: string) => {
-            console.log(`Feature Update for ${featureId}: ${message}`);
-        });
-        
+        onFeatureUpdate(callback);
         joinBpnContext();
         joinBpnFeatureGroup(featureId);
 
         fetchDetails(contextId, featureId);
     });
-    async function fetchDetails(contextId: string, featureId: string) {
+    onDestroy(() => {
+        offFeatureUpdate(callback);
+    });
+        async function fetchDetails(contextId: string, featureId: string) {
         feature = await draftFeatureApi.getDraftFeature({featureId: featureId});
         tasks = feature.tasks??[];
         transitions = feature.transitions??[];
         diagram = feature.diagram;
     }
-    async function handleTaskPositionChange(event: CustomEvent) {
-        const { taskId, position } = event.detail;
-        await draftFeatureDiagramApi.positionUpdatedOnDraftFeature({ positionUpdatedOnDraftFeatureBody: { featureId, taskId, position }});
-    }
+
     function handleTaskSelect(event: any) {
         const { taskId } = event.detail;
         const existingTaskIndex = tasks.findIndex(task => task.id === taskId);
@@ -154,7 +150,7 @@
             <Graph 
             {tasks} 
             {diagram} 
-            on:taskPositionChange={handleTaskPositionChange}
+            featureId={featureId}
             on:taskSelect={handleTaskSelect}
             />
         </div>

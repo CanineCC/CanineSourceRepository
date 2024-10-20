@@ -4,10 +4,11 @@ import * as signalR from "@microsoft/signalr";
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("http://localhost:5228/bpnHub", { transport: signalR.HttpTransportType.WebSockets }) // Adjust the URL to your SignalR hub endpoint
     .withAutomaticReconnect([0, 2000, 10000, 30000]) // Optional: automatically reconnect if the connection is dropped
+    .configureLogging(signalR.LogLevel.Debug)
     .build();
 
 // Start the connection
-async function startConnection() {
+export async function startConnection() {
     try {
         console.log("Try starting SignalR connection.");
         await connection.start();
@@ -29,9 +30,6 @@ connection.onreconnected(connectionId => {
     console.log("SignalR reconnected:", connectionId);
 });
 
-// Call this function to initiate the connection
-startConnection();
-
 // Subscribe to the "ReceiveModelUpdate" event from the server
 export function onModelUpdate(callback: (message: string) => void) {
     connection.on("ReceiveMessage", callback);
@@ -43,12 +41,23 @@ export function onFeatureUpdate(callback: (featureId: string, message: string) =
     connection.on("ReceiveBpnFeatureUpdate", callback);
 };
 
+export function offModelUpdate(callback: (message: string) => void) {
+    connection.off("ReceiveMessage", callback);
+};
+export function offContextUpdate(callback: (message: string) => void) {
+    connection.off("ReceiveBpnContextUpdate", callback);
+};
+export function offFeatureUpdate(callback: (featureId: string, message: string) => void) {
+    connection.off("ReceiveBpnFeatureUpdate", callback);
+};
+
+
 export async function joinBpnContext() {
     try {
-        await connection.invoke("JoinBpnContextGroup");
+        await connection.invoke("JoinBpnContext");
         console.log(`Joined BpnContext`);
     } catch (err) {
-        console.error("Error joining BpnContext group:", err);
+        console.error("Error joining BpnContext:", err);
     }
 };
 export async function leaveBpnContext() {
