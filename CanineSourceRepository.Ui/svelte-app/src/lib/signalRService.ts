@@ -18,6 +18,13 @@ export async function startConnection() {
         setTimeout(startConnection, 5000); // Retry after 5 seconds if the connection fails
     }
 }
+
+export async function stopConnection() {
+    console.log("Try stopping SignalR connection.");
+    await connection.stop();
+    console.log("SignalR connection stopped.");
+}
+
 connection.onclose(error => {
     console.error("SignalR connection closed:", error);
 });

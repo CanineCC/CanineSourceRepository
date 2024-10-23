@@ -12,7 +12,6 @@ using System.Net;
 using Marten.Events;
 using EngineEvents;
 using Microsoft.AspNetCore.SignalR;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +70,7 @@ foreach (var version in BpnEventStore.ApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
   {
+    config.DefaultResponseReferenceTypeNullHandling = NJsonSchema.Generation.ReferenceTypeNullHandling.NotNull;
     config.DocumentName = "engine_" + version;
     config.Title = "BpnEngine API " + version.ToUpper();
     config.Version = version;
@@ -86,6 +86,7 @@ foreach (var version in BpnEngine.PotentialApiVersions)
 {
   builder.Services.AddOpenApiDocument(config =>
   {
+    config.DefaultResponseReferenceTypeNullHandling = NJsonSchema.Generation.ReferenceTypeNullHandling.NotNull;
     config.DocumentName = "bpn_" + version;
     config.Title = "BPN API " + version.ToUpper();
     config.Version = version;

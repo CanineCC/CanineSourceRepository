@@ -53,6 +53,7 @@ public class DynamicCompiler
           // Add more references as needed
         ],
         new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        .WithNullableContextOptions(NullableContextOptions.Enable)
     );
 
     using var ms = new MemoryStream();

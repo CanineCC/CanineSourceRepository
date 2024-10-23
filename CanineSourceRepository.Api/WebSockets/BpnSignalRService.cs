@@ -7,7 +7,7 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
 {
   private readonly IHubContext<BpnHub> _hubContext;
   private Timer _timer;
-  private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(1);
+  private readonly TimeSpan _pollingInterval = TimeSpan.FromMilliseconds(500);
   private readonly string _connectionString;
   private readonly Dictionary<string, long> _versions = new Dictionary<string, long>();
 
@@ -53,7 +53,14 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
     await conn.OpenAsync(stoppingToken);
 
     // Command to select all relevant records
-    await using var cmd = new NpgsqlCommand("SELECT id, type, version FROM public.mt_streams;", conn);
+    //await using var cmd = new NpgsqlCommand("SELECT id, type, version FROM public.mt_streams;", conn);
+    await using var cmd = new NpgsqlCommand(@"
+SELECT id, mt_version, 'bpndraftfeature' as name FROM public.mt_doc_bpndraftfeatureprojection_bpndraftfeature
+union
+SELECT id, mt_version, 'bpncontext' as name FROM public.mt_doc_bpncontextprojection_bpncontext
+union
+SELECT id, mt_version, 'bpnfeature' as name FROM public.mt_doc_bpnfeatureprojection_bpnfeature
+", conn);
     await using var reader = await cmd.ExecuteReaderAsync(stoppingToken);
 
     // We are using a flag to know if this is the first run
@@ -63,8 +70,8 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
     while (await reader.ReadAsync(stoppingToken))
     {
       var id = await reader.GetFieldValueAsync<Guid>(0, stoppingToken);
-      var typeName = reader.IsDBNull(1) ? null : await reader.GetFieldValueAsync<string>(1, stoppingToken);
-      var version = await reader.GetFieldValueAsync<long>(2, stoppingToken);
+      var version = await reader.GetFieldValueAsync<long>(1, stoppingToken);
+      var typeName = reader.IsDBNull(1) ? null : await reader.GetFieldValueAsync<string>(2, stoppingToken);
       var key = $"{typeName}_{id}";
 
       if (firstRun)
@@ -83,13 +90,17 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
             _versions[key] = version; // Update version in dictionary
 
             // Notify of updates based on type
-            if (typeName == "bpn_context_aggregate")
+            if (typeName == "bpncontext")
             {
               await UpdateBpnContext();
             }
-            else if (typeName == "bpn_draft_feature_aggregate")
+            else if (typeName == "bpndraftfeature")
             {
               await UpdateBpnFeature(id);
+            }
+            else if (typeName == "bpnfeature")
+            {
+              //TODO: await UpdateBpnFeature(id);
             }
           }
         }

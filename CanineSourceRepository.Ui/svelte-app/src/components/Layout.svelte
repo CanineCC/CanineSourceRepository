@@ -2,7 +2,7 @@
     import ServerStatus from '../components/ServerStatus.svelte';    
     import { writable } from 'svelte/store';
     import { onMount } from 'svelte';
-    import { startConnection } from '../lib/signalRService'
+    import { startConnection, stopConnection } from '../lib/signalRService'
     import { isAppInitialized  } from '../lib/stores'
 
     let initialized = false;
@@ -18,6 +18,16 @@
             startConnection();
             isAppInitialized.set(true);
         }
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                stopConnection(); // Close WebSocket if the page is hidden
+            } else {
+                startConnection(); // Reopen WebSocket if the page is visible
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
     });
 
  </script>
