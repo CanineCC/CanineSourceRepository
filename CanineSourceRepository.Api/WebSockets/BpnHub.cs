@@ -3,24 +3,24 @@ using Microsoft.AspNetCore.SignalR;
 
 public class BpnHub : Hub
 {
-  public async Task JoinBpnContext()
+  public async Task JoinEntityView(string name, string id)
   {
-    await Groups.AddToGroupAsync(Context.ConnectionId, $"BpnContext");
-    await Clients.Caller.SendAsync("ReceiveMessage", $"You have joined BpnContext");
+    await Groups.AddToGroupAsync(Context.ConnectionId, $"{name}-{id}");
+    await Clients.Caller.SendAsync("ReceiveMessage", $"You have joined the {name} group for {id}");
   }
-  public async Task LeaveBpnContext()
+  public async Task LeaveEntityView(string name, string id)
   {
-    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"BpnContext");
-    await Clients.Caller.SendAsync("ReceiveMessage", $"You have left BpnContext");
+    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{name}-{id}");
+    await Clients.Caller.SendAsync("ReceiveMessage", $"You have left the {name} group for {id}");
   }
-  public async Task JoinBpnFeatureGroup(string bpnFeatureId)
+  public async Task JoinGroupView(string name)
   {
-    await Groups.AddToGroupAsync(Context.ConnectionId, $"BpnFeature-{bpnFeatureId}");
-    await Clients.Caller.SendAsync("ReceiveMessage", $"You have joined BpnFeature group {bpnFeatureId}");
+    await Groups.AddToGroupAsync(Context.ConnectionId, $"{name}");
+    await Clients.Caller.SendAsync("ReceiveMessage", $"You have joined the {name} group");
   }
-  public async Task LeaveBpnFeatureGroup(string bpnFeatureId)
+  public async Task LeaveGroupView(string name)
   {
-    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"BpnFeature-{bpnFeatureId}");
-    await Clients.Caller.SendAsync("ReceiveMessage", $"You have left BpnFeature group {bpnFeatureId}");
+    await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"{name}");
+    await Clients.Caller.SendAsync("ReceiveMessage", $"You have left the {name} group");
   }
 }

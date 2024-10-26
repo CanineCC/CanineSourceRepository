@@ -1,15 +1,13 @@
 ﻿using Npgsql;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
 
-public class BpnSignalRService : IClientNotificationService, IHostedService
+public class BpnSignalRService : IHostedService
 {
   private readonly IHubContext<BpnHub> _hubContext;
   private Timer _timer;
-  private readonly TimeSpan _pollingInterval = TimeSpan.FromMilliseconds(500);
+  private readonly TimeSpan _pollingInterval = TimeSpan.FromMilliseconds(150);
   private readonly string _connectionString;
-  private readonly Dictionary<string, long> _versions = new Dictionary<string, long>();
 
   public BpnSignalRService(IHubContext<BpnHub> hubContext, IConfiguration configuration)
   {
@@ -25,12 +23,60 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
       Pooling = bool.Parse(configuration.GetSection("Marten:Pooling").Value!)
     }.ConnectionString;
   }
+  public async Task CreateOrReplaceGetProjectionDataStoredProcedure(string connectionString, CancellationToken cancellationToken)
+  {
+    await using var tenantConnection = new NpgsqlConnection(connectionString);
+    await tenantConnection.OpenAsync(cancellationToken);
+    var createFunctionSql = @"
+        CREATE OR REPLACE FUNCTION get_projection_data(last_fetched TIMESTAMPTZ) 
+        RETURNS TABLE(id UUID, resource_name text, mt_last_modified TIMESTAMPTZ) AS $$
+        DECLARE
+            tbl record;
+            sql text := '';
+        BEGIN
+            -- Build the dynamic SQL with UNION ALL for each matching table
+            FOR tbl IN
+                SELECT t.table_name,
+                       regexp_replace(t.table_name, '.*_', '') AS resource_name
+                FROM information_schema.tables AS t
+                JOIN information_schema.columns AS c
+                  ON t.table_name = c.table_name
+                WHERE t.table_schema = 'public'
+                  AND t.table_name LIKE 'mt_doc_%'
+                  AND t.table_name LIKE '%projection_%'
+                  AND c.column_name = 'mt_version'
+                  AND c.data_type = 'integer'
+            LOOP
+                -- Append each SELECT statement to the sql variable with a WHERE clause for mt_last_modified
+                sql := sql || format(
+                    'SELECT id, ''%s'' AS resource_name, mt_last_modified FROM public.%I WHERE mt_last_modified > %L UNION ALL ',
+                    tbl.resource_name, tbl.table_name, last_fetched
+                );
+            END LOOP;
 
-  public Task StartAsync(CancellationToken cancellationToken)
+            -- Trim the last UNION ALL if any SQL was generated
+            IF sql <> '' THEN
+                sql := left(sql, length(sql) - 11);  -- Remove last UNION ALL
+            ELSE
+                RETURN; -- No tables found, return an empty set
+            END IF;
+
+            -- Return the result of the dynamically generated SQL
+            RETURN QUERY EXECUTE sql;
+        END $$ LANGUAGE plpgsql;
+        ";
+
+    // Execute the SQL command to create the function
+    await using var command = tenantConnection.CreateCommand();
+    command.CommandText = createFunctionSql;
+    await command.ExecuteNonQueryAsync(cancellationToken);
+  }
+
+  public async Task StartAsync(CancellationToken cancellationToken)
   {
     // Start the timer when the service starts
+    await CreateOrReplaceGetProjectionDataStoredProcedure(_connectionString, cancellationToken);
     _timer = new Timer(async _ => await CheckForUpdates(cancellationToken), null, TimeSpan.Zero, _pollingInterval);
-    return Task.CompletedTask;
   }
   private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -47,84 +93,42 @@ public class BpnSignalRService : IClientNotificationService, IHostedService
     }
     finally { _semaphore.Release(); }
   }
-  private async Task SendNewEvents(CancellationToken stoppingToken)
+  private DateTimeOffset _lastUpdated = DateTimeOffset.Now;
+  private record GetProjectionData(Guid Id, string Name, DateTimeOffset LastModified);
+  private async Task SendNewEvents(CancellationToken ct)
   {
-    await using var conn = new NpgsqlConnection(_connectionString);
-    await conn.OpenAsync(stoppingToken);
-
-    // Command to select all relevant records
-    //await using var cmd = new NpgsqlCommand("SELECT id, type, version FROM public.mt_streams;", conn);
-    await using var cmd = new NpgsqlCommand(@"
-SELECT id, mt_version, 'bpndraftfeature' as name FROM public.mt_doc_bpndraftfeatureprojection_bpndraftfeature
-union
-SELECT id, mt_version, 'bpncontext' as name FROM public.mt_doc_bpncontextprojection_bpncontext
-union
-SELECT id, mt_version, 'bpnfeature' as name FROM public.mt_doc_bpnfeatureprojection_bpnfeature
-", conn);
-    await using var reader = await cmd.ExecuteReaderAsync(stoppingToken);
-
-    // We are using a flag to know if this is the first run
-    bool firstRun = _versions.Count == 0;
-
-    // Iterate over the result set
-    while (await reader.ReadAsync(stoppingToken))
+    try
     {
-      var id = await reader.GetFieldValueAsync<Guid>(0, stoppingToken);
-      var version = await reader.GetFieldValueAsync<long>(1, stoppingToken);
-      var typeName = reader.IsDBNull(1) ? null : await reader.GetFieldValueAsync<string>(2, stoppingToken);
-      var key = $"{typeName}_{id}";
+      await using var conn = new NpgsqlConnection(_connectionString);
+      await conn.OpenAsync(ct);
 
-      if (firstRun)
-      {
-        // On the first run, populate the _versions dictionary
-        _versions.Add(key, version); // Initialize version
-      }
-      else
-      {
-        // Check if this entry exists in _versions
-        if (_versions.TryGetValue(key, out long existingVersion))
-        {
-          // Compare versions to see if we have an update
-          if (existingVersion < version)
-          {
-            _versions[key] = version; // Update version in dictionary
+      await using var cmd = new NpgsqlCommand(@"SELECT * FROM get_projection_data(@lastModified) order by mt_last_modified asc", conn);
+      cmd.Parameters.AddWithValue("lastModified", _lastUpdated.ToUniversalTime());
 
-            // Notify of updates based on type
-            if (typeName == "bpncontext")
-            {
-              await UpdateBpnContext();
-            }
-            else if (typeName == "bpndraftfeature")
-            {
-              await UpdateBpnFeature(id);
-            }
-            else if (typeName == "bpnfeature")
-            {
-              //TODO: await UpdateBpnFeature(id);
-            }
-          }
-        }
-        else
-        {
-          // If the entry is not in _versions, add it
-          _versions.Add(key, version); // Initialize new entry
-        }
+      await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+      // Iterate over the result set
+      while (await reader.ReadAsync(ct))
+      {
+        var data = new GetProjectionData(
+          Id: await reader.GetFieldValueAsync<Guid>(0, ct),
+          Name: await reader.GetFieldValueAsync<string>(1, ct),
+          LastModified: await reader.GetFieldValueAsync<DateTimeOffset>(2, ct)
+          );
+
+        _lastUpdated = data.LastModified;
+        await _hubContext.Clients.Group($"{data.Name}-{data.Id}")
+            .SendAsync("onEntityUpdate", data);
+
+        await _hubContext.Clients.Group($"{data.Name}")
+            .SendAsync("onGroupUpdate", data);
+
       }
     }
-  }
-
-
-
-  public async Task UpdateBpnContext()
-  {
-    await _hubContext.Clients.Group($"BpnContext")
-        .SendAsync("ReceiveBpnContextUpdate", "The context has been updated.");
-  }
-
-  public async Task UpdateBpnFeature(Guid bpnFeatureId)
-  {
-    await _hubContext.Clients.Group($"BpnFeature-{bpnFeatureId}")
-        .SendAsync("ReceiveBpnFeatureUpdate", bpnFeatureId, "The feature has been updated.");
+    catch (Exception ex)
+    {
+      Console.WriteLine(ex.ToString());
+    }
   }
 
   public Task StopAsync(CancellationToken cancellationToken)

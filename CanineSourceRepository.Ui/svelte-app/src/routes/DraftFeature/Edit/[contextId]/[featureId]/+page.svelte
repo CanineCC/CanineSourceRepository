@@ -7,7 +7,7 @@
     import { DraftFeatureApi, DraftFeatureDiagramApi  } from '../../../../../BpnEngineClient/apis'; // Adjust the path accordingly
 	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature } from '../../../../../BpnEngineClient';
     import Graph from '../../../../../components/diagram/Graph.svelte';
-    import {  onFeatureUpdate, offFeatureUpdate, joinBpnContext,joinBpnFeatureGroup } from '../../../../../lib/signalRService'
+    import {  onEntityUpdate, offEntityUpdate, joinEntityView,leaveEntityView } from '../../../../../lib/signalRService'
     
     const draftFeatureApi = new DraftFeatureApi();
     const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
@@ -25,20 +25,24 @@
         contextId = $page.params.contextId;
         featureId = $page.params.featureId;
     }
-    const callback = (featureId: string, message: string) => {
-            fetchDetails(contextId, featureId);
-        };
+    const callback = (name: string, id: string, message: string) => {
+        fetchDetails(contextId, featureId);
+    };
+    
     onMount(() => {
-        onFeatureUpdate(callback);
-        joinBpnContext();
-        joinBpnFeatureGroup(featureId);
+        onEntityUpdate(callback);
+        joinEntityView("bpndraftfeature", featureId);
+        //joinBpnFeatureGroup(featureId);
 
         fetchDetails(contextId, featureId);
     });
+    
     onDestroy(() => {
-        offFeatureUpdate(callback);
+        offEntityUpdate(callback);
+        leaveEntityView("bpndraftfeature", featureId);
     });
-        async function fetchDetails(contextId: string, featureId: string) {
+    
+    async function fetchDetails(contextId: string, featureId: string) {
         feature = await draftFeatureApi.getDraftFeature({featureId: featureId});
         tasks = feature.tasks??[];
         transitions = feature.transitions??[];

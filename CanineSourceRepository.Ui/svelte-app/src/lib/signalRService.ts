@@ -4,27 +4,22 @@ import * as signalR from "@microsoft/signalr";
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("http://localhost:5228/bpnHub", { transport: signalR.HttpTransportType.WebSockets }) // Adjust the URL to your SignalR hub endpoint
     .withAutomaticReconnect([0, 2000, 10000, 30000]) // Optional: automatically reconnect if the connection is dropped
-    .configureLogging(signalR.LogLevel.Debug)
+    //.configureLogging(signalR.LogLevel.Debug)
     .build();
 
 // Start the connection
 export async function startConnection() {
     try {
-        console.log("Try starting SignalR connection.");
         await connection.start();
-        console.log("SignalR connection started.");
     } catch (err) {
-        console.error("Error starting SignalR connection:", err);
         setTimeout(startConnection, 5000); // Retry after 5 seconds if the connection fails
     }
 }
 
 export async function stopConnection() {
-    console.log("Try stopping SignalR connection.");
     await connection.stop();
-    console.log("SignalR connection stopped.");
 }
-
+/*
 connection.onclose(error => {
     console.error("SignalR connection closed:", error);
 });
@@ -35,61 +30,61 @@ connection.onreconnecting(error => {
 
 connection.onreconnected(connectionId => {
     console.log("SignalR reconnected:", connectionId);
-});
+});*/
 
 // Subscribe to the "ReceiveModelUpdate" event from the server
 export function onModelUpdate(callback: (message: string) => void) {
     connection.on("ReceiveMessage", callback);
 };
-export function onContextUpdate(callback: (message: string) => void) {
-    connection.on("ReceiveBpnContextUpdate", callback);
+export function onEntityUpdate(callback: (name: string, id: string, message: string) => void) {
+    connection.on("onEntityUpdate", callback);
 };
-export function onFeatureUpdate(callback: (featureId: string, message: string) => void) {
-    connection.on("ReceiveBpnFeatureUpdate", callback);
+export function onGroupUpdate(callback: (name: string, message: string) => void) {
+    connection.on("onGroupUpdate", callback);
 };
 
 export function offModelUpdate(callback: (message: string) => void) {
     connection.off("ReceiveMessage", callback);
 };
-export function offContextUpdate(callback: (message: string) => void) {
-    connection.off("ReceiveBpnContextUpdate", callback);
+export function offEntityUpdate(callback: (name: string, id: string, message: string)=> void) {
+    connection.off("onEntityUpdate", callback);
 };
-export function offFeatureUpdate(callback: (featureId: string, message: string) => void) {
-    connection.off("ReceiveBpnFeatureUpdate", callback);
-};
-
-
-export async function joinBpnContext() {
-    try {
-        await connection.invoke("JoinBpnContext");
-        console.log(`Joined BpnContext`);
-    } catch (err) {
-        console.error("Error joining BpnContext:", err);
-    }
-};
-export async function leaveBpnContext() {
-    try {
-        await connection.invoke("LeaveBpnContext");
-        console.log("Left BpnContext");
-    } catch (err) {
-        console.error("Error leaving BpnFeature group:", err);
-    }
+export function offGroupUpdate(callback: (name: string, message: string)=> void) {
+    connection.off("onGroupUpdate", callback);
 };
 
-export async function joinBpnFeatureGroup(bpnFeatureId: string) {
+
+export async function joinEntityView(name: string, id: string) {
     try {
-        await connection.invoke("JoinBpnFeatureGroup", bpnFeatureId);
-        console.log(`Joined BpnFeature group for feature ID: ${bpnFeatureId}`);
+        await connection.invoke("JoinEntityView", name, id);
+        console.log(`Joined entity: ${id} for ressource : ${name}`);
     } catch (err) {
-        console.error("Error joining BpnFeature group:", err);
+        console.error(`Error joining entity: ${id} for ressource : ${name}`, err);
     }
 };
-export async function leaveBpnFeatureGroup(bpnFeatureId: string) {
+export async function leaveEntityView(name: string, id: string) {
     try {
-        await connection.invoke("LeaveBpnFeatureGroup", bpnFeatureId);
-        console.log(`Left BpnFeature group for feature ID: ${bpnFeatureId}`);
+        await connection.invoke("LeaveEntityView", name, id);
+        console.log(`Left entity: ${id} for ressource : ${name}`);
     } catch (err) {
-        console.error("Error leaving BpnFeature group:", err);
+        console.error(`Error leaving entity: ${id} for ressource : ${name}`, err);
+    }
+};
+
+export async function joinGroupView(name: string) {
+    try {
+        await connection.invoke("JoinGroupView", name);
+        console.log(`Joined group for ressource : ${name}`);
+    } catch (err) {
+        console.error(`Error joining group for ressource : ${name}`, err);
+    }
+};
+export async function leaveGroupView(name: string) {
+    try {
+        await connection.invoke("LeaveGroupView", name);
+        console.log(`left group for ressource : ${name}`);
+    } catch (err) {
+        console.error(`Error leaving group for ressource : ${name}`, err);
     }
 };
 

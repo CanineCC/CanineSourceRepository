@@ -1,6 +1,6 @@
 <script lang="ts">
 	//import type { PageData } from './$types';
-	import Layout from '../../components/Layout.svelte';
+	import Layout from '@/components/Layout.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
 	import { ContextApi, ServerApi } from '../../BpnEngineClient/apis'; // Adjust the path accordingly
@@ -11,7 +11,7 @@
 	} from '../../BpnEngineClient/models'; // Adjust the path accordingly
 	import { slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
-	import {formatDurationShort,formatDurationLong, formatDate	} from '../../lib/Duration' 
+	import { formatDate	} from '../../lib/Duration' 
 	import FeatureDuration from '../../lib/FeatureDuration.svelte' 
 
 	let contexts: BpnContext[] = [];

@@ -99,7 +99,6 @@ foreach (var version in BpnEngine.PotentialApiVersions)
   });
 }
 
-builder.Services.AddScoped<IClientNotificationService, BpnSignalRService>();
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
 builder.Services.AddSingleton<JsonSerializerOptions>(BpnEngine.bpnJsonSerialize);
 builder.Services.AddHsts(options =>
