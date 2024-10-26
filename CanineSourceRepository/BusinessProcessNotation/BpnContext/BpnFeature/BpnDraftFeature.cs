@@ -141,18 +141,17 @@ public class BpnDraftFeatureAggregate
   public void Apply(BpnDraftFeatureAggregate aggregate, RecordAddedToTask @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
-    task.RecordTypes.Add(@event.RecordDefinition);
+    task.RecordTypes = task.RecordTypes.Add(@event.RecordDefinition);
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, RecordUpdatedOnTask @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
-    task.RecordTypes.RemoveAll(record => record.Name == @event.RecordDefinition.Name);
-    task.RecordTypes.Add(@event.RecordDefinition);
+    task.RecordTypes = task.RecordTypes.RemoveAt(@event.RecordIndex).Add(@event.RecordDefinition);
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, RecordDeletedOnTask @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
-    task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
+    task.RecordTypes = task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
   }
   public void Apply(BpnDraftFeatureAggregate aggregate, CodeUpdatedOnTask @event)
   {
@@ -274,18 +273,17 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     public void Apply(BpnDraftFeature projection, RecordAddedToTask @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
-      task.RecordTypes.Add(@event.RecordDefinition);
+      task.RecordTypes = task.RecordTypes.Add(@event.RecordDefinition).OrderBy(p => p.Name).ToImmutableList();
     }
     public void Apply(BpnDraftFeature projection, RecordUpdatedOnTask @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
-      task.RecordTypes.RemoveAll(record => record.Name == @event.RecordDefinition.Name);
-      task.RecordTypes.Add(@event.RecordDefinition);
+      task.RecordTypes = task.RecordTypes.RemoveAt(@event.RecordIndex).Add(@event.RecordDefinition).OrderBy(p=>p.Name).ToImmutableList();
     }
     public void Apply(BpnDraftFeature projection, RecordDeletedOnTask @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
-      task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
+      task.RecordTypes = task.RecordTypes.RemoveAll(record => record.Name == @event.Name);
     }
     public void Apply(BpnDraftFeature projection, CodeUpdatedOnTask @event)
     {

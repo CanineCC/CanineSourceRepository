@@ -30,7 +30,7 @@
 
 <header>
     <nav>
-        <ul>
+        <ul style="margin:14px 0">
             <li><a href="/">Home</a></li>
             <li><a href="/profile">Profile</a></li>
             <li><a href="/logout">Logout</a></li>

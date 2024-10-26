@@ -323,18 +323,6 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
   {
     return $"{@event.FeatureId}_{@event.FeatureVersion}";
   }
-  /*public class VersionKey(Guid FeatureId, long Version)
-  {
-    public Guid FeatureId { get; set; } = FeatureId;
-    public long Version { get; set; } = Version;
-  }
-
-  public class VersionTaskKey(Guid FeatureId, Guid TaskId, long Version)
-  {
-    public Guid FeatureId { get; set; } = FeatureId;
-    public Guid TaskId { get; set; } = TaskId;
-    public long Version { get; set; } = Version;
-  }*/
 
   public class BpnFeatureStat
   {

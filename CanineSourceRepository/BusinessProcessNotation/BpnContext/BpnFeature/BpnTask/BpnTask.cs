@@ -52,7 +52,9 @@ public abstract class BpnTask(Guid Id, string Name)
     return ServiceInjection.ServiceLocator(ServiceDependency, NamedConfiguration);
   }
 
+  [Required]
   public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
+  [Required]
   public string[] ValidDatatypes
   {
     get

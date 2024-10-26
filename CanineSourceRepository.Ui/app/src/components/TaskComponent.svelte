@@ -1,28 +1,24 @@
 <script lang="ts">
     import type { BpnTask  } from 'BpnEngineClient'; // Import your types
     import { DraftFeatureTaskApi  } from 'BpnEngineClient/apis'; // Adjust the path accordingly
-
     export let task: BpnTask; // Accepts a BpnTask as a prop
     export let featureId: string;
     export let readonly: boolean = false;
+    let newRecordTypeName : string = "";
 
     const draftFeatureTaskApi = new DraftFeatureTaskApi();
+  function addRecordType() {
+    draftFeatureTaskApi.addRecordToTaskFeature({ addRecordToTaskBody:{ featureId:featureId, taskId:task.id, recordDefinition:{ name: newRecordTypeName, fields:[]} } });
+    newRecordTypeName = "";
+  }
+  
+  function removeRecordType(index: number) {
+    draftFeatureTaskApi.deleteRecordOnTaskFeature({deleteRecordOnTaskBody: { featureId: featureId, taskId:task.id, name: task.recordTypes[index].name}});
+  }
+  function updateRecordType(index :number) {
 
-    // Helper to initialize recordTypes if it's undefined
-    $: task.recordTypes = task.recordTypes || [];
-  
-    // Add a new record definition to the task
-    function addRecordType() {
-      if (task.recordTypes)
-        task.recordTypes.push({ name: '', fields: [] });
-    }
-  
-    // Remove a record definition
-    function removeRecordType(index: number) {
-      if (task.recordTypes)
-        task.recordTypes.splice(index, 1);
-    }
-  
+    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id, recordIndex: index , recordDefinition: task.recordTypes[index]}});
+  }
     // Dropdown options for serviceDependency (will come from actual services in future)
     const serviceOptions = ["Database - postgresql", "Message Queue - RabbitMQ"];
     // Placeholder for named configuration (can later be fetched based on serviceDependency)
@@ -98,6 +94,14 @@
         <a href="#top" title="Save" class="button" on:click={saveFeaturePurpose}><i class="fas fa-save "></i></a>
 
       {/if}
+      {#if activeTab === 'verification'}
+        <p>BDD test cases will be listed here.</p>
+      {/if}
+  
+      {#if activeTab === 'code'}
+        <p>Code editor will go here.</p>
+      {/if}
+
       {#if activeTab === 'service-dependency'}
         <div>
             <label for="service-dependency">Service Dependency:</label>
@@ -118,63 +122,88 @@
             </select>
         </div>
         <a href="#top" title="Save" class="button" on:click={saveServiceDependency}><i class="fas fa-save "></i></a>
-    {/if}
-  
+      {/if}
+
+
       {#if activeTab === 'data'}
         {#if !readonly}
-            <button disabled={readonly} on:click={addRecordType}>Add Record Type</button>
+          <h2>Create record type</h2>
+          <div style="display: grid; grid-template-columns: auto 50px; gap: 12px;">
+            <input type="text" bind:value={newRecordTypeName} placeholder="Record Type Name">
+            <a id="addRecord" href="#addRecord" title="Add Record Type"class="button" on:click={addRecordType}><i class="fas fa-plus "></i></a>
+          </div>
+          <hr style="width: 95%; padding: 0; margin: 0 auto; background-color: #333;  border-color: #333;"/>
         {/if}
-        <ul>
-          {#if task.recordTypes}
+      <h2 id="editRecordType">Edit record type</h2>
+      <table>
+        <thead>
+          <tr>
+            <th >Record name</th>
+            <th style="display: grid; grid-template-columns: auto auto; gap: 4px; padding: 0 2px;">
+              <span>Field name</span>
+              <span>Field type</span>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
           {#each task.recordTypes as recordType, i}
-            <li>
+          <tr style="vertical-align: top;">
+            <td>
               <input readonly={readonly}  type="text" bind:value={recordType.name} placeholder="Record Type Name">
-              {#if !readonly}
-                <button disabled={readonly} on:click={() => removeRecordType(i)}>Delete</button>
-              {/if}
+            </td>
               <ul>
-                {#if recordType.fields}
                 {#each recordType.fields as field}
-                  <li>{field.name} ({field.type})</li>
+                  <li style="display: grid; grid-template-columns: auto auto; gap: 4px; padding: 0 2px;">
+                    <input readonly={readonly}  type="text" bind:value={field.name}>
+                    <select disabled={readonly}  bind:value={field.type}>
+                      <option disabled selected>Select data type</option>
+                      {#each task.validDatatypes as dataType}
+                        {#if dataType!=recordType.name}
+                         <option value={dataType}>{dataType}</option>
+                        {/if}
+                      {/each}
+                    </select>
+                  </li>
+
                 {/each}
-                {/if}
               </ul>
-            </li>
+            <td>
+            <td style="width:145px">
+              {#if !readonly}
+                <div style="display: flex;  gap: 25px; flex-flow: row-reverse;">
+                  <a href="#editRecordType" title={`Save '${recordType.name}'`}  class="button" on:click={() => { updateRecordType(i);}}><i class="fas fa-save "></i></a>
+                  <a href="#editRecordType" title={`Delete '${recordType.name}'`} class="button" on:click={() => { removeRecordType(i);}}><i class="fas fa-trash "></i></a>
+                </div>
+              {/if}
+            </td>
+
+          </tr>
+        {/each}
+          
+
+        </tbody>
+      </table>
+      <div>
+        <h4>Select Input/Output Record Type</h4>
+        <label for="input-record">Input Record:</label>
+        <select disabled={readonly}  id="input-record" bind:value={task.input}>
+          <option disabled selected>Select input</option>
+          {#each task.recordTypes as recordType}
+            <option value={recordType.name}>{recordType.name}</option>
           {/each}
-          {/if}
-        </ul>
+        </select>
+
+        <label for="output-record">Output Record:</label>
+        <select disabled={readonly}  id="output-record" bind:value={task.output}>
+          <option disabled selected>Select output</option>
+          {#each task.recordTypes as recordType}
+            <option value={recordType.name}>{recordType.name}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
   
-        <div>
-          <h4>Select Input/Output Record Type</h4>
-          <label for="input-record">Input Record:</label>
-          <select disabled={readonly}  id="input-record" bind:value={task.input}>
-            <option disabled selected>Select input</option>
-            {#if task.recordTypes}
-            {#each task.recordTypes as recordType}
-              <option value={recordType.name}>{recordType.name}</option>
-            {/each}
-            {/if}
-          </select>
-  
-          <label for="output-record">Output Record:</label>
-          <select disabled={readonly}  id="output-record" bind:value={task.output}>
-            <option disabled selected>Select output</option>
-            {#if task.recordTypes}
-            {#each task.recordTypes as recordType}
-              <option value={recordType.name}>{recordType.name}</option>
-            {/each}
-            {/if}
-          </select>
-        </div>
-      {/if}
-  
-      {#if activeTab === 'verification'}
-        <p>BDD test cases will be listed here.</p>
-      {/if}
-  
-      {#if activeTab === 'code'}
-        <p>Code editor will go here.</p>
-      {/if}
     </div>
   </div>
   

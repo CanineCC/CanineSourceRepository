@@ -85,13 +85,13 @@ export interface CodeTask {
      * @type {Array<RecordDefinition>}
      * @memberof CodeTask
      */
-    recordTypes?: Array<RecordDefinition>;
+    recordTypes: Array<RecordDefinition>;
     /**
      * 
      * @type {Array<string>}
      * @memberof CodeTask
      */
-    validDatatypes?: Array<string>;
+    validDatatypes: Array<string>;
     /**
      * 
      * @type {string}
@@ -128,6 +128,8 @@ export function instanceOfCodeTask(value: object): value is CodeTask {
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
+    if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
+    if (!('validDatatypes' in value) || value['validDatatypes'] === undefined) return false;
     if (!('code' in value) || value['code'] === undefined) return false;
     return true;
 }
@@ -150,8 +152,8 @@ export function CodeTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'output': json['output'] == null ? undefined : json['output'],
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
-        'recordTypes': json['recordTypes'] == null ? undefined : ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
-        'validDatatypes': json['validDatatypes'] == null ? undefined : json['validDatatypes'],
+        'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
+        'validDatatypes': json['validDatatypes'],
         'code': json['code'],
         'testCases': json['testCases'] == null ? undefined : (mapValues(json['testCases'], TestCaseFromJSON)),
         'recordsAsCode': json['recordsAsCode'] == null ? undefined : json['recordsAsCode'],
@@ -173,7 +175,7 @@ export function CodeTaskToJSON(value?: CodeTask | null): any {
         'output': value['output'],
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
-        'recordTypes': value['recordTypes'] == null ? undefined : ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
+        'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
         'validDatatypes': value['validDatatypes'],
         'code': value['code'],
         'testCases': value['testCases'] == null ? undefined : (mapValues(value['testCases'], TestCaseToJSON)),

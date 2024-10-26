@@ -79,13 +79,13 @@ export interface ApiInputTask {
      * @type {Array<RecordDefinition>}
      * @memberof ApiInputTask
      */
-    recordTypes?: Array<RecordDefinition>;
+    recordTypes: Array<RecordDefinition>;
     /**
      * 
      * @type {Array<string>}
      * @memberof ApiInputTask
      */
-    validDatatypes?: Array<string>;
+    validDatatypes: Array<string>;
     /**
      * 
      * @type {Array<string>}
@@ -104,6 +104,8 @@ export function instanceOfApiInputTask(value: object): value is ApiInputTask {
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
+    if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
+    if (!('validDatatypes' in value) || value['validDatatypes'] === undefined) return false;
     if (!('accessScopes' in value) || value['accessScopes'] === undefined) return false;
     return true;
 }
@@ -126,8 +128,8 @@ export function ApiInputTaskFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'output': json['output'] == null ? undefined : json['output'],
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
-        'recordTypes': json['recordTypes'] == null ? undefined : ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
-        'validDatatypes': json['validDatatypes'] == null ? undefined : json['validDatatypes'],
+        'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
+        'validDatatypes': json['validDatatypes'],
         'accessScopes': json['accessScopes'],
     };
 }
@@ -146,7 +148,7 @@ export function ApiInputTaskToJSON(value?: ApiInputTask | null): any {
         'output': value['output'],
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
-        'recordTypes': value['recordTypes'] == null ? undefined : ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
+        'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
         'validDatatypes': value['validDatatypes'],
         'accessScopes': value['accessScopes'],
     };

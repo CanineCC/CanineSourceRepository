@@ -43,6 +43,10 @@
         tasks = feature.tasks;
         transitions = feature.transitions;
         diagram = feature.diagram;
+        if (selectedTask)
+        {
+            selectedTask = tasks.find((p) => p.id === selectedTask!.id) ?? null;
+        }
     }
 
     function handleTaskSelect(event: any) {

@@ -79,13 +79,13 @@ export interface BpnTask {
      * @type {Array<RecordDefinition>}
      * @memberof BpnTask
      */
-    recordTypes?: Array<RecordDefinition>;
+    recordTypes: Array<RecordDefinition>;
     /**
      * 
      * @type {Array<string>}
      * @memberof BpnTask
      */
-    validDatatypes?: Array<string>;
+    validDatatypes: Array<string>;
 }
 
 /**
@@ -98,6 +98,8 @@ export function instanceOfBpnTask(value: object): value is BpnTask {
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
+    if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
+    if (!('validDatatypes' in value) || value['validDatatypes'] === undefined) return false;
     return true;
 }
 
@@ -119,8 +121,8 @@ export function BpnTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): B
         'output': json['output'] == null ? undefined : json['output'],
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
-        'recordTypes': json['recordTypes'] == null ? undefined : ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
-        'validDatatypes': json['validDatatypes'] == null ? undefined : json['validDatatypes'],
+        'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
+        'validDatatypes': json['validDatatypes'],
     };
 }
 
@@ -138,7 +140,7 @@ export function BpnTaskToJSON(value?: BpnTask | null): any {
         'output': value['output'],
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
-        'recordTypes': value['recordTypes'] == null ? undefined : ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
+        'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
         'validDatatypes': value['validDatatypes'],
     };
 }

@@ -40,6 +40,12 @@ export interface UpdateRecordOnTaskBody {
     taskId: string;
     /**
      * 
+     * @type {number}
+     * @memberof UpdateRecordOnTaskBody
+     */
+    recordIndex: number;
+    /**
+     * 
      * @type {RecordDefinition}
      * @memberof UpdateRecordOnTaskBody
      */
@@ -52,6 +58,7 @@ export interface UpdateRecordOnTaskBody {
 export function instanceOfUpdateRecordOnTaskBody(value: object): value is UpdateRecordOnTaskBody {
     if (!('featureId' in value) || value['featureId'] === undefined) return false;
     if (!('taskId' in value) || value['taskId'] === undefined) return false;
+    if (!('recordIndex' in value) || value['recordIndex'] === undefined) return false;
     if (!('recordDefinition' in value) || value['recordDefinition'] === undefined) return false;
     return true;
 }
@@ -68,6 +75,7 @@ export function UpdateRecordOnTaskBodyFromJSONTyped(json: any, ignoreDiscriminat
         
         'featureId': json['featureId'],
         'taskId': json['taskId'],
+        'recordIndex': json['recordIndex'],
         'recordDefinition': RecordDefinitionFromJSON(json['recordDefinition']),
     };
 }
@@ -80,6 +88,7 @@ export function UpdateRecordOnTaskBodyToJSON(value?: UpdateRecordOnTaskBody | nu
         
         'featureId': value['featureId'],
         'taskId': value['taskId'],
+        'recordIndex': value['recordIndex'],
         'recordDefinition': RecordDefinitionToJSON(value['recordDefinition']),
     };
 }
