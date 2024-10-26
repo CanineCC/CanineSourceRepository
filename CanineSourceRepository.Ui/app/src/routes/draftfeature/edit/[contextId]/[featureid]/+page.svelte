@@ -117,6 +117,15 @@
 
 <Layout>
     {#if feature}
+    <div class="feature-header">
+        <h1>{feature.name}</h1>
+        <div style="display: flex; padding:12px; gap:25px; flex-flow: row-reverse;">
+            <a href="#top" title="Release" aria-label="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
+            <a href="#top" title="Restore" aria-label="Restore" class="button" on:click={reset}><i class="fas fa-undo"></i></a>
+            <a href="#top" title="Add code task" aria-label="Add code task" class="button" on:click={addTask}><i class="fas fa-code"></i></a>
+        </div>
+    </div>
+
     <Accordion title="Feature Details" isOpen={true}>
         <div class="feature-header">
             <div class="key-value-pairs">
@@ -133,14 +142,10 @@
                     <textarea id="flow-overview" rows="5" bind:value={feature.flowOverview} placeholder="Flow overview description"></textarea>
                 </div>
 
-                <a href="#top" title="Save feature purpose" aria-label="Release" class="button" on:click={saveFeaturePurpose}><i class="fas fa-save "></i></a>
             </div>
 
             <div style="display: flex; gap:25px; flex-flow: row-reverse;">
-                <a href="#top" title="Release" aria-label="Release" class="button" on:click={releaseFeature}><i class="fas fa-rocket "></i></a>
-                <a href="#top" title="Restore" aria-label="Restore" class="button" on:click={reset}><i class="fas fa-undo"></i></a>
-                <a href="#top" title="Add code task" aria-label="Add code task" class="button" on:click={addTask}><i class="fas fa-code"></i></a>
-             <!--   <a href="#top" title="Add api task" class="button" on:click={addTask}><i class="fas fa-cloud"></i></a>-->
+                <a href="#top" title="Save feature purpose" aria-label="Release" class="button" on:click={saveFeaturePurpose}><i class="fas fa-save "></i></a>
             </div>
         </div>
     </Accordion>
