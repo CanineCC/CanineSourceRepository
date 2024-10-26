@@ -1,13 +1,27 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class AddTaskToDraftFeatureFeature : IFeature
 {
   public record DraftFeatureTaskAdded(BpnTask Task);
-  public record AddCodeTaskToDraftFeatureBody(Guid FeatureId, CodeTask Task);
-  public record AddApiTaskToDraftFeatureBody(Guid FeatureId, ApiInputTask Task);
+  public class AddCodeTaskToDraftFeatureBody
+  {
+    [Required]
+    public required Guid FeatureId { get; set; }
+    [Required]
+    public required CodeTask Task { get; set; }
+  }
+  public class AddApiTaskToDraftFeatureBody
+  {
+    [Required]  
+    public required Guid FeatureId { get; set; }
+
+    [Required]  
+    public required ApiInputTask Task { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/DraftFeature/AddCodeTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddCodeTaskToDraftFeatureBody request, CancellationToken ct) =>
