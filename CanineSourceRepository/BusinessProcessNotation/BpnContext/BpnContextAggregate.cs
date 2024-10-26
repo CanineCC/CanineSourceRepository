@@ -1,5 +1,6 @@
 ﻿using EngineEvents;
 using Marten.Events.Projections;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext;
@@ -169,37 +170,57 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
 
   public class FeatureStats(long InvocationCount, long InvocationErrorCount, long InvocationCompletedCount, long InvocationsInProgressCount, decimal TotalDurationMs, double MaxDurationMs, double AvgDurationMs, double MinDurationMs, DateTimeOffset? LastUsed)
   {
+    [Required]
     public long InvocationCount { get; set; } = InvocationCount;
+    [Required]
     public long InvocationErrorCount { get; set; } = InvocationErrorCount;
+    [Required]
     public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
+    [Required]
     public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
+    [Required]
     public decimal TotalDurationMs { get; set; } = TotalDurationMs;
+    [Required]
     public double MaxDurationMs { get; set; } = MaxDurationMs;
+    [Required]
     public double AvgDurationMs { get; set;  } = AvgDurationMs;
+    [Required]
     public double MinDurationMs { get; set; } = MinDurationMs;
+    [Required]
     public DateTimeOffset? LastUsed { get; set; } = LastUsed;
   }
 
   public class FeatureVersion(string Name, long Version, BpnFeature.Environment[] Environments, FeatureStats Stats)
   {
+    [Required]
     public string Name { get; set; } = Name;
+    [Required]
     public long Version { get; set; } = Version;
+    [Required]
     public BpnFeature.Environment[] Environments { get; set; } = Environments;
+    [Required]
     public FeatureStats Stats { get; set; } = Stats;
   }
 
   public class FeatureDetails(Guid Id, List<FeatureVersion> Versions)
   {
+    [Required]
     public Guid Id { get; set; } = Id;
+    [Required]
     public List<FeatureVersion> Versions { get; set; } = Versions;
   }
 
   public class BpnContext
   {
+    [Required]
     public Guid Id { get; set; } = Guid.Empty;
+    [Required]
     public string Name { get; set; } = "";
+    [Required]
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
+    [Required]
     public DateTimeOffset CreatedTimestamp { get; set; }
+    [Required]
     public List<FeatureDetails> Features { get; set; } = [];
     public BpnContext() { }
 

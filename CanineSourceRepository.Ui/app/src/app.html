@@ -2,8 +2,120 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<meta name="description" content="Canine Source Repository Studio">
+
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<link rel="stylesheet" href="%sveltekit.assets%/css/fa.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>CSR ©Canine Development ApS</title>
+		<style>
+			html, body {
+				font-family: sans-serif;
+				height: 100%;
+				margin: 0;
+				background-color: #121212 !important; /* Dark background for body */
+				color: #e0e0e0; /* Light text color */
+
+				scrollbar-width: thin; /* For Firefox */
+        		scrollbar-color: #888 #3c3c3c; 
+			}
+			input, textarea, select {
+				background-color: #333; /* Dark background */
+				color: #fff; /* Light text color */
+				border: 1px solid #555; /* Subtle border */
+				padding: 10px;
+				border-radius: 5px;
+				font-size: 1em;
+				width: 100%;
+				box-sizing: border-box;
+				transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+			}
+			input:focus, textarea:focus, select:focus {
+				background-color: #444; /* Slightly lighter background on focus */
+				border-color: #888; /* Change border color */
+				outline: none; /* Remove default outline */
+			}
+			input::placeholder, textarea::placeholder {
+				color: #aaa; /* Lighter gray for placeholders */
+			}
+			input:disabled, textarea:disabled, select:disabled {
+				background-color: #555; /* Darker gray for disabled state */
+				color: #777; /* Faded text for disabled state */
+				border-color: #666;
+			}
+
+			/* Styling for select dropdown */
+			select {
+				appearance: none; /* Remove default select arrow for cross-browser consistency */
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 20 20'%3E%3Cpolygon fill='%23ffffff' points='0,0 10,10 20,0'/%3E%3C/svg%3E"); /* Custom dropdown arrow */
+				background-repeat: no-repeat;
+				background-position: right 10px center; /* Position the arrow */
+				background-size: 10px;
+			}
+
+			/* Optional: Styling for checkbox and radio buttons */
+			input[type="checkbox"], input[type="radio"] {
+				accent-color: #b0c4de; /* Change accent color to match dark theme */
+			}
+			
+			/* Styling for file input */
+			input[type="file"] {
+				background-color: #222; /* Dark background */
+				color: #bbb; /* Light text */
+				padding: 5px 10px;
+				border: 1px solid #555;
+			}
+
+			/* Optional: Styling for range inputs (sliders) */
+			input[type="range"] {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 100%;
+				background: #555; /* Track background */
+				height: 5px;
+				border-radius: 5px;
+			}
+
+			/* Thumb styling for range input */
+			input[type="range"]::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 15px;
+				height: 15px;
+				background: #b0c4de; /* Thumb color */
+				border-radius: 50%;
+				cursor: pointer;
+			}
+
+			input[type="range"]::-moz-range-thumb {
+				width: 15px;
+				height: 15px;
+				background: #b0c4de;
+				border-radius: 50%;
+				cursor: pointer;
+			}
+			
+			.button {
+				text-decoration: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;      
+				text-align: center;
+				border-radius: 25%;
+				font-size: 24px;
+				width:50px;
+				height: 50px;
+				color: #e0e0e0;
+				background-color: #3c3c3c;
+				transition: background-color 0.3s, color 0.3s;
+			}
+
+			.button:hover {
+				background-color: #575757; /* Hover effect */
+				color: #fff;
+			}  			
+		</style>
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

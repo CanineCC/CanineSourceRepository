@@ -1,12 +1,24 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
-using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class WaypointUpdatedOnDraftFeatureFeature : IFeature
 {
   public record DraftFeatureDiagramWaypointUpdated(ConnectionWaypoints Waypoint);
-  public record WaypointUpdatedOnDraftFeatureBody(Guid FeatureId, Guid FromTaskId, Guid ToTaskId, Position[] Positions);
+  public class WaypointUpdatedOnDraftFeatureBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public Guid FromTaskId { get; set; }
+
+    [Required]
+    public Guid ToTaskId { get; set; }
+
+    [Required]
+    public Position[] Positions { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/WaypointUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] WaypointUpdatedOnDraftFeatureBody request, CancellationToken ct) =>

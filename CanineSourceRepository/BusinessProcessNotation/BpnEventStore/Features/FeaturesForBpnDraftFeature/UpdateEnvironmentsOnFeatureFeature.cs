@@ -1,11 +1,22 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class UpdateEnvironmentsOnFeatureFeature : IFeature
 {
   public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
-  public record UpdateEnvironmentsOnFeatureBody(Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
+  public class UpdateEnvironmentsOnFeatureBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public long FeatureVersion { get; set; }
+
+    [Required]
+    public BpnContext.BpnFeature.Environment[] Environment { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPatch($"BpnEngine/v1/Feature/UpdateEnvironment", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateEnvironmentsOnFeatureBody request, CancellationToken ct) =>

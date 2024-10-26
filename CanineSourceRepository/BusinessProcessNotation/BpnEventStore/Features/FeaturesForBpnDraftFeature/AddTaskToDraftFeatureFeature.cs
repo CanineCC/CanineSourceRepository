@@ -10,17 +10,17 @@ public class AddTaskToDraftFeatureFeature : IFeature
   public class AddCodeTaskToDraftFeatureBody
   {
     [Required]
-    public required Guid FeatureId { get; set; }
+    public Guid FeatureId { get; set; }
     [Required]
-    public required CodeTask Task { get; set; }
+    public CodeTask Task { get; set; }
   }
-  public class AddApiTaskToDraftFeatureBody
+  public record AddApiTaskToDraftFeatureBody
   {
     [Required]  
-    public required Guid FeatureId { get; set; }
+    public Guid FeatureId { get; set; }
 
     [Required]  
-    public required ApiInputTask Task { get; set; }
+    public ApiInputTask Task { get; set; }
   }
   public static void RegisterBpnEventStore(WebApplication app)
   {

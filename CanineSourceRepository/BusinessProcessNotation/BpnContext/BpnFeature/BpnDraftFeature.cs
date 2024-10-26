@@ -1,5 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
+using System.ComponentModel.DataAnnotations;
 using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
@@ -182,8 +183,11 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
   }
   public class BpnDraftFeature
   {
+    [Required]
     public Guid Id { get; set; }
+    [Required]
     public BpnFeatureDiagram Diagram { get; set; } = new BpnFeatureDiagram();
+    [Required]
     public string Name { get;  set; } = string.Empty;
     /// <summary>
     /// Describe the business purpose of the entire feature in business terms, not technical ones.
@@ -191,6 +195,7 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     /// <example>
     /// Enable users to register, validate their email, and gain access to premium content.
     /// </example>
+    [Required]
     public string Objective { get;  set; } = string.Empty;
     /// <summary>
     /// A high-level description of the business process from start to finish. 
@@ -198,9 +203,12 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     /// <example>
     /// The user enters their registration details, verifies their email, and is granted access to restricted areas.
     /// </example>
+    [Required]
     public string FlowOverview { get;  set; } = string.Empty;
 
+    [Required]
     public ImmutableList<BpnTask> Tasks { get;  set; } = [];
+    [Required]
     public ImmutableList<BpnTransition> Transitions { get;  set; } = [];
     public BpnDraftFeature() { }
     public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(BpnFeatureProjection.BpnFeature.ToCode(Tasks, Transitions));

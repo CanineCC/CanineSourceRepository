@@ -4,6 +4,7 @@ using EngineEvents;
 using Marten.Events.Projections;
 using Microsoft.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 public enum Environment { Development, Testing, Staging, Production };
@@ -337,42 +338,67 @@ public class BpnFeatureStatsProjection : MultiStreamProjection<BpnFeatureStatsPr
 
   public class BpnFeatureStat
   {
+    [Required]
     public Guid Id { get; set; }
     //public long Revision { get; set; } = 0;
+    [Required]
     public Stats FeatureStats { get; set; } = new();
+    [Required]
     public Dictionary<string, Stats> VersionStats { get; set; } = [];
+    [Required]
     public Dictionary<string, TaskStats> TaskStats { get; set; } = [];
   }
   public class BpnFeatureVersionStat
   {
+    [Required]
     public Guid Id { get; set; }
     //public long Revision { get; set; } = 0;
+    [Required]
     public Stats FeatureStats { get; set; } = new();
+    [Required]
     public Stats VersionStats { get; set; } = new();
+    [Required]
     public List<TaskStats> TaskStats { get; set; } = new();
   }
   public class Stats(long InvocationCount = 0, long InvocationErrorCount = 0, long InvocationCompletedCount = 0, long InvocationsInProgressCount = 0, decimal TotalDurationMs = 0, double MaxDurationMs = 0, double AvgDurationMs = 0, double MinDurationMs = 0, DateTimeOffset? LastUsed = null)
   {
+    [Required]
     public long InvocationCount { get; set; } = InvocationCount;
+    [Required]
     public long InvocationErrorCount { get; set; } = InvocationErrorCount;
+    [Required]
     public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
+    [Required]
     public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
+    [Required]
     public decimal TotalDurationMs { get; set; } = TotalDurationMs;
+    [Required]
     public double MaxDurationMs { get; set; } = MaxDurationMs;
+    [Required]
     public double AvgDurationMs { get; set; } = AvgDurationMs;
+    [Required]
     public double MinDurationMs { get; set; } = MinDurationMs;
     public DateTimeOffset? LastUsed { get; set; } = LastUsed;
   }
   public class TaskStats(Guid Task, long InvocationCount = 0, long InvocationErrorCount = 0, long InvocationCompletedCount = 0, long InvocationsInProgressCount = 0, decimal TotalDurationMs = 0, double MaxDurationMs = 0, double AvgDurationMs = 0, double MinDurationMs = 0, DateTimeOffset? LastUsed = null)
   {
+    [Required]
     public Guid Task { get; set; } = Task;
+    [Required]
     public long InvocationCount { get; set; } = InvocationCount;
+    [Required]
     public long InvocationErrorCount { get; set; } = InvocationErrorCount;
+    [Required]
     public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
+    [Required]
     public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
+    [Required]
     public decimal TotalDurationMs { get; set; } = TotalDurationMs;
+    [Required]
     public double MaxDurationMs { get; set; } = MaxDurationMs;
+    [Required]
     public double AvgDurationMs { get; set; } = AvgDurationMs;
+    [Required]
     public double MinDurationMs { get; set; } = MinDurationMs;
     public DateTimeOffset? LastUsed { get; set; } = LastUsed;
   }

@@ -1,2 +1,9 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+    import Layout from '@/+layout.svelte';
+ </script>
+ 
+ <Layout>
+     <h1>Welcome to Canine Source Directory (CSR)</h1>
+ 
+ </Layout>
+ 

@@ -1,12 +1,17 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class ResetDraftFeatureFeature : IFeature
 {
   public record DraftFeatureReset(ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram);
-  public record ResetDraftFeatureBody(Guid FeatureId);
+  public class ResetDraftFeatureBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/DraftFeature/Reset", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] ResetDraftFeatureBody request, CancellationToken ct) =>

@@ -1,4 +1,5 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+using System.ComponentModel.DataAnnotations;
 using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
@@ -31,6 +32,7 @@ public record AssertDefinition(string Field, AssertOperation Operation, object? 
 
 public class CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
 {
+  [Required]
   public string? Code { get; set; }
   public ImmutableDictionary<string, TestCase> TestCases { get; set; } = ImmutableDictionary<string, TestCase>.Empty;
 

@@ -1,9 +1,21 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
 
 public class UpdateCodeOnTaskFeature : IFeature
 {
   public record CodeUpdatedOnTask(Guid FeatureId, Guid TaskId, string Code);
-  public record UpdateCodeOnTaskBody(Guid FeatureId, Guid TaskId, string Code);
+  public class UpdateCodeOnTaskBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public Guid TaskId { get; set; }
+
+    [Required]
+    public string Code { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPut($"BpnEngine/v1/DraftFeature/UpdateCodeOnTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateCodeOnTaskBody request, CancellationToken ct) =>

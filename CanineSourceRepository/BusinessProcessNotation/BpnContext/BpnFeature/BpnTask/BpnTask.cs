@@ -1,4 +1,5 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
@@ -17,7 +18,9 @@ public abstract class BpnTask(Guid Id, string Name)
   //  //Global settings? (multiple named instances?!)
   //}
 
+  [Required]
   public Guid Id { get; set; } = Id;
+  [Required]
   public string Name { get; set; } = Name; //sanitize?
 
   /// <summary>
@@ -26,6 +29,7 @@ public abstract class BpnTask(Guid Id, string Name)
   /// <example>
   /// Validate that the user has a verified email address before allowing access to premium content.
   /// </example>
+  [Required]
   public string BusinessPurpose { get; set; } = string.Empty;
 
   /// <summary>
@@ -34,11 +38,14 @@ public abstract class BpnTask(Guid Id, string Name)
   /// <example>
   /// Ensure the email is verified and allow access to content.
   /// </example>
+  [Required]
   public string BehavioralGoal { get; set; } = string.Empty;
 
   public string? Input { get; set; }
   public string? Output { get; set; }
+  [Required]
   public string ServiceDependency { get; set; } = typeof(NoService).Name;
+  [Required]
   public string NamedConfiguration { get; set; } = string.Empty;
   public ServiceInjection GetServiceDependency()
   {
@@ -133,7 +140,9 @@ public abstract class BpnTask(Guid Id, string Name)
   }
   public class RecordDefinition(string Name, params DataDefinition[] Fields)
   {
+    [Required]
     public string Name { get; set; } = Name;
+    [Required]
     public DataDefinition[] Fields { get; set; } = Fields;
 
     public string ToCode()

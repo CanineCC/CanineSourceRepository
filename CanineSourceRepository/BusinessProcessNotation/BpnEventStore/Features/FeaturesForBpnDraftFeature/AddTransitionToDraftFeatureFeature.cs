@@ -1,12 +1,20 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class AddTransitionToDraftFeatureFeature : IFeature
 {
   public record DraftFeatureTransitionAdded(BpnTransition Transition);
-  public record AddTransitionToDraftFeatureBody(Guid FeatureId, BpnTransition Transition);
+  public class AddTransitionToDraftFeatureBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public BpnTransition Transition { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/DraftFeature/AddTransition", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddTransitionToDraftFeatureBody request, CancellationToken ct) =>

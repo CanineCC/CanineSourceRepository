@@ -1,11 +1,22 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
+﻿using System.ComponentModel.DataAnnotations;
+using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
 
 public class AddRecordToTaskFeature : IFeature
 {
   public record RecordAddedToTask(Guid FeatureId, Guid TaskId, RecordDefinition RecordDefinition);
-  public record AddRecordToTaskBody(Guid FeatureId, Guid TaskId, RecordDefinition RecordDefinition);
+  public class AddRecordToTaskBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public Guid TaskId { get; set; }
+
+    [Required]
+    public RecordDefinition RecordDefinition { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/DraftFeature/AddRecordToTask", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddRecordToTaskBody request, CancellationToken ct) =>

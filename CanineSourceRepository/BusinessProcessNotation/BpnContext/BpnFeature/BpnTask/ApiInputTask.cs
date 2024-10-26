@@ -1,9 +1,11 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 
 public class ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
+  [Required]
   public string[] AccessScopes { get; set; } = AccessScopes;
   public override string ToCode(bool includeNamespace = true)
   {

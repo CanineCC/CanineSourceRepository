@@ -1,9 +1,20 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnContext;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnContext;
 
 public class CreateContextFeature : IFeature
 {
   public record ContextCreated(Guid Id, string Name);
-  public record CreateContextBody(string Name);
+  public class CreateContextBody
+  {
+    public CreateContextBody(string name)
+    {
+      Name = name ?? throw new ArgumentNullException(nameof(name));
+    }
+
+    [Required]
+    public string Name { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/Context/Add", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CreateContextBody request, CancellationToken ct) =>

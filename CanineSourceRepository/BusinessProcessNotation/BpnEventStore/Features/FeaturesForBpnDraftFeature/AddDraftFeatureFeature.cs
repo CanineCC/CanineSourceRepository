@@ -1,9 +1,24 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class AddDraftFeatureFeature : IFeature
 {
   public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-  public record AddDraftFeatureBody(Guid BpnContextId, string Name, string Objective, string FlowOverview);
+  public record AddDraftFeatureBody
+  {
+    [Required]
+    public Guid BpnContextId { get; set; }
+
+    [Required]
+    public string Name { get; set; }
+
+    [Required]
+    public string Objective { get; set; }
+
+    [Required]
+    public string FlowOverview { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/DraftFeature/Add", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddDraftFeatureBody request, CancellationToken ct) =>

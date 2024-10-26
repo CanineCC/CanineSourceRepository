@@ -1,4 +1,5 @@
 ﻿using Microsoft.Net.Http.Headers;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 //TODO: if not on environment, return "not found"
@@ -7,7 +8,28 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features;
 public class ServerHealthFeature : IFeature
 {
   private readonly static DateTimeOffset ServerStartTime = DateTimeOffset.UtcNow;
-  public record ServerHealth(bool IsHealthy, string Message, DateTimeOffset ServerStartedTime, int ServerMemoryUsageInMegaBytes);
+  public record ServerHealth
+  {
+    public ServerHealth(bool isHealthy, string message, DateTimeOffset serverStartedTime, int serverMemoryUsageInMegaBytes)
+    {
+      IsHealthy = isHealthy;
+      Message = message ?? throw new ArgumentNullException(nameof(message));
+      ServerStartedTime = serverStartedTime;
+      ServerMemoryUsageInMegaBytes = serverMemoryUsageInMegaBytes;
+    }
+
+    [Required]
+    public bool IsHealthy { get; set; }
+
+    [Required]
+    public string Message { get; set; }
+
+    [Required]
+    public DateTimeOffset ServerStartedTime { get; set; }
+
+    [Required]
+    public int ServerMemoryUsageInMegaBytes { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapGet($"BpnEngine/v1/Health", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
@@ -38,10 +60,10 @@ public class ServerHealthFeature : IFeature
         MaxAge = TimeSpan.FromSeconds(15)
       };
       return Results.Ok(new ServerHealth(
-          IsHealthy: true,
-          Message: "Server is OK.",
-          ServerStartedTime: ServerStartTime,
-          ServerMemoryUsageInMegaBytes: memoryUsageMB
+          isHealthy: true,
+          message: "Server is OK.",
+          serverStartedTime: ServerStartTime,
+          serverMemoryUsageInMegaBytes: memoryUsageMB
         ));
     }).WithName("ServerHealth")
      .Produces(StatusCodes.Status200OK, typeof(ServerHealth))

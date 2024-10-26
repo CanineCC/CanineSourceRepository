@@ -1,12 +1,23 @@
 ﻿using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureDiagram;
 using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class PositionUpdatedOnDraftFeatureFeature : IFeature
 {
   public record DraftFeatureDiagramPositionUpdated(BpnPosition Position);
-  public record PositionUpdatedOnDraftFeatureBody(Guid FeatureId, Guid TaskId, Position Position);
+  public class PositionUpdatedOnDraftFeatureBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public Guid TaskId { get; set; }
+
+    [Required]
+    public Position Position { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPatch($"BpnEngine/v1/DraftFeature/Diagram/PositionUpdated", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] PositionUpdatedOnDraftFeatureBody request, CancellationToken ct) =>

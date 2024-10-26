@@ -9,7 +9,9 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"types": ["node"]
+
 	}
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
@@ -17,3 +19,12 @@
 	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
 	// from the referenced tsconfig.json - TypeScript does not merge them in
 }
+
+
+	  //	"baseUrl": ".",
+      //  "paths": {
+      //      "@/*": ["src/*"],
+      //      "@/*": ["src/*"],
+      //      "@/*": ["src/*"],
+      //      '@signalRService': path.resolve(__dirname, 'src/signalRService'),
+      //      '@BpnEngineClient': path.resolve(__dirname, 'node_modules/BpnEngineClient'),

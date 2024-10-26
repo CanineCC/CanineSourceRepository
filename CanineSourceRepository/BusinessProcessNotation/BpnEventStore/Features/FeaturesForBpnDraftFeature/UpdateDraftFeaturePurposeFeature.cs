@@ -1,11 +1,25 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class UpdateDraftFeaturePurposeFeature : IFeature
 {
   public record DraftFeaturePurposeChanged(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-  public record UpdateDraftFeaturePurposeBody(Guid FeatureId, string Name, string Objective, string FlowOverview);
+  public class UpdateDraftFeaturePurposeBody
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+
+    [Required]
+    public string Name { get; set; }
+
+    [Required]
+    public string Objective { get; set; }
+
+    [Required]
+    public string FlowOverview { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPatch($"BpnEngine/v1/DraftFeature/UpdatePurpose", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateDraftFeaturePurposeBody request, CancellationToken ct) =>
