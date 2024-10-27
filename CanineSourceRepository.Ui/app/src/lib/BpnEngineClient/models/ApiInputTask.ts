@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TestCase } from './TestCase';
+import {
+    TestCaseFromJSON,
+    TestCaseFromJSONTyped,
+    TestCaseToJSON,
+} from './TestCase';
 import type { RecordDefinition } from './RecordDefinition';
 import {
     RecordDefinitionFromJSON,
@@ -64,6 +70,12 @@ export interface ApiInputTask {
     output?: string | null;
     /**
      * 
+     * @type {Array<TestCase>}
+     * @memberof ApiInputTask
+     */
+    testCases: Array<TestCase>;
+    /**
+     * 
      * @type {string}
      * @memberof ApiInputTask
      */
@@ -102,6 +114,7 @@ export function instanceOfApiInputTask(value: object): value is ApiInputTask {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
+    if (!('testCases' in value) || value['testCases'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
     if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
@@ -126,6 +139,7 @@ export function ApiInputTaskFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'behavioralGoal': json['behavioralGoal'],
         'input': json['input'] == null ? undefined : json['input'],
         'output': json['output'] == null ? undefined : json['output'],
+        'testCases': ((json['testCases'] as Array<any>).map(TestCaseFromJSON)),
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
         'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
@@ -146,6 +160,7 @@ export function ApiInputTaskToJSON(value?: ApiInputTask | null): any {
         'behavioralGoal': value['behavioralGoal'],
         'input': value['input'],
         'output': value['output'],
+        'testCases': ((value['testCases'] as Array<any>).map(TestCaseToJSON)),
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
         'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),

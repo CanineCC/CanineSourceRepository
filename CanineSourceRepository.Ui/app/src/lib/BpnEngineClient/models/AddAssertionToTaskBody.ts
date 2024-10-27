@@ -23,70 +23,79 @@ import {
 /**
  * 
  * @export
- * @interface TestCase
+ * @interface AddAssertionToTaskBody
  */
-export interface TestCase {
+export interface AddAssertionToTaskBody {
     /**
      * 
      * @type {string}
-     * @memberof TestCase
+     * @memberof AddAssertionToTaskBody
      */
-    id: string;
+    featureId: string;
     /**
      * 
      * @type {string}
-     * @memberof TestCase
+     * @memberof AddAssertionToTaskBody
+     */
+    taskId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddAssertionToTaskBody
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof TestCase
+     * @memberof AddAssertionToTaskBody
      */
     input: string;
     /**
      * 
      * @type {Array<AssertDefinition>}
-     * @memberof TestCase
+     * @memberof AddAssertionToTaskBody
      */
     asserts: Array<AssertDefinition>;
 }
 
 /**
- * Check if a given object implements the TestCase interface.
+ * Check if a given object implements the AddAssertionToTaskBody interface.
  */
-export function instanceOfTestCase(value: object): value is TestCase {
-    if (!('id' in value) || value['id'] === undefined) return false;
+export function instanceOfAddAssertionToTaskBody(value: object): value is AddAssertionToTaskBody {
+    if (!('featureId' in value) || value['featureId'] === undefined) return false;
+    if (!('taskId' in value) || value['taskId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('input' in value) || value['input'] === undefined) return false;
     if (!('asserts' in value) || value['asserts'] === undefined) return false;
     return true;
 }
 
-export function TestCaseFromJSON(json: any): TestCase {
-    return TestCaseFromJSONTyped(json, false);
+export function AddAssertionToTaskBodyFromJSON(json: any): AddAssertionToTaskBody {
+    return AddAssertionToTaskBodyFromJSONTyped(json, false);
 }
 
-export function TestCaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TestCase {
+export function AddAssertionToTaskBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): AddAssertionToTaskBody {
     if (json == null) {
         return json;
     }
     return {
         
-        'id': json['id'],
+        'featureId': json['featureId'],
+        'taskId': json['taskId'],
         'name': json['name'],
         'input': json['input'],
         'asserts': ((json['asserts'] as Array<any>).map(AssertDefinitionFromJSON)),
     };
 }
 
-export function TestCaseToJSON(value?: TestCase | null): any {
+export function AddAssertionToTaskBodyToJSON(value?: AddAssertionToTaskBody | null): any {
     if (value == null) {
         return value;
     }
     return {
         
-        'id': value['id'],
+        'featureId': value['featureId'],
+        'taskId': value['taskId'],
         'name': value['name'],
         'input': value['input'],
         'asserts': ((value['asserts'] as Array<any>).map(AssertDefinitionToJSON)),

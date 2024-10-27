@@ -1,11 +1,11 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './AddApiTaskToDraftFeatureBody';
+export * from './AddAssertionToTaskBody';
 export * from './AddCodeTaskToDraftFeatureBody';
 export * from './AddDraftFeatureBody';
 export * from './AddRecordToTaskBody';
 export * from './AddTransitionToDraftFeatureBody';
-export * from './Api';
 export * from './ApiInputTask';
 export * from './AssertDefinition';
 export * from './AssertOperation';
@@ -23,6 +23,7 @@ export * from './CompileError';
 export * from './ConnectionWaypoints';
 export * from './CreateContextBody';
 export * from './DataDefinition';
+export * from './DeleteAssertionOnTask';
 export * from './DeleteRecordOnTaskBody';
 export * from './DurationClassification';
 export * from './Environment';
@@ -39,6 +40,7 @@ export * from './ServerHealth';
 export * from './Stats';
 export * from './TaskStats';
 export * from './TestCase';
+export * from './UpdateAssertionOnTaskBody';
 export * from './UpdateCodeOnTaskBody';
 export * from './UpdateDraftFeaturePurposeBody';
 export * from './UpdateEnvironmentsOnFeatureBody';

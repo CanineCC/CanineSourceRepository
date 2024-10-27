@@ -9,11 +9,11 @@ apis/ServerApi.ts
 apis/index.ts
 index.ts
 models/AddApiTaskToDraftFeatureBody.ts
+models/AddAssertionToTaskBody.ts
 models/AddCodeTaskToDraftFeatureBody.ts
 models/AddDraftFeatureBody.ts
 models/AddRecordToTaskBody.ts
 models/AddTransitionToDraftFeatureBody.ts
-models/Api.ts
 models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
@@ -31,6 +31,7 @@ models/CompileError.ts
 models/ConnectionWaypoints.ts
 models/CreateContextBody.ts
 models/DataDefinition.ts
+models/DeleteAssertionOnTask.ts
 models/DeleteRecordOnTaskBody.ts
 models/DurationClassification.ts
 models/Environment.ts
@@ -47,6 +48,7 @@ models/ServerHealth.ts
 models/Stats.ts
 models/TaskStats.ts
 models/TestCase.ts
+models/UpdateAssertionOnTaskBody.ts
 models/UpdateCodeOnTaskBody.ts
 models/UpdateDraftFeaturePurposeBody.ts
 models/UpdateEnvironmentsOnFeatureBody.ts

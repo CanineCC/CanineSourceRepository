@@ -1,6 +1,9 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
 using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
 using System.ComponentModel.DataAnnotations;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.AddAssertionToTaskFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.DeleteAssertionOnTaskFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.UpdateAssertionOnTaskFeature;
 using static CanineSourceRepository.DynamicCompiler;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
@@ -93,7 +96,6 @@ public class BpnDraftFeatureAggregate
     aggregate.Objective = @event.Objective;
     aggregate.FlowOverview = @event.FlowOverview;
   }
-
   public void Apply(BpnDraftFeatureAggregate aggregate, DraftFeatureTaskAdded @event)
   {
     aggregate.Tasks = aggregate.Tasks.Add(@event.Task);
@@ -130,7 +132,6 @@ public class BpnDraftFeatureAggregate
     aggregate.Diagram.BpnConnectionWaypoints.RemoveAll(p => p.FromBPN == @event.Waypoint.FromBPN && p.ToBPN == @event.Waypoint.ToBPN);
     aggregate.Diagram.BpnConnectionWaypoints.Add(@event.Waypoint);
   }
-
   public void Apply(BpnDraftFeatureAggregate aggregate, TaskPurposeUpdated @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
@@ -164,6 +165,22 @@ public class BpnDraftFeatureAggregate
     task.ServiceDependency = @event.ServiceDependency;
     task.NamedConfiguration = @event.NamedConfiguration;
   }
+  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionAddedToTaskBody @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.AddTestCase(@event.TestCase);
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionDeletedOnTask @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.RemoveTestCase(@event.AssertionId);
+  }
+  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionUpdatedOnTaskBody @event)
+  {
+    var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
+    task.AddTestCase(@event.TestCase);
+  }
+
 }
 
 public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureProjection.BpnDraftFeature>
@@ -296,5 +313,21 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
       task.ServiceDependency = @event.ServiceDependency;
       task.NamedConfiguration = @event.NamedConfiguration;
     }
+    public void Apply(BpnDraftFeature projection, AssertionAddedToTaskBody @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.AddTestCase(@event.TestCase);
+    }
+    public void Apply(BpnDraftFeature projection, AssertionDeletedOnTask @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.RemoveTestCase(@event.AssertionId);
+    }
+    public void Apply(BpnDraftFeature projection, AssertionUpdatedOnTaskBody @event)
+    {
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
+      task.AddTestCase(@event.TestCase);
+    }
+
   }
 }

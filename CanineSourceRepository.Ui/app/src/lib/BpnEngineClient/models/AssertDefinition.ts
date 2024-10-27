@@ -40,10 +40,10 @@ export interface AssertDefinition {
     operation?: AssertOperation;
     /**
      * 
-     * @type {any}
+     * @type {string}
      * @memberof AssertDefinition
      */
-    expectedValue?: any | null;
+    expectedValue?: string | null;
 }
 
 

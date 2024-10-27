@@ -53,6 +53,15 @@
             behavioralGoal: task.behavioralGoal
         }});
     }
+    async function  addAssertion() {
+      draftFeatureTaskApi.addAssertion({addAssertionToTaskBody: { 
+        featureId: featureId,
+        taskId: task.id,
+        name: "<assertion>",
+        input: "{}",
+        asserts: []
+      }});
+    }
 
     async function saveServiceDependency() {
         draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: {
@@ -106,7 +115,18 @@
 
       {/if}
       {#if activeTab === 'verification'}
-        <p>BDD test cases will be listed here.</p>
+      <div>
+        <div style="display: grid; grid-template-columns: auto 50px; gap: 12px;">
+          <select id="testCases">
+            <option>Select a Test case</option>
+            {#each task.testCases as test}
+                <option value={test.id}>{test.name}</option>
+            {/each}
+          </select>
+          <a id="addAssertion" href="#addAssertion" title="Add assertion"class="button" on:click={addAssertion}><i class="fas fa-plus "></i></a>
+        </div>
+
+      </div>
       {/if}
   
       {#if activeTab === 'code'}

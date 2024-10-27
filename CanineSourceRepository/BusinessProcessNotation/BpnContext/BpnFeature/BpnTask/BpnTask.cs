@@ -43,6 +43,105 @@ public abstract class BpnTask(Guid Id, string Name)
 
   public string? Input { get; set; }
   public string? Output { get; set; }
+
+
+
+  [Required]
+  public List<TestCase> TestCases { get; set; } = [];
+
+  public TestCase[] AddTestCase(TestCase record)
+  {
+    TestCases.RemoveAll(p => p.Id == record.Id);
+    TestCases.Add(record);
+    return TestCases.OrderBy(p=>p.Name).ToArray();
+  }
+
+  public TestCase[] RemoveTestCase(Guid id)
+  {
+    TestCases.RemoveAll(p => p.Id == id);
+    return TestCases.OrderBy(p => p.Name).ToArray();
+  }
+
+  public async Task<List<TestResult>> RunTests(object? serviceInjection, Assembly assembly)
+  {
+
+    var results = new List<TestResult>();
+    foreach (var testcase in TestCases)
+    {
+      try
+      {
+        dynamic? result = await Execute(testcase.Input, serviceInjection, assembly);
+
+        foreach (var assert in testcase.Asserts)
+        {
+          var field = result?.GetType().GetProperty(assert.Field)?.GetValue(result, null);
+          var fieldAsStr = (string?)(field?.ToString());
+          var expectedValueAsStr = assert.ExpectedValue;
+          TestResult testResult = assert.Operation switch
+          {
+            AssertOperation.True => field == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.False => field == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.Equal => assert.ExpectedValue == fieldAsStr
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.NotEqual => assert.ExpectedValue != fieldAsStr
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.Empty => field == null || string.IsNullOrEmpty(fieldAsStr) == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.NotEmpty => field != null && string.IsNullOrEmpty(fieldAsStr) == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.StartWith => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.StartsWith(expectedValueAsStr) == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.DoesNotStartWith => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.StartsWith(expectedValueAsStr) == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.EndWith => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.EndsWith(expectedValueAsStr) == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.DoesNotEndWith => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.EndsWith(expectedValueAsStr) == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.Contains => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.Contains(expectedValueAsStr) == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.DoesNotContain => fieldAsStr != null && expectedValueAsStr != null && fieldAsStr.Contains(expectedValueAsStr) == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.MatchRegEx => fieldAsStr != null && expectedValueAsStr != null && Regex.IsMatch(fieldAsStr, expectedValueAsStr) == true
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.DoesNotMatchRegEx => fieldAsStr != null && expectedValueAsStr != null && Regex.IsMatch(fieldAsStr, expectedValueAsStr) == false
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.GreaterThan => field > assert.ExpectedValue//TODO: numbers?, dates?
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            AssertOperation.LessThan => field < assert.ExpectedValue//TODO: numbers?, dates?
+                            ? new TestResult(testcase.Name, true)
+                            : new TestResult(testcase.Name, false, "expected true"),
+            _ => throw new NotImplementedException($"{assert.Operation} is not implemented"),
+          };
+          results.Add(testResult);
+        }
+      }
+      catch (Exception e)
+      {
+        results.Add(new TestResult(testcase.Name, false, e.Message));
+      }
+
+    }
+    return results;
+  }
+
+
   [Required]
   public string ServiceDependency { get; set; } = typeof(NoService).Name;
   [Required]

@@ -15,18 +15,27 @@
 
 import * as runtime from '../runtime';
 import type {
+  AddAssertionToTaskBody,
   AddRecordToTaskBody,
+  DeleteAssertionOnTask,
   DeleteRecordOnTaskBody,
+  UpdateAssertionOnTaskBody,
   UpdateCodeOnTaskBody,
   UpdateRecordOnTaskBody,
   UpdateServiceDependencyBody,
   UpdateTaskPurposeFeatureBody,
 } from '../models/index';
 import {
+    AddAssertionToTaskBodyFromJSON,
+    AddAssertionToTaskBodyToJSON,
     AddRecordToTaskBodyFromJSON,
     AddRecordToTaskBodyToJSON,
+    DeleteAssertionOnTaskFromJSON,
+    DeleteAssertionOnTaskToJSON,
     DeleteRecordOnTaskBodyFromJSON,
     DeleteRecordOnTaskBodyToJSON,
+    UpdateAssertionOnTaskBodyFromJSON,
+    UpdateAssertionOnTaskBodyToJSON,
     UpdateCodeOnTaskBodyFromJSON,
     UpdateCodeOnTaskBodyToJSON,
     UpdateRecordOnTaskBodyFromJSON,
@@ -37,12 +46,24 @@ import {
     UpdateTaskPurposeFeatureBodyToJSON,
 } from '../models/index';
 
+export interface AddAssertionRequest {
+    addAssertionToTaskBody: AddAssertionToTaskBody;
+}
+
 export interface AddRecordToTaskFeatureRequest {
     addRecordToTaskBody: AddRecordToTaskBody;
 }
 
+export interface DeleteAssertionRequest {
+    deleteAssertionOnTask: DeleteAssertionOnTask;
+}
+
 export interface DeleteRecordOnTaskFeatureRequest {
     deleteRecordOnTaskBody: DeleteRecordOnTaskBody;
+}
+
+export interface UpdateAssertionRequest {
+    updateAssertionOnTaskBody: UpdateAssertionOnTaskBody;
 }
 
 export interface UpdateCodeOnTaskFeatureRequest {
@@ -65,6 +86,39 @@ export interface UpdateTaskPurposeFeatureRequest {
  * 
  */
 export class DraftFeatureTaskApi extends runtime.BaseAPI {
+
+    /**
+     */
+    async addAssertionRaw(requestParameters: AddAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['addAssertionToTaskBody'] == null) {
+            throw new runtime.RequiredError(
+                'addAssertionToTaskBody',
+                'Required parameter "addAssertionToTaskBody" was null or undefined when calling addAssertion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/BpnEngine/v1/DraftFeature/AddAssertion`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddAssertionToTaskBodyToJSON(requestParameters['addAssertionToTaskBody']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async addAssertion(requestParameters: AddAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addAssertionRaw(requestParameters, initOverrides);
+    }
 
     /**
      */
@@ -101,6 +155,39 @@ export class DraftFeatureTaskApi extends runtime.BaseAPI {
 
     /**
      */
+    async deleteAssertionRaw(requestParameters: DeleteAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['deleteAssertionOnTask'] == null) {
+            throw new runtime.RequiredError(
+                'deleteAssertionOnTask',
+                'Required parameter "deleteAssertionOnTask" was null or undefined when calling deleteAssertion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/BpnEngine/v1/DraftFeature/DeleteAssertion`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DeleteAssertionOnTaskToJSON(requestParameters['deleteAssertionOnTask']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async deleteAssertion(requestParameters: DeleteAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteAssertionRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
     async deleteRecordOnTaskFeatureRaw(requestParameters: DeleteRecordOnTaskFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters['deleteRecordOnTaskBody'] == null) {
             throw new runtime.RequiredError(
@@ -130,6 +217,39 @@ export class DraftFeatureTaskApi extends runtime.BaseAPI {
      */
     async deleteRecordOnTaskFeature(requestParameters: DeleteRecordOnTaskFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteRecordOnTaskFeatureRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
+    async updateAssertionRaw(requestParameters: UpdateAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['updateAssertionOnTaskBody'] == null) {
+            throw new runtime.RequiredError(
+                'updateAssertionOnTaskBody',
+                'Required parameter "updateAssertionOnTaskBody" was null or undefined when calling updateAssertion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/BpnEngine/v1/DraftFeature/UpdateAssertion`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateAssertionOnTaskBodyToJSON(requestParameters['updateAssertionOnTaskBody']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async updateAssertion(requestParameters: UpdateAssertionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateAssertionRaw(requestParameters, initOverrides);
     }
 
     /**

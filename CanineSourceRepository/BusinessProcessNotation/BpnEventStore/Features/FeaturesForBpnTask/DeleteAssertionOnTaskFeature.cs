@@ -1,37 +1,42 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class DeleteAssertionOnTaskFeature// : IFeature
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
+
+public class DeleteAssertionOnTaskFeature : IFeature
 {
-  //public record DraftFeatureCreated(Guid ContextId, Guid FeatureId, string Name, string Objective, string FlowOverview);
-  //public record AddDraftFeatureBody(Guid BpnContextId, string Name, string Objective, string FlowOverview);
+  public record AssertionDeletedOnTask(Guid FeatureId, Guid TaskId, Guid AssertionId);
+  public record DeleteAssertionOnTask
+  {
+    [Required]
+    public Guid FeatureId { get; set; }
+    [Required]
+    public Guid TaskId { get; set; }
+    [Required]
+    public Guid AssertionId { get; set; }
+  }
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    //app.MapPost($"BpnEngine/v1/DraftFeature/Add", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddDraftFeatureBody request, CancellationToken ct) =>
-    //{
-    //  var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/Add", request.BpnContextId, request.Name, request.Objective, request.FlowOverview, ct);
-    //  return Results.Ok(id);
-    //}).WithName("AddDraftFeature")
-    // .Produces(StatusCodes.Status200OK)
-    // .WithTags("DraftFeature")
-    // .Accepts(typeof(AddDraftFeatureBody), false, "application/json");
+    app.MapDelete($"BpnEngine/v1/DraftFeature/DeleteAssertion", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] DeleteAssertionOnTask request, CancellationToken ct) =>
+    {
+      await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/DeleteAssertion", request.FeatureId, request.TaskId, request.AssertionId, ct);
+      return Results.Accepted();
+    }).WithName("DeleteAssertion")
+     .Produces(StatusCodes.Status202Accepted)
+     .WithTags("DraftFeature.Task")
+     .Accepts(typeof(DeleteAssertionOnTask), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-    //    options.Events.AddEventType<DraftFeatureCreated>();
+    options.Events.AddEventType<AssertionDeletedOnTask>();
   }
-  public static async Task Execute(IDocumentSession session, string causationId, CancellationToken ct)
+  public static async Task Execute(IDocumentSession session, string causationId, Guid featureId, Guid taskId, Guid assertionId, CancellationToken ct)
   {
-    //var featureId = Guid.CreateVersion7();
-    //
-    //var @event = new DraftFeatureCreated(
-    //ContextId: bpnContextId,
-    //FeatureId: featureId,
-    //Name: name,
-    //Objective: objective,
-    //FlowOverview: flowOverview);
-    //await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, @event);
-    //
-    //return featureId;
+    //TODO validate exist? (feature, task assertion)
+    var @event = new AssertionDeletedOnTask(
+    FeatureId: featureId,
+    TaskId: taskId,
+    AssertionId: assertionId);
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, @event);
   }
 }

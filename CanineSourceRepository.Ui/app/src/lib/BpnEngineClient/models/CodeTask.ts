@@ -70,6 +70,12 @@ export interface CodeTask {
     output?: string | null;
     /**
      * 
+     * @type {Array<TestCase>}
+     * @memberof CodeTask
+     */
+    testCases: Array<TestCase>;
+    /**
+     * 
      * @type {string}
      * @memberof CodeTask
      */
@@ -100,12 +106,6 @@ export interface CodeTask {
     code: string;
     /**
      * 
-     * @type {{ [key: string]: TestCase; }}
-     * @memberof CodeTask
-     */
-    testCases?: { [key: string]: TestCase; };
-    /**
-     * 
      * @type {string}
      * @memberof CodeTask
      */
@@ -126,6 +126,7 @@ export function instanceOfCodeTask(value: object): value is CodeTask {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
+    if (!('testCases' in value) || value['testCases'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
     if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
@@ -150,12 +151,12 @@ export function CodeTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'behavioralGoal': json['behavioralGoal'],
         'input': json['input'] == null ? undefined : json['input'],
         'output': json['output'] == null ? undefined : json['output'],
+        'testCases': ((json['testCases'] as Array<any>).map(TestCaseFromJSON)),
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
         'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
         'validDatatypes': json['validDatatypes'],
         'code': json['code'],
-        'testCases': json['testCases'] == null ? undefined : (mapValues(json['testCases'], TestCaseFromJSON)),
         'recordsAsCode': json['recordsAsCode'] == null ? undefined : json['recordsAsCode'],
         'methodSignatureAsCode': json['methodSignatureAsCode'] == null ? undefined : json['methodSignatureAsCode'],
     };
@@ -173,12 +174,12 @@ export function CodeTaskToJSON(value?: CodeTask | null): any {
         'behavioralGoal': value['behavioralGoal'],
         'input': value['input'],
         'output': value['output'],
+        'testCases': ((value['testCases'] as Array<any>).map(TestCaseToJSON)),
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
         'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
         'validDatatypes': value['validDatatypes'],
         'code': value['code'],
-        'testCases': value['testCases'] == null ? undefined : (mapValues(value['testCases'], TestCaseToJSON)),
         'recordsAsCode': value['recordsAsCode'],
         'methodSignatureAsCode': value['methodSignatureAsCode'],
     };
