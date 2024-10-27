@@ -7,11 +7,14 @@
     let newRecordTypeName : string = "";
 
     const draftFeatureTaskApi = new DraftFeatureTaskApi();
+
+  function updateDependency() {
+    draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: { featureId: featureId, taskId: task.id, serviceDependency: task.serviceDependency, namedConfiguration: task.namedConfiguration}});
+  }
   function addRecordType() {
     draftFeatureTaskApi.addRecordToTaskFeature({ addRecordToTaskBody:{ featureId:featureId, taskId:task.id, recordDefinition:{ name: newRecordTypeName, fields:[]} } });
     newRecordTypeName = "";
   }
-  
   function removeRecordType(index: number) {
     draftFeatureTaskApi.deleteRecordOnTaskFeature({deleteRecordOnTaskBody: { featureId: featureId, taskId:task.id, name: task.recordTypes[index].name}});
   }
@@ -19,13 +22,24 @@
 
     draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id, recordIndex: index , recordDefinition: task.recordTypes[index]}});
   }
+  function addFieldToRecordType(index : number){
+    task.recordTypes[index].fields.push({ name:"<new>", type:"string", isMandatory:false, isCollection :false });
+    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id, recordIndex: index , recordDefinition: task.recordTypes[index]}});
+  }
+
+  //NEXT STEPS:
+  // - ASSERTIONS
+  // - DependencyInjection/Services list (include a mock for each) ==> Consider how to help for non-developers (SQL, EventSourced, JBOD/JSON, Binary)
+  // - Named configuration (pr. service) / VAULT !
+  // - DRAFT => DEVELOPMENT-ENV => TEST-ENV => STAG-ENV => PROD-ENV (version <Prod.Stag.Test.Development> ) (review/approval between each, different goal/objective)
+  // - SOFTWARE SYSTEM (name, purpose) => CONTAINER (name, type ex. webapi) => CONTEXT => FEATURES/CODE ... C4
+
     // Dropdown options for serviceDependency (will come from actual services in future)
     const serviceOptions = ["Database - postgresql", "Message Queue - RabbitMQ"];
     // Placeholder for named configuration (can later be fetched based on serviceDependency)
     const namedConfigOptions = ["customer database", "inventory database"];
   
-    let activeTab = 'overview'; // Default active tab
-    // Function to set active tab
+    let activeTab = 'overview'; 
     function setActiveTab(tab: string) {
       activeTab = tab;
     }
@@ -49,14 +63,10 @@
         }});
     }
     //TODO featureTaskApi.
-        //TODO featureTaskApi.AddRecord
-        //TODO featureTaskApi.UpdateRecord
-        //TODO featureTaskApi.DeleteRecord
         //TODO featureTaskApi.AddAssertion
         //TODO featureTaskApi.UpdateAssertion
         //TODO featureTaskApi.DeleteAssertion
         //TODO featureTaskApi.UpdateCode
-
         //TODO: Add Assertion-list to task!
 
        /*await draftFeatureApi.updateDraftFeaturePurpose({ updateDraftFeaturePurposeBody : {
@@ -71,10 +81,11 @@
   <div class="tab-container">
     <div class="tabs">
       <button class={activeTab === 'overview' ? 'active' : ''} on:click={() => setActiveTab('overview')}>Overview</button>
-      <button class={activeTab === 'service-dependency' ? 'active' : ''} on:click={() => setActiveTab('service-dependency')}>Service dependency</button>
       <button class={activeTab === 'data' ? 'active' : ''} on:click={() => setActiveTab('data')}>Data Structures</button>
+      <button class={activeTab === 'inputoutput' ? 'active' : ''} on:click={() => setActiveTab('inputoutput')}>Input & output</button>
+      <button class={activeTab === 'service-dependency' ? 'active' : ''} on:click={() => setActiveTab('service-dependency')}>Service dependency</button>
       <button class={activeTab === 'verification' ? 'active' : ''} on:click={() => setActiveTab('verification')}>Verification</button>
-      <button class={activeTab === 'code' ? 'active' : ''} on:click={() => setActiveTab('code')}>Code Viewer</button>
+      <button class={activeTab === 'code' ? 'active' : ''} on:click={() => setActiveTab('code')}>Code</button>
     </div>
   
     <div class="tab-content">
@@ -123,69 +134,9 @@
         </div>
         <a href="#top" title="Save" class="button" on:click={saveServiceDependency}><i class="fas fa-save "></i></a>
       {/if}
-
-
-      {#if activeTab === 'data'}
-        {#if !readonly}
-          <h2>Create record type</h2>
-          <div style="display: grid; grid-template-columns: auto 50px; gap: 12px;">
-            <input type="text" bind:value={newRecordTypeName} placeholder="Record Type Name">
-            <a id="addRecord" href="#addRecord" title="Add Record Type"class="button" on:click={addRecordType}><i class="fas fa-plus "></i></a>
-          </div>
-          <hr style="width: 95%; padding: 0; margin: 0 auto; background-color: #333;  border-color: #333;"/>
-        {/if}
-      <h2 id="editRecordType">Edit record type</h2>
-      <table>
-        <thead>
-          <tr>
-            <th >Record name</th>
-            <th style="display: grid; grid-template-columns: auto auto; gap: 4px; padding: 0 2px;">
-              <span>Field name</span>
-              <span>Field type</span>
-            </th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each task.recordTypes as recordType, i}
-          <tr style="vertical-align: top;">
-            <td>
-              <input readonly={readonly}  type="text" bind:value={recordType.name} placeholder="Record Type Name">
-            </td>
-              <ul>
-                {#each recordType.fields as field}
-                  <li style="display: grid; grid-template-columns: auto auto; gap: 4px; padding: 0 2px;">
-                    <input readonly={readonly}  type="text" bind:value={field.name}>
-                    <select disabled={readonly}  bind:value={field.type}>
-                      <option disabled selected>Select data type</option>
-                      {#each task.validDatatypes as dataType}
-                        {#if dataType!=recordType.name}
-                         <option value={dataType}>{dataType}</option>
-                        {/if}
-                      {/each}
-                    </select>
-                  </li>
-
-                {/each}
-              </ul>
-            <td>
-            <td style="width:145px">
-              {#if !readonly}
-                <div style="display: flex;  gap: 25px; flex-flow: row-reverse;">
-                  <a href="#editRecordType" title={`Save '${recordType.name}'`}  class="button" on:click={() => { updateRecordType(i);}}><i class="fas fa-save "></i></a>
-                  <a href="#editRecordType" title={`Delete '${recordType.name}'`} class="button" on:click={() => { removeRecordType(i);}}><i class="fas fa-trash "></i></a>
-                </div>
-              {/if}
-            </td>
-
-          </tr>
-        {/each}
-          
-
-        </tbody>
-      </table>
+      
+      {#if activeTab === 'inputoutput'}
       <div>
-        <h4>Select Input/Output Record Type</h4>
         <label for="input-record">Input Record:</label>
         <select disabled={readonly}  id="input-record" bind:value={task.input}>
           <option disabled selected>Select input</option>
@@ -201,7 +152,80 @@
             <option value={recordType.name}>{recordType.name}</option>
           {/each}
         </select>
+        {#if !readonly}
+          <div style="display: flex;  padding: 12px 0; gap: 25px; flex-flow: row-reverse;">
+            <a href="#editRecordType" title="Save"  class="button" on:click={updateDependency}><i class="fas fa-save "></i></a>
+          </div>
+          {/if}
       </div>
+      {/if}
+
+      {#if activeTab === 'data'}
+        {#if !readonly}
+          <h2>Create record type</h2>
+          <div style="display: grid; grid-template-columns: auto 50px; gap: 12px;">
+            <input type="text" bind:value={newRecordTypeName} placeholder="Record Type Name">
+            <a id="addRecord" href="#addRecord" title="Add Record Type"class="button" on:click={addRecordType}><i class="fas fa-plus "></i></a>
+          </div>
+          <hr style="width: 95%; padding: 0; margin: 0 auto; background-color: #333;  border-color: #333;"/>
+        {/if}
+      <h2 id="editRecordType">Edit record type</h2>
+      <table>
+        <thead>
+          <tr>
+            <th >Record name</th>
+            <th style="display: grid; grid-template-columns: auto auto 120px 120px; gap: 4px; padding: 0 2px;">
+              <span>Field name</span>
+              <span>Field type</span>
+              <span>Mandatory</span>
+              <span>Collection</span>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each task.recordTypes as recordType, i}
+          <tr style="vertical-align: top;">
+            <td>
+              <input readonly={readonly}  type="text" bind:value={recordType.name} placeholder="Record Type Name">
+            </td>
+            <td>
+              <ul>
+                {#each recordType.fields as field}
+                  <li style="display: grid; grid-template-columns: auto auto 120px 120px; gap: 4px; padding: 0 2px;">
+                    <input readonly={readonly}  type="text" bind:value={field.name}>
+                    <select disabled={readonly}  bind:value={field.type}>
+                      <option disabled selected>Select data type</option>
+                      {#each task.validDatatypes as dataType}
+                        {#if dataType!=recordType.name}
+                         <option value={dataType}>{dataType}</option>
+                        {/if}
+                      {/each}
+                    </select>
+                    <input type="checkbox" bind:checked={field.isMandatory} />
+                    <input type="checkbox" bind:checked={field.isCollection} />
+                  </li>
+                {/each}
+              {#if !readonly}
+                <div style="display: flex;  gap: 25px; flex-flow: row-reverse;">
+                  <a href="#editRecordType" title={`Add new field to '${recordType.name}'`}  class="button" on:click={() => { addFieldToRecordType(i);}}><i class="fas fa-plus "></i></a>
+                </div>
+              {/if}
+          </ul>
+            </td>
+            <td style="width:145px">
+              {#if !readonly}
+                <div style="display: flex;  gap: 25px; flex-flow: row-reverse;">
+                  <a href="#editRecordType" title={`Save '${recordType.name}'`}  class="button" on:click={() => { updateRecordType(i);}}><i class="fas fa-save "></i></a>
+                  <a href="#editRecordType" title={`Delete '${recordType.name}'`} class="button" on:click={() => { removeRecordType(i);}}><i class="fas fa-trash "></i></a>
+                </div>
+              {/if}
+            </td>
+
+          </tr>
+        {/each}
+        </tbody>
+      </table>
     {/if}
   
     </div>
