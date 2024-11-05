@@ -1,14 +1,16 @@
 ﻿using EngineEvents;
 using Marten.Events.Projections;
 using System.ComponentModel.DataAnnotations;
+using Environment = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component.Environment;
 
-
-namespace CanineSourceRepository.BusinessProcessNotation.BpnContext;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_Container;
 
 public class BpnContextAggregate
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
+    //control endpoints/api (GPRC, RestApi)
+    //Frontend is defined here as well
   }
 
   public Guid Id { get; internal set; }
@@ -33,7 +35,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
       return Results.Ok(bpnContexts);
     }).WithName("GetAllContexts")
       .Produces(StatusCodes.Status200OK, typeof(List<BpnContextProjection.BpnContext>))
-      .WithTags("Context");
+      .WithTags("Container");
   }
   public BpnContextProjection()
   {
@@ -57,10 +59,10 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
   {
     view.Features.Add(new FeatureDetails(
       Id: @event.Data.FeatureId,
-      Versions: new List<FeatureVersion>() {
-        new FeatureVersion(
+      Revisions: new List<FeatureRevisions>() {
+        new FeatureRevisions(
             Name: @event.Data.Name,
-            Version: -1,
+            Revision: -1,
             Environments: [],
             Stats : new FeatureStats(
               InvocationCount: 0,
@@ -71,7 +73,8 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
               MaxDurationMs: 0,
               MinDurationMs: 0, 
               AvgDurationMs: 0,
-              LastUsed: null)
+              LastUsed: null,
+              Published: @event.Timestamp)
             )
       }
     ));
@@ -83,9 +86,10 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     if (entry != null)
     {
       view.Features.Remove(entry);
-      entry.Versions.Add(new FeatureVersion(
+      DateTimeOffset? dateTimeOffset = null;
+      entry.Revisions.Add(new FeatureRevisions(
         Name: @event.Data.Name, 
-        Version: @event.Data.Version, 
+        Revision: @event.Data.Revision, 
         Environments: [],
         Stats: new FeatureStats(
               InvocationCount: 0,
@@ -96,7 +100,8 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
               MaxDurationMs: 0,
               MinDurationMs: 0,
               AvgDurationMs: 0,
-              LastUsed: null)));
+              LastUsed: dateTimeOffset,
+              Published: @event.Timestamp)));
       view.Features.Add(entry);
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
@@ -106,9 +111,9 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
     {
-      var version = entry.Versions.FirstOrDefault(ver => ver.Version == @event.Data.FeatureVersion);
-      if (version == null) return;
-      version.Environments = @event.Data.Environment;
+      var revision = entry.Revisions.FirstOrDefault(ver => ver.Revision == @event.Data.FeatureRevision);
+      if (revision == null) return;
+      revision.Environments = @event.Data.Environment;
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
@@ -117,10 +122,10 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
     {
-      var version = entry.Versions.FirstOrDefault(ver => ver.Version == -1);
-      if (version == null) return;
+      var revision = entry.Revisions.FirstOrDefault(ver => ver.Revision == -1);
+      if (revision == null) return;
 
-      version.Name = @event.Data.Name;
+      revision.Name = @event.Data.Name;
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
@@ -131,12 +136,12 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
     {
-      var version = entry.Versions.FirstOrDefault(ver => ver.Version == @event.Data.FeatureVersion);
-      if (version == null) return;
+      var revision = entry.Revisions.FirstOrDefault(ver => ver.Revision == @event.Data.FeatureRevision);
+      if (revision == null) return;
 
-      version.Stats.InvocationCount++;
-      version.Stats.LastUsed = @event.Timestamp;
-      version.Stats.InvocationsInProgressCount = version.Stats.InvocationCount - version.Stats.InvocationErrorCount - version.Stats.InvocationCompletedCount;
+      revision.Stats.InvocationCount++;
+      revision.Stats.LastUsed = @event.Timestamp;
+      revision.Stats.InvocationsInProgressCount = revision.Stats.InvocationCount - revision.Stats.InvocationErrorCount - revision.Stats.InvocationCompletedCount;
     }
   }
   public static void Apply(BpnContext view, IEvent<BpnFeatureError> @event)
@@ -144,11 +149,11 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
     {
-      var version = entry.Versions.FirstOrDefault(ver => ver.Version == @event.Data.FeatureVersion);
-      if (version == null) return;
+      var revision = entry.Revisions.FirstOrDefault(ver => ver.Revision == @event.Data.FeatureRevision);
+      if (revision == null) return;
 
-      version.Stats.InvocationErrorCount++;
-      version.Stats.InvocationsInProgressCount = version.Stats.InvocationCount - version.Stats.InvocationErrorCount - version.Stats.InvocationCompletedCount;
+      revision.Stats.InvocationErrorCount++;
+      revision.Stats.InvocationsInProgressCount = revision.Stats.InvocationCount - revision.Stats.InvocationErrorCount - revision.Stats.InvocationCompletedCount;
     }
   }
   public static void Apply(BpnContext view, IEvent<BpnFeatureCompleted> @event)
@@ -156,19 +161,19 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
     {
-      var version = entry.Versions.FirstOrDefault(ver => ver.Version == @event.Data.FeatureVersion);
-      if (version == null) return;
+      var revision = entry.Revisions.FirstOrDefault(ver => ver.Revision == @event.Data.FeatureRevision);
+      if (revision == null) return;
 
-      version.Stats.InvocationCompletedCount++;
-      version.Stats.InvocationsInProgressCount = version.Stats.InvocationCount - version.Stats.InvocationErrorCount - version.Stats.InvocationCompletedCount;
-      version.Stats.MaxDurationMs = Math.Max(version.Stats.MaxDurationMs, @event.Data.DurationMs);
-      version.Stats.MinDurationMs = version.Stats.MinDurationMs == 0 ? @event.Data.DurationMs : Math.Min(version.Stats.MinDurationMs, @event.Data.DurationMs);
-      version.Stats.TotalDurationMs += (decimal)@event.Data.DurationMs;
-      version.Stats.AvgDurationMs = (double)(version.Stats.TotalDurationMs / version.Stats.InvocationCompletedCount);
+      revision.Stats.InvocationCompletedCount++;
+      revision.Stats.InvocationsInProgressCount = revision.Stats.InvocationCount - revision.Stats.InvocationErrorCount - revision.Stats.InvocationCompletedCount;
+      revision.Stats.MaxDurationMs = Math.Max(revision.Stats.MaxDurationMs, @event.Data.DurationMs);
+      revision.Stats.MinDurationMs = revision.Stats.MinDurationMs == 0 ? @event.Data.DurationMs : Math.Min(revision.Stats.MinDurationMs, @event.Data.DurationMs);
+      revision.Stats.TotalDurationMs += (decimal)@event.Data.DurationMs;
+      revision.Stats.AvgDurationMs = (double)(revision.Stats.TotalDurationMs / revision.Stats.InvocationCompletedCount);
     }
   }
 
-  public class FeatureStats(long InvocationCount, long InvocationErrorCount, long InvocationCompletedCount, long InvocationsInProgressCount, decimal TotalDurationMs, double MaxDurationMs, double AvgDurationMs, double MinDurationMs, DateTimeOffset? LastUsed)
+  public class FeatureStats(long InvocationCount, long InvocationErrorCount, long InvocationCompletedCount, long InvocationsInProgressCount, decimal TotalDurationMs, double MaxDurationMs, double AvgDurationMs, double MinDurationMs, DateTimeOffset? LastUsed, DateTimeOffset Published)
   {
     [Required]
     public long InvocationCount { get; set; } = InvocationCount;
@@ -186,28 +191,29 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     public double AvgDurationMs { get; set;  } = AvgDurationMs;
     [Required]
     public double MinDurationMs { get; set; } = MinDurationMs;
-    [Required]
     public DateTimeOffset? LastUsed { get; set; } = LastUsed;
+    [Required]
+    public DateTimeOffset Published { get; set; } = Published;
   }
 
-  public class FeatureVersion(string Name, long Version, BpnFeature.Environment[] Environments, FeatureStats Stats)
+  public class FeatureRevisions(string Name, long Revision, Environment[] Environments, FeatureStats Stats)
   {
     [Required]
     public string Name { get; set; } = Name;
     [Required]
-    public long Version { get; set; } = Version;
+    public long Revision { get; set; } = Revision;
     [Required]
-    public BpnFeature.Environment[] Environments { get; set; } = Environments;
+    public Environment[] Environments { get; set; } = Environments;
     [Required]
     public FeatureStats Stats { get; set; } = Stats;
   }
 
-  public class FeatureDetails(Guid Id, List<FeatureVersion> Versions)
+  public class FeatureDetails(Guid Id, List<FeatureRevisions> Revisions)
   {
     [Required]
     public Guid Id { get; set; } = Id;
     [Required]
-    public List<FeatureVersion> Versions { get; set; } = Versions;
+    public List<FeatureRevisions> Revisions { get; set; } = Revisions;
   }
 
   public class BpnContext
@@ -216,6 +222,10 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     public Guid Id { get; set; } = Guid.Empty;
     [Required]
     public string Name { get; set; } = "";
+
+   // [Required]
+    //public long Revision { get; internal set; } = 0;
+
     [Required]
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
     [Required]

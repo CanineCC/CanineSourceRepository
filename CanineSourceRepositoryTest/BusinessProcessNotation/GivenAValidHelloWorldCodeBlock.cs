@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using CanineSourceRepository.BusinessProcessNotation.Engine;
-using System.Reflection;
+﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 
 namespace CanineSourceRepositoryTest.BusinessProcessNotation;
 
@@ -18,11 +16,17 @@ public class GivenAValidHelloWorldCodeBlock
     block.Code = "return new Output(input.Greet + ' ' + input.Name);";
 
 
-    block.AddTestCase(new TestCase(
-      Name: "Unit test",
-      Input: new { Greet = "Hello", Name = "John" },
-      new AssertDefinition("Greeting", AssertOperation.Equal, "Hello John")
-      ));
+    block.UpsertTestCase(new TestCase(){
+      Id = Guid.CreateVersion7(),
+      Name = "Unit test",
+      Input = """{ Greet = "Hello", Name = "John" }""",
+      Asserts = [new AssertDefinition()
+      {
+        Field = "Greeting",
+        Operation =  AssertOperation.Equal,
+        ExpectedValue = "Hello John"
+      }]}
+      );
     assembly = block.ToAssembly();
   }
 

@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { FeatureVersion } from './FeatureVersion';
+import type { FeatureRevisions } from './FeatureRevisions';
 import {
-    FeatureVersionFromJSON,
-    FeatureVersionFromJSONTyped,
-    FeatureVersionToJSON,
-} from './FeatureVersion';
+    FeatureRevisionsFromJSON,
+    FeatureRevisionsFromJSONTyped,
+    FeatureRevisionsToJSON,
+} from './FeatureRevisions';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface FeatureDetails {
     id: string;
     /**
      * 
-     * @type {Array<FeatureVersion>}
+     * @type {Array<FeatureRevisions>}
      * @memberof FeatureDetails
      */
-    versions: Array<FeatureVersion>;
+    revisions: Array<FeatureRevisions>;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface FeatureDetails {
  */
 export function instanceOfFeatureDetails(value: object): value is FeatureDetails {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('versions' in value) || value['versions'] === undefined) return false;
+    if (!('revisions' in value) || value['revisions'] === undefined) return false;
     return true;
 }
 
@@ -60,7 +60,7 @@ export function FeatureDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'id': json['id'],
-        'versions': ((json['versions'] as Array<any>).map(FeatureVersionFromJSON)),
+        'revisions': ((json['revisions'] as Array<any>).map(FeatureRevisionsFromJSON)),
     };
 }
 
@@ -71,7 +71,7 @@ export function FeatureDetailsToJSON(value?: FeatureDetails | null): any {
     return {
         
         'id': value['id'],
-        'versions': ((value['versions'] as Array<any>).map(FeatureVersionToJSON)),
+        'revisions': ((value['revisions'] as Array<any>).map(FeatureRevisionsToJSON)),
     };
 }
 

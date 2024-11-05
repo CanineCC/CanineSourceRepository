@@ -11,7 +11,11 @@ using System.Net.Sockets;
 using System.Net;
 using Marten.Events;
 using EngineEvents;
+using JasperFx.Core;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using NJsonSchema;
+using NSwag.Generation.Processors.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,8 +46,12 @@ var connectionString = new NpgsqlConnectionStringBuilder
   Pooling = bool.Parse(builder.Configuration.GetSection("Marten:Pooling").Value!) 
 };
 
-builder.Services.AddSingleton<BpnSignalRService>(sp =>
-    new BpnSignalRService(sp.GetRequiredService<IHubContext<BpnHub>>(), builder.Configuration));
+builder.Services.Configure<JsonOptions>(options =>
+{
+  options.JsonSerializerOptions.Converters.AddRange(BpnEngine.BpnJsonSerialize.Converters);
+});
+  
+builder.Services.AddSingleton<BpnSignalRService>(sp => new BpnSignalRService(sp.GetRequiredService<IHubContext<BpnHub>>(), builder.Configuration));
 builder.Services.AddHostedService<BpnSignalRService>();
 builder.Services.AddHostedService<EngineEventsBackgroundService>();
 builder.Services.AddMarten(config =>
@@ -51,7 +59,10 @@ builder.Services.AddMarten(config =>
   config.Connection(connectionString.ConnectionString);
   config.RegisterBpnEngine();
   config.RegisterBpnEventStore();
-  config.UseSystemTextJsonForSerialization(BpnEngine.bpnJsonSerialize, enumStorage: EnumStorage.AsString);
+  config.UseSystemTextJsonForSerialization(
+    BpnEngine.BpnJsonSerialize, 
+    enumStorage: EnumStorage.AsString
+    );
 
   config.Policies.ForAllDocuments(x =>
   {
@@ -66,41 +77,44 @@ builder.Services.AddMarten(config =>
   .UseLightweightSessions()
   .AddAsyncDaemon(DaemonMode.HotCold);
 
-foreach (var version in BpnEventStore.ApiVersions)
+foreach (var revision in BpnEventStore.ApiRevisions)
 {
   builder.Services.AddOpenApiDocument(config =>
   {
     config.DefaultResponseReferenceTypeNullHandling = NJsonSchema.Generation.ReferenceTypeNullHandling.NotNull;
-    config.DocumentName = "engine_" + version;
-    config.Title = "BpnEngine API " + version.ToUpper();
-    config.Version = version;
+    config.DocumentName = "engine_" + revision;
+    config.Title = "BpnEngine API " + revision.ToUpper();
+    config.Version = revision;
+    config.DocumentProcessors.Add(new EnumDocumentProcessor());
+    
     config.OperationProcessors.Add(new OperationProcessor(ctx =>
     {
       // Only include operations with the "BpnEngine" tag
-      return ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + version + "/"); //ctx.OperationDescription.Operation.Tags.Contains("BpnEngine");
+      return ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + revision + "/"); //ctx.OperationDescription.Operation.Tags.Contains("BpnEngine");
     }));
 
   });
 }
-foreach (var version in BpnEngine.PotentialApiVersions)
+foreach (var revision in BpnEngine.PotentialApiRevisions)
 {
   builder.Services.AddOpenApiDocument(config =>
   {
     config.DefaultResponseReferenceTypeNullHandling = NJsonSchema.Generation.ReferenceTypeNullHandling.NotNull;
-    config.DocumentName = "bpn_" + version;
-    config.Title = "BPN API " + version.ToUpper();
-    config.Version = version;
+    config.DocumentName = "bpn_" + revision;
+    config.Title = "BPN API " + revision.ToUpper();
+    config.Version = revision;
+    config.DocumentProcessors.Add(new EnumDocumentProcessor());
 
     config.OperationProcessors.Add(new OperationProcessor(ctx =>
     {
       // Only include operations with the "BpnEngine" tag
-      return !ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + version + "/"); // ctx.OperationDescription.Operation.Tags.Contains("Bpn");
+      return !ctx.OperationDescription.Path.StartsWith("/BpnEngine") && ctx.OperationDescription.Path.Contains("/" + revision + "/"); // ctx.OperationDescription.Operation.Tags.Contains("Bpn");
     }));
   });
 }
 
 builder.Services.AddEndpointsApiExplorer(); // Enables OpenAPI
-builder.Services.AddSingleton<JsonSerializerOptions>(BpnEngine.bpnJsonSerialize);
+builder.Services.AddSingleton<JsonSerializerOptions>(BpnEngine.BpnJsonSerialize);
 builder.Services.AddHsts(options =>
 {
   options.Preload = true;
@@ -157,13 +171,13 @@ using (var scope = app.Services.CreateScope())
   app.UseSwaggerUi(settings =>
   {
 
-    foreach (var version in BpnEngine.ApiVersions(session))
+    foreach (var revision in BpnEngine.ApiRevision(session))
     {
-      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"Bpn API {version.ToUpper()}", $"/swagger/bpn_{version}/swagger.json"));
+      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"Bpn API {revision.ToUpper()}", $"/swagger/bpn_{revision}/swagger.json"));
     }
-    foreach (var version in BpnEventStore.ApiVersions)
+    foreach (var revision in BpnEventStore.ApiRevisions)
     {
-      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"BpnEngine API {version.ToUpper()}", $"/swagger/engine_{version}/swagger.json"));
+      settings.SwaggerRoutes.Add(new NSwag.AspNetCore.SwaggerUiRoute($"BpnEngine API {revision.ToUpper()}", $"/swagger/engine_{revision}/swagger.json"));
     }
     settings.TagsSorter = "alpha"; // Alphabetically sorts tags
     settings.OperationsSorter = "alpha"; // Alphabetically sorts endpoints
@@ -210,5 +224,25 @@ bool IsPortAvailable(int port)
   catch (SocketException)
   {
     return false; // Port is in use
+  }
+}
+
+public class EnumDocumentProcessor : IDocumentProcessor
+{
+  public void Process(DocumentProcessorContext context)
+  {
+    var schemas = context.SchemaResolver.Schemas;
+    foreach (var schema in schemas)
+    {
+      if (schema.IsEnumeration)
+      {
+        schema.Type = JsonObjectType.String;
+        schema.Enumeration.Clear();
+        foreach (var name in schema.EnumerationNames)
+        {
+          schema.Enumeration.Add(name);
+        }
+      }
+    }
   }
 }

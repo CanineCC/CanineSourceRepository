@@ -1,23 +1,27 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using EngineEvents;
+﻿using EngineEvents;
 using Marten.Events.Projections;
-using static CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature.BpnFeatureProjection;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
 public static class BpnEngine
 {
-  public static readonly JsonSerializerOptions bpnJsonSerialize = new()
+  public static readonly JsonSerializerOptions BpnJsonSerialize = new()
   {
-    Converters = { new JsonStringEnumConverter(), new BpnConverter(), new EventLogJsonConverter() }
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    Converters =
+    {
+      new JsonStringEnumConverter(),
+      new BpnConverter(),
+      new EventLogJsonConverter()
+    }
   };
   public static readonly string CodeNamespace = "CanineSourceRepository";
 
   public static void RegisterBpnEngine(this StoreOptions options)
   {
     options.Projections.LiveStreamAggregation<FeatureInvocationAggregate>();
-    options.Projections.Add<FeatureInvocationProjection>(ProjectionLifecycle.Async);
-    options.Schema.For<FeatureInvocationProjection.FeatureInvocation>().Index(x => x.FeatureId);
+  //  options.Projections.Add<FeatureInvocationProjection>(ProjectionLifecycle.Async);
+ //   options.Schema.For<FeatureInvocationProjection.FeatureInvocation>().Index(x => x.FeatureId);
     options.Events.AddEventType<BpnFeatureStarted>();
     options.Events.AddEventType<BpnFeatureError>();
     options.Events.AddEventType<BpnTaskInitialized>();
@@ -43,29 +47,27 @@ public static class BpnEngine
       {
         var assembly = feature.ToAssembly();
 
-        foreach (var version in feature.Versions)
+        foreach (var version in feature.Revisions)
         {
           AddEnpoint(app, $"Commands/v{version.Revision}/{version.Name.ToPascalCase()}", context, feature, version, assembly);
         }
       };
     }
-
-
     return app;
   }
 
-  public static string[] PotentialApiVersions => Enumerable.Range(1, 999).Select(i => $"v{i}") .ToArray();  
+  public static string[] PotentialApiRevisions => Enumerable.Range(1, 999).Select(i => $"v{i}") .ToArray();  
 
-  public static string[] ApiVersions(IDocumentSession session)
+  public static string[] ApiRevision(IDocumentSession session)
   {
-    return session.Query<BpnFeatureProjection.BpnFeature>().ToList().SelectMany(feat => feat.Versions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
+    return session.Query<BpnFeatureProjection.BpnFeature>().ToList().SelectMany(feat => feat.Revisions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
   }
 
-  private static void AddEnpoint(WebApplication app, string name, BpnContextProjection.BpnContext bpnContext, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly)
+  private static void AddEnpoint(WebApplication app, string name, BpnContextProjection.BpnContext bpnContext, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly)
   {
     var groupName = bpnContext.Name.ToPascalCase();
 
-    var startTask = version.Tasks.First();
+    var startTask = revision.Tasks.First();
     var inputType = startTask.GetCompiledType(assembly);
     app.MapPost(name, async Task<IResult> (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
     {
@@ -78,7 +80,7 @@ public static class BpnEngine
 
       try
       {
-        await Run(session, ct, input, bpnContext.Id, feature, version, assembly, null, null);
+        await Run(session, ct, input, bpnContext.Id, feature, revision, assembly, null, null);
         return Results.Accepted();
       }
       catch (UnauthorizedAccessException)
@@ -103,7 +105,7 @@ public static class BpnEngine
       .Accepts(startTask.GetCompiledType(assembly), false, "application/json"); // Define input content type
   }
 
-  public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, BpnFeature feature, BpnFeatureProjection.BpnFeatureVersion version, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
+  public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
     var initial = nextTask == null;
@@ -113,45 +115,45 @@ public static class BpnEngine
     }
     if (nextTask == null)
     {
-      nextTask = version.Tasks.First();
-      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureStarted(contextId, feature.Id, version.Revision, DateTime.UtcNow, correlationId.Value));
+      nextTask = revision.Tasks.First();
+      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureStarted(contextId, feature.Id, revision.Revision, DateTime.UtcNow, correlationId.Value));
     }
 
     ServiceInjection DiService = nextTask.GetServiceDependency();
 
     //consider if we can start a transaction in this scope, if it runs across multiple nodes
-    var response = await DiService.Execute(session, ct, inputJson, contextId, feature.Id, version.Revision, nextTask, correlationId.Value, assembly);//version!?
+    var response = await DiService.Execute(session, ct, inputJson, contextId, feature.Id, revision.Revision, nextTask, correlationId.Value, assembly);//version!?
 
     if (response.Success == false) return false;
     var success = true;
 
-    foreach (var featureTransition in version.Transitions.Where(p => p.FromBPN == nextTask.Id))
+    foreach (var featureTransition in revision.Transitions.Where(p => p.FromBPN == nextTask.Id))
     {//HOWTO FAN OUT?
 
       if (featureTransition.ConditionIsMeet(response.Result, assembly))
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionUsed(correlationId.Value, contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
-        var mapToTask = version.Tasks.FirstOrDefault(task => task.Id == featureTransition.ToBPN);
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionUsed(correlationId.Value, contextId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
+        var mapToTask = revision.Tasks.FirstOrDefault(task => task.Id == featureTransition.ToBPN);
         if (mapToTask == null)
         {
-          EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureError(correlationId.Value, contextId, feature.Id, version.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
+          EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureError(correlationId.Value, contextId, feature.Id, revision.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
           continue;
         }
 
         var map = featureTransition.MapObject(response.Result, mapToTask.GetCompiledType(assembly));
-        if (await Run(session, ct, map, contextId, feature, version, assembly, correlationId, mapToTask) == false)
+        if (await Run(session, ct, map, contextId, feature, revision, assembly, correlationId, mapToTask) == false)
         {
           success = false;
         }
       }
       else
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionSkipped(correlationId.Value, contextId, feature.Id, version.Revision, nextTask.Id, featureTransition.ToBPN));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionSkipped(correlationId.Value, contextId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
       }
     }
     if (initial && success)
     {
-      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureCompleted(correlationId.Value, contextId, feature.Id, version.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
+      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureCompleted(correlationId.Value, contextId, feature.Id, revision.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
       stopwatch.Stop();
     }
 

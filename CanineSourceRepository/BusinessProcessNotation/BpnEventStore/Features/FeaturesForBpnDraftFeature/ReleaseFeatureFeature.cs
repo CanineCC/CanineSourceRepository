@@ -1,12 +1,10 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class ReleaseFeatureFeature : IFeature
 {
-  public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram, long Version);
+  public record FeatureReleased(Guid ContextId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, BpnFeatureDiagram Diagram, long Revision);
   public class ReleaseFeatureBody
   {
     [Required]

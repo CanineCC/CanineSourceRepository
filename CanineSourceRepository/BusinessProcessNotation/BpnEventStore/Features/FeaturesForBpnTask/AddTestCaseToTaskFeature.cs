@@ -1,12 +1,11 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask;
 
-public class AddAssertionToTaskFeature : IFeature
+public class AddTestCaseToTaskFeature : IFeature
 {
-  public record AssertionAddedToTaskBody(Guid FeatureId, Guid TaskId, TestCase TestCase);
-  public record AddAssertionToTaskBody
+  public record TestCaseAddedToTaskBody(Guid FeatureId, Guid TaskId, TestCase TestCase);
+  public record AddTestCaseToTaskBody
   {
     [Required]
     public Guid FeatureId { get; set; }
@@ -22,24 +21,24 @@ public class AddAssertionToTaskFeature : IFeature
 
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapPost($"BpnEngine/v1/DraftFeature/AddAssertion", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddAssertionToTaskBody request, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/DraftFeature/AddTestCase", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] AddTestCaseToTaskBody request, CancellationToken ct) =>
     {
-      var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddAssertion", request.FeatureId, request.TaskId, request.Name, request.Input, request.Asserts, ct);
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/DraftFeature/AddTestCase", request.FeatureId, request.TaskId, request.Name, request.Input, request.Asserts, ct);
       return Results.Ok(id);
-    }).WithName("AddAssertion")
+    }).WithName("AddTestCase")
      .Produces(StatusCodes.Status200OK)
      .WithTags("DraftFeature.Task")
-     .Accepts(typeof(AddAssertionToTaskBody), false, "application/json");
+     .Accepts(typeof(AddTestCaseToTaskBody), false, "application/json");
 
   }
   public static void RegisterBpnEvents(StoreOptions options)
   {
-      options.Events.AddEventType<AssertionAddedToTaskBody>();
+      options.Events.AddEventType<TestCaseAddedToTaskBody>();
   }
   public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid featureId, Guid taskId, string name, string input, AssertDefinition[] asserts, CancellationToken ct)
   {
     var id = Guid.CreateVersion7();
-    var @event = new AssertionAddedToTaskBody(
+    var @event = new TestCaseAddedToTaskBody(
         FeatureId: featureId,
         TaskId: taskId,
         TestCase: new TestCase { Id = id, Input = input, Name = name, Asserts = asserts  } );

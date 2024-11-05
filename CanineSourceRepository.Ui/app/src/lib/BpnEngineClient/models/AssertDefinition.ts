@@ -31,19 +31,19 @@ export interface AssertDefinition {
      * @type {string}
      * @memberof AssertDefinition
      */
-    field?: string;
+    field: string;
     /**
      * 
      * @type {AssertOperation}
      * @memberof AssertDefinition
      */
-    operation?: AssertOperation;
+    operation: AssertOperation;
     /**
      * 
      * @type {string}
      * @memberof AssertDefinition
      */
-    expectedValue?: string | null;
+    expectedValue: string;
 }
 
 
@@ -52,6 +52,9 @@ export interface AssertDefinition {
  * Check if a given object implements the AssertDefinition interface.
  */
 export function instanceOfAssertDefinition(value: object): value is AssertDefinition {
+    if (!('field' in value) || value['field'] === undefined) return false;
+    if (!('operation' in value) || value['operation'] === undefined) return false;
+    if (!('expectedValue' in value) || value['expectedValue'] === undefined) return false;
     return true;
 }
 
@@ -65,9 +68,9 @@ export function AssertDefinitionFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'field': json['field'] == null ? undefined : json['field'],
-        'operation': json['operation'] == null ? undefined : AssertOperationFromJSON(json['operation']),
-        'expectedValue': json['expectedValue'] == null ? undefined : json['expectedValue'],
+        'field': json['field'],
+        'operation': AssertOperationFromJSON(json['operation']),
+        'expectedValue': json['expectedValue'],
     };
 }
 

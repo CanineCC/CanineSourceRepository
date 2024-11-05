@@ -1,7 +1,7 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 using System.ComponentModel.DataAnnotations;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 
 public abstract class BpnTask(Guid Id, string Name)
@@ -49,7 +49,7 @@ public abstract class BpnTask(Guid Id, string Name)
   [Required]
   public List<TestCase> TestCases { get; set; } = [];
 
-  public TestCase[] AddTestCase(TestCase record)
+  public TestCase[] UpsertTestCase(TestCase record)
   {
     TestCases.RemoveAll(p => p.Id == record.Id);
     TestCases.Add(record);
@@ -263,9 +263,9 @@ public abstract class BpnTask(Guid Id, string Name)
 }
 
 
+
 public class BpnConverter : JsonConverter<BpnTask>
 {
-
   public override BpnTask Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
     using var jsonDoc = JsonDocument.ParseValue(ref reader);

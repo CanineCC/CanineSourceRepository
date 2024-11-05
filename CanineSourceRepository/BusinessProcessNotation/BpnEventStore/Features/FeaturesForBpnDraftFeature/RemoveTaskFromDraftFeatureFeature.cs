@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-
-namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class RemoveTaskFromDraftFeatureFeature : IFeature
 {

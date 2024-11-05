@@ -1,6 +1,6 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 public record MapField(string From, string To);/*consider build-in methods, ex. Today, ABS, MIN (of two values, or within a list), MAX, ANY(in list) */
 
 public record BpnTransition(

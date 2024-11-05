@@ -72,7 +72,13 @@ export interface FeatureStats {
      * @type {Date}
      * @memberof FeatureStats
      */
-    lastUsed: Date;
+    lastUsed?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof FeatureStats
+     */
+    published: Date;
 }
 
 /**
@@ -87,7 +93,7 @@ export function instanceOfFeatureStats(value: object): value is FeatureStats {
     if (!('maxDurationMs' in value) || value['maxDurationMs'] === undefined) return false;
     if (!('avgDurationMs' in value) || value['avgDurationMs'] === undefined) return false;
     if (!('minDurationMs' in value) || value['minDurationMs'] === undefined) return false;
-    if (!('lastUsed' in value) || value['lastUsed'] === undefined) return false;
+    if (!('published' in value) || value['published'] === undefined) return false;
     return true;
 }
 
@@ -109,7 +115,8 @@ export function FeatureStatsFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'maxDurationMs': json['maxDurationMs'],
         'avgDurationMs': json['avgDurationMs'],
         'minDurationMs': json['minDurationMs'],
-        'lastUsed': (new Date(json['lastUsed'])),
+        'lastUsed': json['lastUsed'] == null ? undefined : (new Date(json['lastUsed'])),
+        'published': (new Date(json['published'])),
     };
 }
 
@@ -127,7 +134,8 @@ export function FeatureStatsToJSON(value?: FeatureStats | null): any {
         'maxDurationMs': value['maxDurationMs'],
         'avgDurationMs': value['avgDurationMs'],
         'minDurationMs': value['minDurationMs'],
-        'lastUsed': ((value['lastUsed']).toISOString()),
+        'lastUsed': value['lastUsed'] == null ? undefined : ((value['lastUsed'] as any).toISOString()),
+        'published': ((value['published']).toISOString()),
     };
 }
 

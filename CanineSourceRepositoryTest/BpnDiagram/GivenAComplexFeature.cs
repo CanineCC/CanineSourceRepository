@@ -1,7 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-
-namespace CanineSourceRepositoryTest.BpnDiagram;
+﻿namespace CanineSourceRepositoryTest.BpnDiagram;
 
 public class GivenAComplexFeature
 {

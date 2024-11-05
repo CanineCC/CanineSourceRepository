@@ -1,7 +1,7 @@
 
 
 export function formatDate(date: Date | undefined | null, now: Date): string {
-    if (!date) return '';
+    if (!date) return '-';
     const diff = now.getTime() - date.getTime();
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);

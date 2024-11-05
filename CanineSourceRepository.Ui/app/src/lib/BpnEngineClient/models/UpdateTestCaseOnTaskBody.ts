@@ -23,51 +23,44 @@ import {
 /**
  * 
  * @export
- * @interface UpdateAssertionOnTaskBody
+ * @interface UpdateTestCaseOnTaskBody
  */
-export interface UpdateAssertionOnTaskBody {
+export interface UpdateTestCaseOnTaskBody {
     /**
      * 
      * @type {string}
-     * @memberof UpdateAssertionOnTaskBody
+     * @memberof UpdateTestCaseOnTaskBody
      */
     featureId: string;
     /**
      * 
      * @type {string}
-     * @memberof UpdateAssertionOnTaskBody
+     * @memberof UpdateTestCaseOnTaskBody
      */
     taskId: string;
     /**
      * 
-     * @type {string}
-     * @memberof UpdateAssertionOnTaskBody
-     */
-    assertionId: string;
-    /**
-     * 
      * @type {TestCase}
-     * @memberof UpdateAssertionOnTaskBody
+     * @memberof UpdateTestCaseOnTaskBody
      */
     testCase: TestCase;
 }
 
 /**
- * Check if a given object implements the UpdateAssertionOnTaskBody interface.
+ * Check if a given object implements the UpdateTestCaseOnTaskBody interface.
  */
-export function instanceOfUpdateAssertionOnTaskBody(value: object): value is UpdateAssertionOnTaskBody {
+export function instanceOfUpdateTestCaseOnTaskBody(value: object): value is UpdateTestCaseOnTaskBody {
     if (!('featureId' in value) || value['featureId'] === undefined) return false;
     if (!('taskId' in value) || value['taskId'] === undefined) return false;
-    if (!('assertionId' in value) || value['assertionId'] === undefined) return false;
     if (!('testCase' in value) || value['testCase'] === undefined) return false;
     return true;
 }
 
-export function UpdateAssertionOnTaskBodyFromJSON(json: any): UpdateAssertionOnTaskBody {
-    return UpdateAssertionOnTaskBodyFromJSONTyped(json, false);
+export function UpdateTestCaseOnTaskBodyFromJSON(json: any): UpdateTestCaseOnTaskBody {
+    return UpdateTestCaseOnTaskBodyFromJSONTyped(json, false);
 }
 
-export function UpdateAssertionOnTaskBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): UpdateAssertionOnTaskBody {
+export function UpdateTestCaseOnTaskBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): UpdateTestCaseOnTaskBody {
     if (json == null) {
         return json;
     }
@@ -75,12 +68,11 @@ export function UpdateAssertionOnTaskBodyFromJSONTyped(json: any, ignoreDiscrimi
         
         'featureId': json['featureId'],
         'taskId': json['taskId'],
-        'assertionId': json['assertionId'],
         'testCase': TestCaseFromJSON(json['testCase']),
     };
 }
 
-export function UpdateAssertionOnTaskBodyToJSON(value?: UpdateAssertionOnTaskBody | null): any {
+export function UpdateTestCaseOnTaskBodyToJSON(value?: UpdateTestCaseOnTaskBody | null): any {
     if (value == null) {
         return value;
     }
@@ -88,7 +80,6 @@ export function UpdateAssertionOnTaskBodyToJSON(value?: UpdateAssertionOnTaskBod
         
         'featureId': value['featureId'],
         'taskId': value['taskId'],
-        'assertionId': value['assertionId'],
         'testCase': TestCaseToJSON(value['testCase']),
     };
 }

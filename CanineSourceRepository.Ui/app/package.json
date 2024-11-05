@@ -31,6 +31,7 @@
 		"vite": "^5.0.3"
 	},
 	"dependencies": {
-		"@microsoft/signalr": "^8.0.7"
+		"@microsoft/signalr": "^8.0.7",
+		"@openapitools/openapi-generator-cli": "^2.15.3"
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using CanineSourceRepository.BusinessProcessNotation.Engine;
 using System.ComponentModel.DataAnnotations;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 public class ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {

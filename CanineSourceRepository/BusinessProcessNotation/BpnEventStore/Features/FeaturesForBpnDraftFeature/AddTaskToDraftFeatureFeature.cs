@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 

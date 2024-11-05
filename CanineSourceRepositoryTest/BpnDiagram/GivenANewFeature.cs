@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-
-namespace CanineSourceRepositoryTest.BpnDiagram;
+﻿namespace CanineSourceRepositoryTest.BpnDiagram;
 
 public class GivenANewFeature
 {

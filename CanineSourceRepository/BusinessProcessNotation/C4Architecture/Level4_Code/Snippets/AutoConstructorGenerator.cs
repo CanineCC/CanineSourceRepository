@@ -1,6 +1,4 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
-
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.Snippets;
 
 public class AutoConstructorGenerator
 {

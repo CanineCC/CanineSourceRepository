@@ -23,7 +23,7 @@ public class CreateContextFeature : IFeature
       return Results.Ok(id);
     }).WithName("CreateContext")
      .Produces(StatusCodes.Status200OK)
-     .WithTags("Context")
+     .WithTags("Container")
      .Accepts(typeof(CreateContextBody), false, "application/json"); // Define input content type
 
   }

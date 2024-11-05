@@ -5,18 +5,18 @@ public interface IEngineEvents
   Guid CorrelationId { get; }
   Guid ContextId { get; }
   Guid FeatureId { get; }
-  long FeatureVersion { get; }
+  long FeatureRevision { get; }
 }
 
-public record BpnFeatureStarted(Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset StarTime, Guid CorrelationId) : IEngineEvents;
-public record BpnFeatureError(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, ErrorEvent Exception) : IEngineEvents;
-public record BpnFeatureCompleted(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
-public record BpnTaskInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, string Input) : IEngineEvents;
-public record BpnTaskFailed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
-public record BpnFailedTaskReInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, string NewInput, double ExecutionTimeMs) : IEngineEvents;
-public record BpnTaskSucceeded(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
-public record BpnTransitionUsed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
-public record BpnTransitionSkipped(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureVersion, Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnFeatureStarted(Guid ContextId, Guid FeatureId, long FeatureRevision, DateTimeOffset StarTime, Guid CorrelationId) : IEngineEvents;
+public record BpnFeatureError(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, ErrorEvent Exception) : IEngineEvents;
+public record BpnFeatureCompleted(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
+public record BpnTaskInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, Guid TaskId, string Input) : IEngineEvents;
+public record BpnTaskFailed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
+public record BpnFailedTaskReInitialized(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, string NewInput, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTaskSucceeded(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
+public record BpnTransitionUsed(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, Guid FromBpn, Guid ToBpn) : IEngineEvents;
+public record BpnTransitionSkipped(Guid CorrelationId, Guid ContextId, Guid FeatureId, long FeatureRevision, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 public record ErrorEvent(string Message, string Details);
 
 

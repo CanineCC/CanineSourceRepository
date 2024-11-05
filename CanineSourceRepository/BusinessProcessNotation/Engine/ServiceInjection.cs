@@ -1,6 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
-using EngineEvents;
+﻿using EngineEvents;
 using static CanineSourceRepository.BusinessProcessNotation.Engine.BpnEngine;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
@@ -40,7 +38,7 @@ public abstract class ServiceInjection
           CorrelationId: correlationId,
           ContextId: contextId,
           FeatureId: featureId,
-          FeatureVersion: featureVersion,
+          FeatureRevision: featureVersion,
           TaskId: task.Id,
           Input: InputLogger.LogInput(input));
       EngineEventsQueue.EnqueueEngineEvents(evt);

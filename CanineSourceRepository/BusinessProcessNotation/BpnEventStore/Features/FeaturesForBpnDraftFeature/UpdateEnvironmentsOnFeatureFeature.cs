@@ -1,27 +1,27 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Environment = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component.Environment;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnDraftFeature;
 
 public class UpdateEnvironmentsOnFeatureFeature : IFeature
 {
-  public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureVersion, BpnContext.BpnFeature.Environment[] Environment);
+  public record EnvironmentsUpdated(Guid ContextId, Guid FeatureId, long FeatureRevision, Environment[] Environment);
   public class UpdateEnvironmentsOnFeatureBody
   {
     [Required]
     public Guid FeatureId { get; set; }
 
     [Required]
-    public long FeatureVersion { get; set; }
+    public long FeatureRevision { get; set; }
 
     [Required]
-    public BpnContext.BpnFeature.Environment[] Environment { get; set; }
+    public Environment[] Environment { get; set; }
   }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPatch($"BpnEngine/v1/Feature/UpdateEnvironment", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] UpdateEnvironmentsOnFeatureBody request, CancellationToken ct) =>
     {
-      var id = await Execute(session, "WebApplication/v1/BpnEngine/Feature/UpdateEnvironment", request.FeatureId, request.FeatureVersion, request.Environment, ct);
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/Feature/UpdateEnvironment", request.FeatureId, request.FeatureRevision, request.Environment, ct);
       return Results.Ok(id);
     }).WithName("UpdateEnvironmentsOnFeature")
      .Produces(StatusCodes.Status200OK)
@@ -34,7 +34,7 @@ public class UpdateEnvironmentsOnFeatureFeature : IFeature
     options.Events.AddEventType<EnvironmentsUpdated>();
   }
 
-  public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, long featureVersion, BpnContext.BpnFeature.Environment[] environment, CancellationToken ct)
+  public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, long featureRevision, Environment[] environment, CancellationToken ct)
   {
     var draftAggregate = await session.Events.AggregateStreamAsync<BpnDraftFeatureAggregate>(featureId, token: ct);
     if (draftAggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
@@ -45,7 +45,7 @@ public class UpdateEnvironmentsOnFeatureFeature : IFeature
     await session.RegisterEventsOnBpnFeature(ct, featureId, causationId, new EnvironmentsUpdated(
       ContextId: draftAggregate.ContextId,
       FeatureId: featureId,
-      FeatureVersion: featureVersion,
+      FeatureRevision: featureRevision,
       Environment: environment));
     return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
   }

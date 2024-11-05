@@ -1,10 +1,13 @@
 <script lang="ts">
-    import type { BpnTask  } from 'BpnEngineClient'; // Import your types
+  import type {BpnTask, TestCase} from 'BpnEngineClient'; // Import your types
     import { DraftFeatureTaskApi  } from 'BpnEngineClient/apis'; // Adjust the path accordingly
     export let task: BpnTask; // Accepts a BpnTask as a prop
     export let featureId: string;
     export let readonly: boolean = false;
     let newRecordTypeName : string = "";
+    let selectedTestCaseId : string = "";
+    let selectedTestCase : TestCase | null = null;
+    $: selectedTestCase = task.testCases.find(test => test.id === selectedTestCaseId) || null;
 
     const draftFeatureTaskApi = new DraftFeatureTaskApi();
 
@@ -45,7 +48,7 @@
     }
 
     async function saveFeaturePurpose() {
-        draftFeatureTaskApi.updateTaskPurposeFeature({updateTaskPurposeFeatureBody: {
+        await draftFeatureTaskApi.updateTaskPurposeFeature({updateTaskPurposeFeatureBody: {
             featureId: featureId, 
             taskId: task.id,
             name: task.name,
@@ -53,18 +56,30 @@
             behavioralGoal: task.behavioralGoal
         }});
     }
-    async function  addAssertion() {
-      draftFeatureTaskApi.addAssertion({addAssertionToTaskBody: { 
+
+
+    async function  addTestCase() {
+      await draftFeatureTaskApi.addTestCase({addTestCaseToTaskBody: {
         featureId: featureId,
         taskId: task.id,
-        name: "<assertion>",
+        name: "<Test case>",
         input: "{}",
         asserts: []
       }});
     }
+    async function  saveTestCase() {
+      if (selectedTestCase == null) return;
+      selectedTestCase.asserts.push({ field:"", operation: 'Equal', expectedValue: ""});
+      await  draftFeatureTaskApi.updateTestCase({ updateTestCaseOnTaskBody: {
+          featureId: featureId,
+          taskId: task.id,
+          testCase: selectedTestCase
+      } })
+
+    }
 
     async function saveServiceDependency() {
-        draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: {
+        await draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: {
             featureId: featureId, 
             taskId: task.id,
             serviceDependency: task.serviceDependency,
@@ -117,14 +132,24 @@
       {#if activeTab === 'verification'}
       <div>
         <div style="display: grid; grid-template-columns: auto 50px; gap: 12px;">
-          <select id="testCases">
+          <select id="testCases" bind:value={selectedTestCaseId}>
             <option>Select a Test case</option>
             {#each task.testCases as test}
                 <option value={test.id}>{test.name}</option>
             {/each}
           </select>
-          <a id="addAssertion" href="#addAssertion" title="Add assertion"class="button" on:click={addAssertion}><i class="fas fa-plus "></i></a>
+          <a id="addTestCase" href="#addTestCase" title="Add test case"class="button" on:click={addTestCase}><i class="fas fa-plus "></i></a>
         </div>
+        {#if selectedTestCase != null}
+          <input type="text" bind:value={selectedTestCase.name} placeholder="Name">
+          <input type="text" bind:value={selectedTestCase.input} placeholder="Input">
+          {#each selectedTestCase.asserts as assert}
+            {assert.field}
+            {assert.operation.toString()}
+            {assert.expectedValue}
+          {/each}
+          <a id="addAssert" href="#addAssert" title="Add assertion"class="button" on:click={saveTestCase}><i class="fas fa-save "></i></a>
+        {/if}
 
       </div>
       {/if}

@@ -37,7 +37,7 @@ export interface UpdateEnvironmentsOnFeatureBody {
      * @type {number}
      * @memberof UpdateEnvironmentsOnFeatureBody
      */
-    featureVersion: number;
+    featureRevision: number;
     /**
      * 
      * @type {Array<Environment>}
@@ -51,7 +51,7 @@ export interface UpdateEnvironmentsOnFeatureBody {
  */
 export function instanceOfUpdateEnvironmentsOnFeatureBody(value: object): value is UpdateEnvironmentsOnFeatureBody {
     if (!('featureId' in value) || value['featureId'] === undefined) return false;
-    if (!('featureVersion' in value) || value['featureVersion'] === undefined) return false;
+    if (!('featureRevision' in value) || value['featureRevision'] === undefined) return false;
     if (!('environment' in value) || value['environment'] === undefined) return false;
     return true;
 }
@@ -67,7 +67,7 @@ export function UpdateEnvironmentsOnFeatureBodyFromJSONTyped(json: any, ignoreDi
     return {
         
         'featureId': json['featureId'],
-        'featureVersion': json['featureVersion'],
+        'featureRevision': json['featureRevision'],
         'environment': ((json['environment'] as Array<any>).map(EnvironmentFromJSON)),
     };
 }
@@ -79,7 +79,7 @@ export function UpdateEnvironmentsOnFeatureBodyToJSON(value?: UpdateEnvironments
     return {
         
         'featureId': value['featureId'],
-        'featureVersion': value['featureVersion'],
+        'featureRevision': value['featureRevision'],
         'environment': ((value['environment'] as Array<any>).map(EnvironmentToJSON)),
     };
 }

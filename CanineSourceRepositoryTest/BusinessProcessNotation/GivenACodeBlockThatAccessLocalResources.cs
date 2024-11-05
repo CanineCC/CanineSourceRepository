@@ -1,7 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using System.Reflection;
-
-namespace CanineSourceRepositoryTest.BusinessProcessNotation;
+﻿namespace CanineSourceRepositoryTest.BusinessProcessNotation;
 
 public class GivenACodeBlockThatAccessLocalResources
 {

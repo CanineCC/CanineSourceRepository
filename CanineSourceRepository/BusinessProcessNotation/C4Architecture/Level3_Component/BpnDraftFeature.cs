@@ -1,12 +1,10 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
-using CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets;
-using System.ComponentModel.DataAnnotations;
-using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.AddAssertionToTaskFeature;
-using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.DeleteAssertionOnTaskFeature;
-using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.UpdateAssertionOnTaskFeature;
+﻿using System.ComponentModel.DataAnnotations;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.AddTestCaseToTaskFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.RemoveTestCaseFromTaskFeature;
+using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnTask.UpdateTestCaseOnTaskFeature;
 using static CanineSourceRepository.DynamicCompiler;
 
-namespace CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 
 
 public class BpnDraftFeatureAggregate
@@ -165,20 +163,20 @@ public class BpnDraftFeatureAggregate
     task.ServiceDependency = @event.ServiceDependency;
     task.NamedConfiguration = @event.NamedConfiguration;
   }
-  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionAddedToTaskBody @event)
+  public void Apply(BpnDraftFeatureAggregate aggregate, TestCaseAddedToTaskBody @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
-    task.AddTestCase(@event.TestCase);
+    task.UpsertTestCase(@event.TestCase);
   }
-  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionDeletedOnTask @event)
+  public void Apply(BpnDraftFeatureAggregate aggregate, TestCaseRemovedFromTask @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
     task.RemoveTestCase(@event.AssertionId);
   }
-  public void Apply(BpnDraftFeatureAggregate aggregate, AssertionUpdatedOnTaskBody @event)
+  public void Apply(BpnDraftFeatureAggregate aggregate, TestCaseUpdatedOnTaskBody @event)
   {
     var task = aggregate.Tasks.First(p => p.Id == @event.TaskId);
-    task.AddTestCase(@event.TestCase);
+    task.UpsertTestCase(@event.TestCase);
   }
 
 }
@@ -191,7 +189,6 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
     {
       var bpnFeature = await session.Query<BpnDraftFeatureProjection.BpnDraftFeature>().Where(p => p.Id == featureId).SingleOrDefaultAsync();
       if (bpnFeature == null) return Results.NotFound();
-
       return Results.Ok(bpnFeature);
     }).WithName("GetDraftFeature")
       .Produces(StatusCodes.Status200OK, typeof(BpnDraftFeatureProjection.BpnDraftFeature))
@@ -313,20 +310,20 @@ public class BpnDraftFeatureProjection : SingleStreamProjection<BpnDraftFeatureP
       task.ServiceDependency = @event.ServiceDependency;
       task.NamedConfiguration = @event.NamedConfiguration;
     }
-    public void Apply(BpnDraftFeature projection, AssertionAddedToTaskBody @event)
+    public void Apply(BpnDraftFeature projection, TestCaseAddedToTaskBody @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
-      task.AddTestCase(@event.TestCase);
+      task.UpsertTestCase(@event.TestCase);
     }
-    public void Apply(BpnDraftFeature projection, AssertionDeletedOnTask @event)
+    public void Apply(BpnDraftFeature projection, TestCaseRemovedFromTask @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
       task.RemoveTestCase(@event.AssertionId);
     }
-    public void Apply(BpnDraftFeature projection, AssertionUpdatedOnTaskBody @event)
+    public void Apply(BpnDraftFeature projection, TestCaseUpdatedOnTaskBody @event)
     {
       var task = projection.Tasks.First(p => p.Id == @event.TaskId);
-      task.AddTestCase(@event.TestCase);
+      task.UpsertTestCase(@event.TestCase);
     }
 
   }

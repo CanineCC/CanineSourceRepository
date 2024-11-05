@@ -1,6 +1,4 @@
-﻿using static CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.BpnTask;
-
-namespace CanineSourceRepositoryTest.Snippets.AutoMapperGenerator;
+﻿namespace CanineSourceRepositoryTest.Snippets.AutoMapperGenerator;
 
 public class GivenSimpleInputAndOutputDefinition
 {
@@ -31,7 +29,7 @@ public class GivenSimpleInputAndOutputDefinition
   {
     //ARRANGE
     //ACT
-    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets.AutoMapperGenerator.GenerateMapping(inputDefinition, outputDefinition, [inputDefinition, outputDefinition]);
+    var generatedCode = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.Snippets.AutoMapperGenerator.GenerateMapping(inputDefinition, outputDefinition, [inputDefinition, outputDefinition]);
 
     //ASSERT
     Assert.Contains("First_Name = input.FirstName", generatedCode);
@@ -45,7 +43,7 @@ public class GivenSimpleInputAndOutputDefinition
   {
     //ARRANGE
     //ACT
-    var generatedCode = CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task.Snippets.AutoMapperGenerator.GenerateMapping(outputDefinition, inputDefinition, [inputDefinition, outputDefinition]);
+    var generatedCode = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.Snippets.AutoMapperGenerator.GenerateMapping(outputDefinition, inputDefinition, [inputDefinition, outputDefinition]);
 
     //ASSERT
     Assert.Contains("FirstName = input.First_Name", generatedCode);

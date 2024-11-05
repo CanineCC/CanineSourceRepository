@@ -16,44 +16,44 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DeleteAssertionOnTask
+ * @interface RemoveTestCaseFromTask
  */
-export interface DeleteAssertionOnTask {
+export interface RemoveTestCaseFromTask {
     /**
      * 
      * @type {string}
-     * @memberof DeleteAssertionOnTask
+     * @memberof RemoveTestCaseFromTask
      */
     featureId: string;
     /**
      * 
      * @type {string}
-     * @memberof DeleteAssertionOnTask
+     * @memberof RemoveTestCaseFromTask
      */
     taskId: string;
     /**
      * 
      * @type {string}
-     * @memberof DeleteAssertionOnTask
+     * @memberof RemoveTestCaseFromTask
      */
     assertionId: string;
 }
 
 /**
- * Check if a given object implements the DeleteAssertionOnTask interface.
+ * Check if a given object implements the RemoveTestCaseFromTask interface.
  */
-export function instanceOfDeleteAssertionOnTask(value: object): value is DeleteAssertionOnTask {
+export function instanceOfRemoveTestCaseFromTask(value: object): value is RemoveTestCaseFromTask {
     if (!('featureId' in value) || value['featureId'] === undefined) return false;
     if (!('taskId' in value) || value['taskId'] === undefined) return false;
     if (!('assertionId' in value) || value['assertionId'] === undefined) return false;
     return true;
 }
 
-export function DeleteAssertionOnTaskFromJSON(json: any): DeleteAssertionOnTask {
-    return DeleteAssertionOnTaskFromJSONTyped(json, false);
+export function RemoveTestCaseFromTaskFromJSON(json: any): RemoveTestCaseFromTask {
+    return RemoveTestCaseFromTaskFromJSONTyped(json, false);
 }
 
-export function DeleteAssertionOnTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): DeleteAssertionOnTask {
+export function RemoveTestCaseFromTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemoveTestCaseFromTask {
     if (json == null) {
         return json;
     }
@@ -65,7 +65,7 @@ export function DeleteAssertionOnTaskFromJSONTyped(json: any, ignoreDiscriminato
     };
 }
 
-export function DeleteAssertionOnTaskToJSON(value?: DeleteAssertionOnTask | null): any {
+export function RemoveTestCaseFromTaskToJSON(value?: RemoveTestCaseFromTask | null): any {
     if (value == null) {
         return value;
     }

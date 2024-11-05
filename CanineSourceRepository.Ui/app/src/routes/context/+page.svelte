@@ -2,8 +2,8 @@
 	import Layout from '@/+layout.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
-	import { ContextApi, ServerApi } from 'BpnEngineClient/apis'; 
-	import type { BpnContext, DurationClassification, FeatureVersion } from 'BpnEngineClient/models'; 
+	import { ContainerApi, ServerApi } from 'BpnEngineClient/apis';
+	import type { BpnContext, DurationClassification, FeatureRevisions } from 'BpnEngineClient/models';
 	import { slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { formatDate	} from 'lib/Duration' 
@@ -13,14 +13,14 @@
 	let durationClasses: DurationClassification[] = [];
 	let expandedContextRow: number | null = null; // Track which row is expanded
 	let expandedFeatureRow: number | null = null; // Track which row is expanded
-	const contextApi = new ContextApi();
+	const containerApi = new ContainerApi();
 	const serverApi = new ServerApi();
 	const currentTime = writable(new Date());
 
 	let intervalId: any;
 	onMount(async () => {
 		durationClasses = await serverApi.getDurationClassification();
-		contexts = await contextApi.getAllContexts();
+		contexts = await containerApi.getAllContexts();
 
 		intervalId = setInterval(() => {
 			currentTime.set(new Date());
@@ -47,10 +47,10 @@
 		let avgOfAverages = 0;
 		let totalAvgDurations = 0;
 		let avgCount = 0;
-		let lastUsed: Date | undefined | null = undefined;
+		let lastUsed: Date | undefined | null = null;
 
 		context.features?.forEach((feature) => {
-			feature.versions.forEach((version) => {
+			feature.revisions.forEach((version) => {
 				totalInvocations += version.stats.invocationCount ?? 0;
 				totalErrors += version.stats.invocationErrorCount ?? 0;
 				totalCompleted += version.stats.invocationCompletedCount ?? 0;
@@ -96,10 +96,10 @@
       goto(`/feature/edit/${contextId}/${featureId}/${versionId}`);
 	}
 
-	function getHighestVersion(versions: FeatureVersion[]): FeatureVersion {
+	function getHighestVersion(versions: FeatureRevisions[]): FeatureRevisions {
 		return versions.reduce((prev, current) => {
-			const prevVersion = prev.version || 0;
-			const currentVersion = current.version || 0;
+			const prevVersion = prev.revision || 0;
+			const currentVersion = current.revision || 0;
 			return prevVersion > currentVersion ? prev : current;
 		}, versions[0]);
 	}
@@ -180,12 +180,13 @@
 												<th>Avg duration</th>
 												<th>Min duration</th>
 												<th>Last Used</th>
+												<th>Released</th>
 											</tr>
 										</thead>
 										<tbody>
 											{#if context && context.features}
 												{#each context.features as feature, featureindex}
-													{#await getHighestVersion(feature.versions) then highestVersionFeature}
+													{#await getHighestVersion(feature.revisions) then highestVersionFeature}
 														<tr>
 															<td class="title-column">
 																<button title="accordion" aria-label="accordion"
@@ -199,9 +200,9 @@
 																{highestVersionFeature.name}
 															</td>
 															<td class="version-column">
-																{highestVersionFeature.version == -1
+																{highestVersionFeature.revision == -1
 																? 'draft'
-																: 'v' + highestVersionFeature.version}
+																: 'v' + highestVersionFeature.revision}
 															</td>
 															<td class="number-column"
 																>{highestVersionFeature.stats.invocationCount}</td
@@ -235,6 +236,16 @@
 																		)
 																	: '-'}
 															</td>
+															<td
+																	class="tooltip date-column"
+																	data-tooltip={highestVersionFeature.stats.published}
+															>
+																{highestVersionFeature.revision == -1
+																		? '-'
+																		: $currentTime
+																		? formatDate(highestVersionFeature.stats.published, $currentTime)
+																		: '-'}
+															</td>
 														</tr>
 													{/await}
 
@@ -256,10 +267,11 @@
 																				<th>Min duration</th>
 
 																				<th>Last Used</th>
+																				<th>Released</th>
 																			</tr>
 																		</thead>
 																		<tbody>
-																		{#each feature.versions as version}
+																		{#each feature.revisions as version}
 																				<tr>
 																					<td class="title-column">
 																						{version.name}
@@ -270,15 +282,15 @@
 																								editVersion(
 																									context.id ?? '',
 																									feature.id ?? '',
-																									version.version?.toString() ?? ''
+																									version.revision?.toString() ?? ''
 																								)}
 																							style="border: none; background: none; cursor: pointer; user-select: none;"
 																						>
 																							<i class="fas fa-edit light-icon"></i>
 																						</button>
-																						{version.version == -1
+																						{version.revision == -1
 																							? 'draft'
-																							: 'v' + version.version}
+																							: 'v' + version.revision}
 																					</td>
 																					<td class="number-column"
 																						>{version.stats.invocationCount}</td
@@ -308,6 +320,16 @@
 																						{$currentTime
 																							? formatDate(version.stats.lastUsed, $currentTime)
 																							: '-'}
+																					</td>
+																					<td
+																							class="tooltip date-column"
+																							data-tooltip={version.stats.published}
+																					>
+																						{version.revision == -1
+																								? '-'
+																								: $currentTime
+																										? formatDate(version.stats.published, $currentTime)
+																										: '-'}
 																					</td>
 																				</tr>
 																		{/each}

@@ -15,27 +15,27 @@
 
 import * as runtime from '../runtime';
 import type {
-  BpnFeatureVersion,
-  BpnFeatureVersionStat,
+  BpnFeatureRevision,
+  BpnFeatureRevisionsStat,
   UpdateEnvironmentsOnFeatureBody,
 } from '../models/index';
 import {
-    BpnFeatureVersionFromJSON,
-    BpnFeatureVersionToJSON,
-    BpnFeatureVersionStatFromJSON,
-    BpnFeatureVersionStatToJSON,
+    BpnFeatureRevisionFromJSON,
+    BpnFeatureRevisionToJSON,
+    BpnFeatureRevisionsStatFromJSON,
+    BpnFeatureRevisionsStatToJSON,
     UpdateEnvironmentsOnFeatureBodyFromJSON,
     UpdateEnvironmentsOnFeatureBodyToJSON,
 } from '../models/index';
 
-export interface GetFeatureVersionRequest {
+export interface GetFeatureRevisionRequest {
     featureId: string;
-    version: number;
+    revision: number;
 }
 
-export interface GetFeatureVersionStatsRequest {
+export interface GetFeatureRevisionStatsRequest {
     featureId: string;
-    version: number;
+    revision: number;
 }
 
 export interface UpdateEnvironmentsOnFeatureRequest {
@@ -49,18 +49,18 @@ export class FeatureApi extends runtime.BaseAPI {
 
     /**
      */
-    async getFeatureVersionRaw(requestParameters: GetFeatureVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BpnFeatureVersion>> {
+    async getFeatureRevisionRaw(requestParameters: GetFeatureRevisionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BpnFeatureRevision>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
-                'Required parameter "featureId" was null or undefined when calling getFeatureVersion().'
+                'Required parameter "featureId" was null or undefined when calling getFeatureRevision().'
             );
         }
 
-        if (requestParameters['version'] == null) {
+        if (requestParameters['revision'] == null) {
             throw new runtime.RequiredError(
-                'version',
-                'Required parameter "version" was null or undefined when calling getFeatureVersion().'
+                'revision',
+                'Required parameter "revision" was null or undefined when calling getFeatureRevision().'
             );
         }
 
@@ -69,36 +69,36 @@ export class FeatureApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/Feature/{featureId}/{version}`.replace(`{${"featureId"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"version"}}`, encodeURIComponent(String(requestParameters['version']))),
+            path: `/BpnEngine/v1/Feature/{featureId}/{revision}`.replace(`{${"featureId"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"revision"}}`, encodeURIComponent(String(requestParameters['revision']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BpnFeatureVersionFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BpnFeatureRevisionFromJSON(jsonValue));
     }
 
     /**
      */
-    async getFeatureVersion(requestParameters: GetFeatureVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BpnFeatureVersion> {
-        const response = await this.getFeatureVersionRaw(requestParameters, initOverrides);
+    async getFeatureRevision(requestParameters: GetFeatureRevisionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BpnFeatureRevision> {
+        const response = await this.getFeatureRevisionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
      */
-    async getFeatureVersionStatsRaw(requestParameters: GetFeatureVersionStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BpnFeatureVersionStat>> {
+    async getFeatureRevisionStatsRaw(requestParameters: GetFeatureRevisionStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BpnFeatureRevisionsStat>> {
         if (requestParameters['featureId'] == null) {
             throw new runtime.RequiredError(
                 'featureId',
-                'Required parameter "featureId" was null or undefined when calling getFeatureVersionStats().'
+                'Required parameter "featureId" was null or undefined when calling getFeatureRevisionStats().'
             );
         }
 
-        if (requestParameters['version'] == null) {
+        if (requestParameters['revision'] == null) {
             throw new runtime.RequiredError(
-                'version',
-                'Required parameter "version" was null or undefined when calling getFeatureVersionStats().'
+                'revision',
+                'Required parameter "revision" was null or undefined when calling getFeatureRevisionStats().'
             );
         }
 
@@ -107,19 +107,19 @@ export class FeatureApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/Feature/Stats/{featureId}/{version}`.replace(`{${"featureId"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"version"}}`, encodeURIComponent(String(requestParameters['version']))),
+            path: `/BpnEngine/v1/Feature/Stats/{featureId}/{revision}`.replace(`{${"featureId"}}`, encodeURIComponent(String(requestParameters['featureId']))).replace(`{${"revision"}}`, encodeURIComponent(String(requestParameters['revision']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => BpnFeatureVersionStatFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BpnFeatureRevisionsStatFromJSON(jsonValue));
     }
 
     /**
      */
-    async getFeatureVersionStats(requestParameters: GetFeatureVersionStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BpnFeatureVersionStat> {
-        const response = await this.getFeatureVersionStatsRaw(requestParameters, initOverrides);
+    async getFeatureRevisionStats(requestParameters: GetFeatureRevisionStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BpnFeatureRevisionsStat> {
+        const response = await this.getFeatureRevisionStatsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

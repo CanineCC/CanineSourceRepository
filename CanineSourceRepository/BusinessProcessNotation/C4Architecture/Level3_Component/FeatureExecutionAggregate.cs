@@ -1,7 +1,6 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnContext.BpnFeature;
-using EngineEvents;
+﻿using EngineEvents;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Engine;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 public static class FeatureInovationEventStore
 {
   public static async Task RegisterEvents(this IDocumentSession session, CancellationToken ct, Guid id, Guid causationId, params IEngineEvents[] @events)
@@ -15,26 +14,6 @@ public static class FeatureInovationEventStore
             ct);
     await session.SaveChangesAsync();  
   }
-
-  //public static async Task RegisterFeatureStarted(Guid featureId, DateTimeOffset starTime, long featureVersion, Guid correlationId)
-  //{
-  //  var feature = await session.Events.AggregateStreamAsync<BpnFeatureAggregate>(featureId, token: ct);
-  //  if (feature == null) return;
-
-  //  RegisterEvents
-
-
-  //}
-
-  //public record FeatureStarted(Guid ContextId, Guid FeatureId, DateTimeOffset StarTime, long FeatureVersion, Guid CorrelationId) : IEngineEvents;
-  //public record FeatureError(Guid ContextId, Guid FeatureId, ErrorEvent Exception) : IEngineEvents;
-  //public record BpnFeatureCompleted(Guid ContextId, Guid FeatureId, DateTimeOffset EndTime, double DurationMs) : IEngineEvents;
-  //public record TaskInitialized(Guid ContextId, Guid FeatureId, Guid TaskId, string Input) : IEngineEvents;
-  //public record TaskFailed(Guid ContextId, Guid FeatureId, Guid TaskId, ErrorEvent Exception, double ExecutionTimeMs) : IEngineEvents;
-  //public record FailedTaskReInitialized(Guid ContextId, Guid FeatureId, string NewInput, double ExecutionTimeMs) : IEngineEvents;
-  //public record TaskSucceeded(Guid ContextId, Guid FeatureId, Guid TaskId, double ExecutionTimeMs) : IEngineEvents;
-  //public record TransitionUsed(Guid ContextId, Guid FeatureId, Guid FromBpn, Guid ToBpn) : IEngineEvents;
-  //public record TransitionSkipped(Guid ContextId, Guid FeatureId, Guid FromBpn, Guid ToBpn) : IEngineEvents;
 }
 
 public class FeatureInvocationAggregate
@@ -48,6 +27,7 @@ public class FeatureInvocationAggregate
     aggregate.Id = @event.CorrelationId;
   }
 }
+/*
 public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocationProjection.FeatureInvocation>
 {
   public class FeatureInvocation
@@ -67,7 +47,7 @@ public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocat
     {
       projection.Id = @event.CorrelationId;
       projection.StarTime = @event.StarTime;
-      projection.FeatureVersion = @event.FeatureVersion;
+      projection.FeatureVersion = @event.FeatureRevision;
       projection.FeatureId = @event.FeatureId;
       projection.Status = FeatureStatus.InProgress;
       EventLog.Add(@event);
@@ -101,3 +81,4 @@ public class FeatureInvocationProjection : SingleStreamProjection<FeatureInvocat
   }
 }
 
+*/

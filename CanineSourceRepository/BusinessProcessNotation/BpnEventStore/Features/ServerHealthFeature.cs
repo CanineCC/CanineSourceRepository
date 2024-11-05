@@ -40,7 +40,7 @@ public class ServerHealthFeature : IFeature
 
         try
         {
-          bool isDbReachable = await session.Query<BpnContext.BpnContextProjection.BpnContext>().AnyAsync(ct);
+          bool isDbReachable = await session.Query<BpnContextProjection.BpnContext>().AnyAsync(ct);
           if (!isDbReachable)
           {
             throw new Exception("Database query failed.");

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using static CanineSourceRepository.DynamicCompiler;
 
-namespace CanineSourceRepository.BusinessProcessNotation.Context.Feature.Task;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 
 public record TestCase
@@ -18,9 +18,9 @@ public record TestCase
 }
 public record AssertDefinition
 {
-  public string Field { get; set; }
-  public AssertOperation Operation { get; set; }
-  public string? ExpectedValue { get; set; } 
+  [Required]  public string Field { get; set; }
+  [Required]public AssertOperation Operation { get; set; }
+  [Required]public string? ExpectedValue { get; set; } 
 }
 
 public record TestResult(string Name, bool Success, string Message = "");
@@ -77,7 +77,11 @@ public class CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
   {
     if (Code == null) return "";
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
-    var usingAndNamespace = includeNamespace ? @$"using System; using System.Threading.Tasks; using System.Linq; using CanineSourceRepository.BusinessProcessNotation.Engine;
+    var usingAndNamespace = includeNamespace ? @$"
+using System; 
+using System.Threading.Tasks; 
+using System.Linq; 
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 namespace {BpnEngine.CodeNamespace};" : string.Empty;
     return @$"{usingAndNamespace}
 
