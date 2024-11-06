@@ -1,4 +1,6 @@
-﻿using Marten.Events.Projections;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
+using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
+using Marten.Events.Projections;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -7,7 +9,7 @@ public static class BpnEventStore
 
   public static async Task GenerateDefaultData(this IDocumentSession session, CancellationToken ct)
   {
-    if (session.Query<BpnContextProjection.BpnContext>().Any()) return;
+    if (session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Any()) return;
 
     var entryBlock = new ApiInputTask("Create user endpoint", ["Anonymous"]);
     entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
@@ -66,7 +68,10 @@ public static class BpnEventStore
       );
 
     var causationId = "GenerateDefaultData";
-    var contextId = await CreateContextFeature.Execute(session, causationId, "User (Demo)", ct);
+
+
+    var systemId = await CreateSystemFeature.Execute(session, causationId, "User system", ct);
+    var contextId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", systemId, ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,
                           causationId: causationId,
@@ -84,10 +89,14 @@ public static class BpnEventStore
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
   {
-    options.Projections.LiveStreamAggregation<BpnContextAggregate>();
-    options.Projections.Add<BpnContextProjection>(ProjectionLifecycle.Async);
-    options.Schema.For<BpnContextProjection.BpnContext>();
+    options.Projections.LiveStreamAggregation<BpnSystemAggregate>();
+    options.Projections.Add<BpnSystemProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<BpnSystemProjection.BpnSystem>();
 
+    options.Projections.LiveStreamAggregation<BpnBpnWebApiContainerAggregate>();
+    options.Projections.Add<BpnBpnWebApiContainerProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<BpnBpnWebApiContainerProjection.BpnWebApiContainer>();
+  
     options.Projections.LiveStreamAggregation<BpnFeatureAggregate>();
     options.Projections.Add<BpnFeatureProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnFeature>();
@@ -128,13 +137,14 @@ public static class BpnEventStore
       registerMethod?.Invoke(null, [app]);
     }
     BpnDraftFeatureAggregate.RegisterBpnEventStore(app);
-    BpnContextAggregate.RegisterBpnEventStore(app);
+    BpnBpnWebApiContainerAggregate.RegisterBpnEventStore(app);
     BpnFeatureAggregate.RegisterBpnEventStore(app);
+    BpnSystemProjection.RegisterBpnEventStore(app);
 
     BpnDraftFeatureProjection.RegisterBpnEventStore(app);
     BpnFeatureProjection.RegisterBpnEventStore(app);
     BpnFeatureStatsProjection.RegisterBpnEventStore(app);
-    BpnContextProjection.RegisterBpnEventStore(app);
+    BpnBpnWebApiContainerProjection.RegisterBpnEventStore(app);
   }
 }
 
@@ -151,7 +161,7 @@ public static class DocumentSessionExtension
     session.CorrelationId = id.ToString("N");
     session.CausationId = causationId;
 
-    await session.Events.WriteToAggregate<BpnContextAggregate>(
+    await session.Events.WriteToAggregate<BpnBpnWebApiContainerAggregate>(
             id,
             stream => stream.AppendMany(@events),
             ct);

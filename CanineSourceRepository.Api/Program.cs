@@ -9,6 +9,7 @@ using NSwag.Generation.Processors;
 using System.Text.Json;
 using System.Net.Sockets;
 using System.Net;
+using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 using Marten.Events;
 using EngineEvents;
 using JasperFx.Core;

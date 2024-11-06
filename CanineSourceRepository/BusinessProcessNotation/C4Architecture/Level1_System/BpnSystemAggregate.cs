@@ -1,7 +1,6 @@
-﻿using EngineEvents;
-using Marten.Events.Projections;
+﻿using Marten.Events.Projections;
 using System.ComponentModel.DataAnnotations;
-using Environment = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component.Environment;
+using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
@@ -14,12 +13,13 @@ public class BpnSystemAggregate
   public Guid Id { get; internal set; }
 
   public void Apply(
-     BpnContextAggregate aggregate,
-     ContextCreated @event
+    BpnSystemAggregate aggregate,
+     CreateSystemFeature.SystemCreated @event
   )
   {
     aggregate.Id = @event.Id;
   }
+  //WebApiContainerCreated
 }
 
 
@@ -29,31 +29,41 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
   {
     app.MapGet($"BpnEngine/v1/System/All", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
     {
-      var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
+      var bpnContexts = await session.Query<BpnSystem>().ToListAsync(ct);
       return Results.Ok(bpnContexts);
     }).WithName("GetAllSystems")
-      .Produces(StatusCodes.Status200OK, typeof(List<BpnContextProjection.BpnContext>))
+      .Produces(StatusCodes.Status200OK, typeof(List<BpnSystem>))
+      .WithTags("System");
+    
+    app.MapGet($"BpnEngine/v1/System/DiagramSvg", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
+      {
+        var bpnContexts = await session.Query<BpnSystem>().ToListAsync(ct);
+        var diagram = new C4SystemDiagram("TODO", bpnContexts.ToArray());
+        var svg = C4DiagramHelper.GenerateC4(diagram);
+
+        context.Response.ContentType = "image/svg+xml"; 
+        await context.Response.WriteAsync(svg, ct);
+      }).WithName("GetC4_Level1DiagramSvg")
+      .Produces(StatusCodes.Status200OK, typeof(string))
       .WithTags("System");
   }
   public BpnSystemProjection()
   {
-    Identity<ContextCreated>(x => x.Id);
-    Identity<DraftFeatureCreated>(x => x.ContextId);
-    Identity<FeatureReleased>(x => x.ContextId);
-    Identity<EnvironmentsUpdated>(x => x.ContextId);
-    Identity<DraftFeaturePurposeChanged>(x => x.ContextId);
-    Identity<BpnFeatureStarted>(x => x.ContextId);
-    Identity<BpnFeatureError>(x => x.ContextId);
-    Identity<BpnFeatureCompleted>(x => x.ContextId);
+    Identity<CreateSystemFeature.SystemCreated>(x => x.Id);
+    Identity<WebApiContainerCreated>(x => x.SystemId);
   }
-  /*
-  public static void Apply(BpnSystem view, IEvent<ContextCreated> @event)
+  public static void Apply(BpnSystem view, IEvent<CreateSystemFeature.SystemCreated> @event)
   {
     view.Id = @event.Data.Id;
     view.Name = @event.Data.Name;
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
+  public static void Apply(BpnSystem view, IEvent<WebApiContainerCreated> @event)
+  {
+    view.Contexts.Add(new ContextDetails(@event.Data.Id, @event.Data.Name));
+  }
+  /*
   public static void Apply(BpnSystem view, IEvent<DraftFeatureCreated> @event)
   {
     view.Features.Add(new FeatureDetails(
@@ -70,7 +80,7 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
               InvocationsInProgressCount: 0,
               TotalDurationMs: 0,
               MaxDurationMs: 0,
-              MinDurationMs: 0, 
+              MinDurationMs: 0,
               AvgDurationMs: 0,
               LastUsed: null)
             )
@@ -85,8 +95,8 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     {
       view.Features.Remove(entry);
       entry.Versions.Add(new FeatureVersion(
-        Name: @event.Data.Name, 
-        Version: @event.Data.Version, 
+        Name: @event.Data.Name,
+        Version: @event.Data.Version,
         Environments: [],
         Stats: new FeatureStats(
               InvocationCount: 0,
@@ -170,60 +180,33 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     }
   }*/
 
-  public class ContextStats(long InvocationCount, long InvocationErrorCount, long InvocationCompletedCount, long InvocationsInProgressCount, decimal TotalDurationMs, double MaxDurationMs, double AvgDurationMs, double MinDurationMs, DateTimeOffset? LastUsed)
-  {
-    [Required]
-    public long InvocationCount { get; set; } = InvocationCount;
-    [Required]
-    public long InvocationErrorCount { get; set; } = InvocationErrorCount;
-    [Required]
-    public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
-    [Required]
-    public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
-    [Required]
-    public decimal TotalDurationMs { get; set; } = TotalDurationMs;
-    [Required]
-    public double MaxDurationMs { get; set; } = MaxDurationMs;
-    [Required]
-    public double AvgDurationMs { get; set;  } = AvgDurationMs;
-    [Required]
-    public double MinDurationMs { get; set; } = MinDurationMs;
-    [Required]
-    public DateTimeOffset? LastUsed { get; set; } = LastUsed;
-  }
 
-
-  public class ContextVersion(string Name, long Version, Environment[] Environments, ContextStats Stats)
-  {
-    [Required]
-    public string Name { get; set; } = Name;
-    //[Required]
-    //public long Revision { get; set; } = Revision;
-    [Required]
-    public Environment[] Environments { get; set; } = Environments;
-    [Required]
-    public ContextStats Stats { get; set; } = Stats;
-  }
-  public class ContextDetails(Guid Id, List<ContextVersion> revisions)
+  
+  public class ContextDetails(Guid Id, string Name)
   {
     [Required]
     public Guid Id { get; set; } = Id;
     [Required]
-    public List<ContextVersion> Revisions { get; set; } = revisions;
+    public string Name { get; set; } = Name;
   }
 
   public class BpnSystem
-  {
+  {//versioning?/timestamp?
     [Required]
     public Guid Id { get; set; } = Guid.Empty;
     [Required]
     public string Name { get; set; } = "";
     [Required]
-    public DateTimeOffset LastUpdatedTimestamp { get; set; }
+    public string Description { get; set; } = "";
+    
     [Required]
     public DateTimeOffset CreatedTimestamp { get; set; }
     [Required]
-    public List<ContextDetails> Features { get; set; } = [];
+    public DateTimeOffset LastUpdatedTimestamp { get; set; }
+    [Required]
+    public List<ContextDetails> Contexts { get; set; } = [];
+    //Relations to other systems? (maybe determin by: messages sendt and received? + services called)
+    //Person/Customer for documentation (including relation to system) - https://c4model.com/diagrams/system-context
     public BpnSystem() { }
   }
 }

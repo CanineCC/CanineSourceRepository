@@ -1,11 +1,12 @@
 ﻿using EngineEvents;
 using Marten.Events.Projections;
 using System.ComponentModel.DataAnnotations;
+using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 using Environment = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component.Environment;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_Container;
 
-public class BpnContextAggregate
+public class BpnBpnWebApiContainerAggregate
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
@@ -16,8 +17,8 @@ public class BpnContextAggregate
   public Guid Id { get; internal set; }
 
   public void Apply(
-     BpnContextAggregate aggregate,
-     ContextCreated @event
+     BpnBpnWebApiContainerAggregate aggregate,
+     WebApiContainerCreated @event
   )
   {
     aggregate.Id = @event.Id;
@@ -25,21 +26,34 @@ public class BpnContextAggregate
 }
 
 
-public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.BpnContext, Guid>
+public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebApiContainerProjection.BpnWebApiContainer, Guid>
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapGet($"BpnEngine/v1/Context/All", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
     {
-      var bpnContexts = await session.Query<BpnContextProjection.BpnContext>().ToListAsync(ct);
+      var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().ToListAsync(ct);
       return Results.Ok(bpnContexts);
     }).WithName("GetAllContexts")
-      .Produces(StatusCodes.Status200OK, typeof(List<BpnContextProjection.BpnContext>))
+      .Produces(StatusCodes.Status200OK, typeof(List<BpnBpnWebApiContainerProjection.BpnWebApiContainer>))
       .WithTags("Container");
+    
+    app.MapGet("BpnEngine/v1/Context/DiagramSvg/{systemId}", async (HttpContext context, [FromServices] IQuerySession session, Guid systemId, CancellationToken ct) =>
+      {
+        var bpnSystem = await session.Query<BpnSystemProjection.BpnSystem>().Where(p=>p.Id == systemId).FirstAsync(ct);
+        var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.SystemId == systemId).ToListAsync(ct);
+        var diagram = new C4ContainerDiagram(bpnSystem, bpnContexts.ToArray());
+        var svg = C4DiagramHelper.GenerateC4(diagram);
+        context.Response.ContentType = "image/svg+xml"; 
+        await context.Response.WriteAsync(svg, ct);
+      }).WithName("GetC4_level2DiagramSvg")
+      .Produces(StatusCodes.Status200OK, typeof(string))
+      .WithTags("Container");
+    
   }
-  public BpnContextProjection()
+  public BpnBpnWebApiContainerProjection()
   {
-    Identity<ContextCreated>(x => x.Id);
+    Identity<WebApiContainerCreated>(x => x.Id);
     Identity<DraftFeatureCreated>(x => x.ContextId);
     Identity<FeatureReleased>(x => x.ContextId);
     Identity<EnvironmentsUpdated>(x => x.ContextId);
@@ -48,14 +62,15 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     Identity<BpnFeatureError>(x => x.ContextId);
     Identity<BpnFeatureCompleted>(x => x.ContextId);
   }
-  public static void Apply(BpnContext view, IEvent<ContextCreated> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<WebApiContainerCreated> @event)
   {
     view.Id = @event.Data.Id;
+    view.SystemId = @event.Data.SystemId;
     view.Name = @event.Data.Name;
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  public static void Apply(BpnContext view, IEvent<DraftFeatureCreated> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<DraftFeatureCreated> @event)
   {
     view.Features.Add(new FeatureDetails(
       Id: @event.Data.FeatureId,
@@ -80,7 +95,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     ));
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  public static void Apply(BpnContext view, IEvent<FeatureReleased> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<FeatureReleased> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -106,7 +121,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  public static void Apply(BpnContext view, IEvent<EnvironmentsUpdated> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<EnvironmentsUpdated> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -117,7 +132,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  public static void Apply(BpnContext view, IEvent<DraftFeaturePurposeChanged> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<DraftFeaturePurposeChanged> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -131,7 +146,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
   }
 
 
-  public static void Apply(BpnContext view, IEvent<BpnFeatureStarted> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<BpnFeatureStarted> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -144,7 +159,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
       revision.Stats.InvocationsInProgressCount = revision.Stats.InvocationCount - revision.Stats.InvocationErrorCount - revision.Stats.InvocationCompletedCount;
     }
   }
-  public static void Apply(BpnContext view, IEvent<BpnFeatureError> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<BpnFeatureError> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -156,7 +171,7 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
       revision.Stats.InvocationsInProgressCount = revision.Stats.InvocationCount - revision.Stats.InvocationErrorCount - revision.Stats.InvocationCompletedCount;
     }
   }
-  public static void Apply(BpnContext view, IEvent<BpnFeatureCompleted> @event)
+  public static void Apply(BpnWebApiContainer view, IEvent<BpnFeatureCompleted> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
     if (entry != null)
@@ -216,15 +231,17 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     public List<FeatureRevisions> Revisions { get; set; } = Revisions;
   }
 
-  public class BpnContext
+  public class BpnWebApiContainer
   {
     [Required]
     public Guid Id { get; set; } = Guid.Empty;
     [Required]
+    public Guid SystemId { get; set; } = Guid.Empty;
+    [Required]
     public string Name { get; set; } = "";
-
-   // [Required]
-    //public long Revision { get; internal set; } = 0;
+    [Required]
+    public string Description { get; set; } = "";
+    
 
     [Required]
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
@@ -232,9 +249,11 @@ public class BpnContextProjection : MultiStreamProjection<BpnContextProjection.B
     public DateTimeOffset CreatedTimestamp { get; set; }
     [Required]
     public List<FeatureDetails> Features { get; set; } = [];
-    public BpnContext() { }
+    public BpnWebApiContainer() { }
 
-
-
+    //Person/Customer for documentation (including relation to context)
+    //Relations between contexts/containers - https://c4model.com/diagrams/container
   }
+//TODO: ServiceContainer (named configuration)
+
 }

@@ -38,7 +38,7 @@ public static class BpnEngine
 
   public static WebApplication RegisterAll(this WebApplication app, IDocumentSession session)
   {
-    var contexts = session.Query<BpnContextProjection.BpnContext>().ToList();
+    var contexts = session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().ToList();
     foreach (var context in contexts)
     {
       var usedIds = context.Features.Select(feature => feature.Id).ToList();
@@ -63,9 +63,9 @@ public static class BpnEngine
     return session.Query<BpnFeatureProjection.BpnFeature>().ToList().SelectMany(feat => feat.Revisions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
   }
 
-  private static void AddEnpoint(WebApplication app, string name, BpnContextProjection.BpnContext bpnContext, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly)
+  private static void AddEnpoint(WebApplication app, string name, BpnBpnWebApiContainerProjection.BpnWebApiContainer bpnWebApiContainer, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly)
   {
-    var groupName = bpnContext.Name.ToPascalCase();
+    var groupName = bpnWebApiContainer.Name.ToPascalCase();
 
     var startTask = revision.Tasks.First();
     var inputType = startTask.GetCompiledType(assembly);
@@ -80,7 +80,7 @@ public static class BpnEngine
 
       try
       {
-        await Run(session, ct, input, bpnContext.Id, feature, revision, assembly, null, null);
+        await Run(session, ct, input, bpnWebApiContainer.Id, feature, revision, assembly, null, null);
         return Results.Accepted();
       }
       catch (UnauthorizedAccessException)
@@ -95,7 +95,7 @@ public static class BpnEngine
       {
         return Results.InternalServerError();
       }
-    }).WithName($"{bpnContext.Name.ToPascalCase()}/{name}") // Set the operation ID to the feature's name
+    }).WithName($"{bpnWebApiContainer.Name.ToPascalCase()}/{name}") // Set the operation ID to the feature's name
       //.WithGroupName(groupName)
       .WithTags(groupName)
       .Produces(StatusCodes.Status202Accepted) // Specify return types

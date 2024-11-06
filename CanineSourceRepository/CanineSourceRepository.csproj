@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="C4Sharp" Version="7.0.189" />
     <PackageReference Include="Marten" Version="7.30.1" />
   </ItemGroup>
 
