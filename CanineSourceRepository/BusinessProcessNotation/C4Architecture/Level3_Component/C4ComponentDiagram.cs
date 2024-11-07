@@ -3,34 +3,51 @@ using C4Sharp.Elements;
 using C4Sharp.Elements.Relationships;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
-namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_Container;
+namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 
-public class C4ContainerDiagram : ContainerDiagram
+public class C4ComponentDiagram : ComponentDiagram
 {
     private readonly BpnSystemProjection.BpnSystem _system;
+    private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer _container;
+    private readonly BpnFeatureProjection.BpnFeature[] _components;
     private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer[] _containers;
 
-    public C4ContainerDiagram(BpnSystemProjection.BpnSystem system, BpnBpnWebApiContainerProjection.BpnWebApiContainer[] containers)
+    public C4ComponentDiagram(
+        BpnSystemProjection.BpnSystem system, 
+        BpnBpnWebApiContainerProjection.BpnWebApiContainer container,
+        BpnBpnWebApiContainerProjection.BpnWebApiContainer[] containers,
+        BpnFeatureProjection.BpnFeature[] components
+        )
     {
         _system = system;
+        _container = container;
+        _components = components;
         _containers = containers;
     }
-    protected override string Title => _system.Name;
+    protected override string Title => $"{_system.Name} - {_container.Name}";
 
     protected override IEnumerable<Structure> Structures
-    {
+    {//TODO: Also build in features/components
         get
-        {
+        {//boundry around features in the "container"
+         //include contains that communicates with features (via events? or direct calls?)
+         
             List<Structure> structures = new List<Structure>();
-            List<Container> containers = new List<Container>();
+            //List<Container> containers = new List<Container>();
+            List<Component> components = new List<Component>();
 
-            structures.Add(Person.None | Boundary.External | ("User", "TODO-user", "Todo-user description."));
-            //TODO: External systems
-            foreach (var container in _containers)
+            var c4container = Container.None | (ContainerType.WebApplication, _container.Name.ToPascalCase(), _container.Name,
+                "C#, WebApi", _container.Description);
+            //containers.Add(c4container);
+            structures.Add(c4container);
+
+            
+            foreach (var component in _components)
             {
-                containers.Add(Container.None | (ContainerType.WebApplication, container.Name.ToPascalCase(), container.Name, "C#, WebApi", container.Description));
+                var newestVersion = component.Revisions.Last(); //TODO: how to document different versions?
+                components.Add(new (newestVersion.Name.ToPascalCase(), newestVersion.Name, "C#", newestVersion.Objective));
             }
-            structures.Add(Bound("c1", _system.Name, containers.ToArray()));
+            structures.Add(Bound("c1", _container.Name, components.ToArray()));
             //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Database, "SqlDatabase", "SqlDatabase", "SQL Database", "Stores user registration information, hashed auth credentials, access logs, etc."),
             //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Queue, "RabbitMQ", "RabbitMQ", "RabbitMQ", "Stores user registration information, hashed auth credentials, access logs, etc."),
             

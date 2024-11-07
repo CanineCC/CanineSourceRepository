@@ -144,8 +144,6 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     }
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-
-
   public static void Apply(BpnWebApiContainer view, IEvent<BpnFeatureStarted> @event)
   {
     var entry = view.Features.FirstOrDefault(entry => entry.Id == @event.Data.FeatureId);
@@ -210,7 +208,6 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required]
     public DateTimeOffset Published { get; set; } = Published;
   }
-
   public class FeatureRevisions(string Name, long Revision, Environment[] Environments, FeatureStats Stats)
   {
     [Required]
@@ -222,7 +219,6 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required]
     public FeatureStats Stats { get; set; } = Stats;
   }
-
   public class FeatureDetails(Guid Id, List<FeatureRevisions> Revisions)
   {
     [Required]
@@ -230,7 +226,6 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required]
     public List<FeatureRevisions> Revisions { get; set; } = Revisions;
   }
-
   public class BpnWebApiContainer
   {
     [Required]
@@ -241,8 +236,6 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     public string Name { get; set; } = "";
     [Required]
     public string Description { get; set; } = "";
-    
-
     [Required]
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
     [Required]

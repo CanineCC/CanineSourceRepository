@@ -5,7 +5,7 @@ using Position = C4Sharp.Elements.Relationships.Position;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
-public class ContainerDiagramSample : ContainerDiagram
+public class ContainerDiagramSample : ContextDiagram
 {
     protected override string Title => "Container diagram for Internet Banking System";
 
