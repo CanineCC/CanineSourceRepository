@@ -16,45 +16,54 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface CreateContextBody
+ * @interface ContextDetails
  */
-export interface CreateContextBody {
+export interface ContextDetails {
     /**
      * 
      * @type {string}
-     * @memberof CreateContextBody
+     * @memberof ContextDetails
+     */
+    id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ContextDetails
      */
     name: string;
 }
 
 /**
- * Check if a given object implements the CreateContextBody interface.
+ * Check if a given object implements the ContextDetails interface.
  */
-export function instanceOfCreateContextBody(value: object): value is CreateContextBody {
+export function instanceOfContextDetails(value: object): value is ContextDetails {
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     return true;
 }
 
-export function CreateContextBodyFromJSON(json: any): CreateContextBody {
-    return CreateContextBodyFromJSONTyped(json, false);
+export function ContextDetailsFromJSON(json: any): ContextDetails {
+    return ContextDetailsFromJSONTyped(json, false);
 }
 
-export function CreateContextBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): CreateContextBody {
+export function ContextDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ContextDetails {
     if (json == null) {
         return json;
     }
     return {
         
+        'id': json['id'],
         'name': json['name'],
     };
 }
 
-export function CreateContextBodyToJSON(value?: CreateContextBody | null): any {
+export function ContextDetailsToJSON(value?: ContextDetails | null): any {
     if (value == null) {
         return value;
     }
     return {
         
+        'id': value['id'],
         'name': value['name'],
     };
 }

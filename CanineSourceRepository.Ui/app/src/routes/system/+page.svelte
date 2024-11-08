@@ -2,25 +2,28 @@
 	import Layout from '@/+layout.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
-	import { ContainerApi, ServerApi } from 'BpnEngineClient/apis';
-	import type { BpnContext, DurationClassification, FeatureRevisions } from 'BpnEngineClient/models';
+	import {  SystemApi, ContainerApi, ServerApi } from 'BpnEngineClient/apis';
+	import type { BpnWebApiContainer, DurationClassification, FeatureRevisions } from 'BpnEngineClient/models';
 	import { slide } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { formatDate	} from 'lib/Duration' 
 	import FeatureDuration from 'components/FeatureDuration.svelte' 
 
-	let contexts: BpnContext[] = [];
+	let webApiContainer: BpnWebApiContainer[] = [];
 	let durationClasses: DurationClassification[] = [];
-	let expandedContextRow: number | null = null; // Track which row is expanded
+	let expandedContainerRow: number | null = null; // Track which row is expanded
 	let expandedFeatureRow: number | null = null; // Track which row is expanded
 	const containerApi = new ContainerApi();
 	const serverApi = new ServerApi();
+	const systemApi = new SystemApi();
 	const currentTime = writable(new Date());
 
 	let intervalId: any;
 	onMount(async () => {
 		durationClasses = await serverApi.getDurationClassification();
-		contexts = await containerApi.getAllContexts();
+		let systems = await systemApi.getAllSystems();
+		//systems[0].
+		webApiContainer = await containerApi.getAllContexts();
 
 		intervalId = setInterval(() => {
 			currentTime.set(new Date());
@@ -30,14 +33,14 @@
 		clearInterval(intervalId); 
 	});
 
-	function toggleContextRow(index: number) {
-		expandedContextRow = expandedContextRow === index ? null : index;
+	function toggleContainerRow(index: number) {
+		expandedContainerRow = expandedContainerRow === index ? null : index;
 	}
 	function toggleFeatureRow(index: number) {
 		expandedFeatureRow = expandedFeatureRow === index ? null : index;
 	}
 
-	function getFeatureSummaries(context: BpnContext) {
+	function getFeatureSummaries(container: BpnWebApiContainer) {
 		let totalInvocations = 0;
 		let totalErrors = 0;
 		let totalCompleted = 0;
@@ -49,7 +52,7 @@
 		let avgCount = 0;
 		let lastUsed: Date | undefined | null = null;
 
-		context.features?.forEach((feature) => {
+		container.features?.forEach((feature) => {
 			feature.revisions.forEach((version) => {
 				totalInvocations += version.stats.invocationCount ?? 0;
 				totalErrors += version.stats.invocationErrorCount ?? 0;
@@ -89,11 +92,11 @@
 		};
 	}
 
-	function editVersion(contextId: string, featureId: string, versionId: string) {
+	function editVersion(containerId: string, featureId: string, versionId: string) {
     if (versionId === "-1")
-		  goto(`/draftfeature/edit/${contextId}/${featureId}`);
+		  goto(`/draftfeature/edit/${containerId}/${featureId}`);
 		else 
-      goto(`/feature/edit/${contextId}/${featureId}/${versionId}`);
+      goto(`/feature/edit/${containerId}/${featureId}/${versionId}`);
 	}
 
 	function getHighestVersion(versions: FeatureRevisions[]): FeatureRevisions {
@@ -106,11 +109,11 @@
 </script>
 
 <Layout>
-		<h1>Contexts Table</h1>
+		<h1>Containers</h1>
 		<table>
 			<thead>
 				<tr>
-					<th>Context</th>
+					<th>Container</th>
 					<th>Invocations</th>
 					<th>Errors</th>
 					<th>Completed</th>
@@ -125,20 +128,20 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each contexts as context, index}
+				{#each webApiContainer as container, index}
 					<tr>
 						<td class="title-column">
 							<button title="accordion" aria-label="accordion"
-								on:click={() => toggleContextRow(index)}
+								on:click={() => toggleContainerRow(index)}
 								style="border: none; background: none; cursor: pointer;"
 							>
-								<i
-									class={`fas ${expandedContextRow === index ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}
-								></i>
+								<span class="actionRow">
+									<i class={`fas ${expandedContainerRow === index ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}></i>
+									{container.name} <span class="technology">[WepApi]</span>
+								</span>
 							</button>
-							{context.name}
 						</td>
-						{#await Promise.resolve(getFeatureSummaries(context)) then summary}
+						{#await Promise.resolve(getFeatureSummaries(container)) then summary}
 							<td class="number-column">{summary.totalInvocations}</td>
 							<td class="number-column">{summary.totalErrors}</td>
 							<td class="number-column">{summary.totalCompleted}</td>
@@ -156,14 +159,14 @@
 								{$currentTime ? formatDate(summary.lastUsed, $currentTime) : '-'}
 							</td>
 						{/await}
-						<td class="tooltip date-column" data-tooltip={context.lastUpdatedTimestamp}>
-							{$currentTime ? formatDate(context.lastUpdatedTimestamp, $currentTime) : '-'}
+						<td class="tooltip date-column" data-tooltip={container.lastUpdatedTimestamp}>
+							{$currentTime ? formatDate(container.lastUpdatedTimestamp, $currentTime) : '-'}
 						</td>
-						<td class="tooltip" data-tooltip={context.createdTimestamp}>
-							{$currentTime ? formatDate(context.createdTimestamp, $currentTime) : '-'}
+						<td class="tooltip" data-tooltip={container.createdTimestamp}>
+							{$currentTime ? formatDate(container.createdTimestamp, $currentTime) : '-'}
 						</td>
 					</tr>
-					{#if expandedContextRow === index}
+					{#if expandedContainerRow === index}
 						<tr class="expandable-row">
 							<td colspan="11" style="padding:25px 50px; border:0;">
 								<div transition:slide>
@@ -184,8 +187,8 @@
 											</tr>
 										</thead>
 										<tbody>
-											{#if context && context.features}
-												{#each context.features as feature, featureindex}
+											{#if container && container.features}
+												{#each container.features as feature, featureindex}
 													{#await getHighestVersion(feature.revisions) then highestVersionFeature}
 														<tr>
 															<td class="title-column">
@@ -193,11 +196,11 @@
 																	on:click={() => toggleFeatureRow(featureindex)}
 																	style="border: none; background: none; cursor: pointer; user-select: none;"
 																>
-																	<i
-																		class={`fas ${expandedFeatureRow === featureindex ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}
-																	></i>
+																	<span class="actionRow">
+																		<i class={`fas ${expandedFeatureRow === featureindex ? 'fa-chevron-up' : 'fa-chevron-down'} light-icon`}></i>
+																		{highestVersionFeature.name} <span class="technology">[C#]</span>
+																	</span>
 																</button>
-																{highestVersionFeature.name}
 															</td>
 															<td class="version-column">
 																{highestVersionFeature.revision == -1
@@ -274,20 +277,22 @@
 																		{#each feature.revisions as version}
 																				<tr>
 																					<td class="title-column">
-																						{version.name}
-																					</td>
-																					<td class="version-column">
 																						<button title="accordion" aria-label="accordion"
-																							on:click={() =>
+																								on:click={() =>
 																								editVersion(
-																									context.id ?? '',
+																									container.id ?? '',
 																									feature.id ?? '',
 																									version.revision?.toString() ?? ''
 																								)}
-																							style="border: none; background: none; cursor: pointer; user-select: none;"
+																								style="border: none; background: none; cursor: pointer; user-select: none;"
 																						>
-																							<i class="fas fa-edit light-icon"></i>
+																							<span class="actionRow">
+																								<i class="fas fa-edit light-icon"></i>
+																								{version.name} <span class="technology">[C#]</span>
+																							</span>
 																						</button>
+																					</td>
+																					<td class="version-column">
 																						{version.revision == -1
 																							? 'draft'
 																							: 'v' + version.revision}
@@ -420,5 +425,13 @@
 		overflow: hidden; /* Prevents content from overflowing */
 		transition: max-height 3.3s ease; /* Smooth transition */
 		height: 0; /* Start collapsed */
+	}
+	.technology {
+		color: #555;
+	}
+	.actionRow {
+		color: #e0e0e0;
+		font-family: sans-serif;
+		font-size: 12pt;
 	}
 </style>

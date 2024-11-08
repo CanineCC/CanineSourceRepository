@@ -42,8 +42,8 @@
     <aside class="left-menu">
         <ul>
             <li><a href="/dashboard" title="Dashboard" aria-label="Dashboard" ><i class="fas fa-tachometer-alt"></i></a></li>
-            <li><a href="/documentation" title="C4 documentation (include bpn as level 4) (new Icon)" aria-label="Context"><i class="fas fa-cogs"></i></a></li>
-            <li><a href="/context" title="Systems (new icon!)" aria-label="Context"><i class="fas fa-cogs"></i></a></li>
+            <li><a href="/documentation" title="C4 documentation" aria-label="Documentation"><i class="fas fa-book"></i></a></li>
+            <li><a href="/system" title="Systems" aria-label="Systems"><i class="fas fa-server"></i></a></li>
             <li><a href="/profile" title="Profile" aria-label="Profile"><i class="fas fa-user"></i></a></li>
         </ul>
     </aside>

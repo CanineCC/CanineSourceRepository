@@ -23,79 +23,97 @@ import {
 /**
  * 
  * @export
- * @interface BpnContext
+ * @interface BpnWebApiContainer
  */
-export interface BpnContext {
+export interface BpnWebApiContainer {
     /**
      * 
      * @type {string}
-     * @memberof BpnContext
+     * @memberof BpnWebApiContainer
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof BpnContext
+     * @memberof BpnWebApiContainer
+     */
+    systemId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnWebApiContainer
      */
     name: string;
     /**
      * 
+     * @type {string}
+     * @memberof BpnWebApiContainer
+     */
+    description: string;
+    /**
+     * 
      * @type {Date}
-     * @memberof BpnContext
+     * @memberof BpnWebApiContainer
      */
     lastUpdatedTimestamp: Date;
     /**
      * 
      * @type {Date}
-     * @memberof BpnContext
+     * @memberof BpnWebApiContainer
      */
     createdTimestamp: Date;
     /**
      * 
      * @type {Array<FeatureDetails>}
-     * @memberof BpnContext
+     * @memberof BpnWebApiContainer
      */
     features: Array<FeatureDetails>;
 }
 
 /**
- * Check if a given object implements the BpnContext interface.
+ * Check if a given object implements the BpnWebApiContainer interface.
  */
-export function instanceOfBpnContext(value: object): value is BpnContext {
+export function instanceOfBpnWebApiContainer(value: object): value is BpnWebApiContainer {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('systemId' in value) || value['systemId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('createdTimestamp' in value) || value['createdTimestamp'] === undefined) return false;
     if (!('features' in value) || value['features'] === undefined) return false;
     return true;
 }
 
-export function BpnContextFromJSON(json: any): BpnContext {
-    return BpnContextFromJSONTyped(json, false);
+export function BpnWebApiContainerFromJSON(json: any): BpnWebApiContainer {
+    return BpnWebApiContainerFromJSONTyped(json, false);
 }
 
-export function BpnContextFromJSONTyped(json: any, ignoreDiscriminator: boolean): BpnContext {
+export function BpnWebApiContainerFromJSONTyped(json: any, ignoreDiscriminator: boolean): BpnWebApiContainer {
     if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
+        'systemId': json['systemId'],
         'name': json['name'],
+        'description': json['description'],
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'createdTimestamp': (new Date(json['createdTimestamp'])),
         'features': ((json['features'] as Array<any>).map(FeatureDetailsFromJSON)),
     };
 }
 
-export function BpnContextToJSON(value?: BpnContext | null): any {
+export function BpnWebApiContainerToJSON(value?: BpnWebApiContainer | null): any {
     if (value == null) {
         return value;
     }
     return {
         
         'id': value['id'],
+        'systemId': value['systemId'],
         'name': value['name'],
+        'description': value['description'],
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),
         'features': ((value['features'] as Array<any>).map(FeatureDetailsToJSON)),
