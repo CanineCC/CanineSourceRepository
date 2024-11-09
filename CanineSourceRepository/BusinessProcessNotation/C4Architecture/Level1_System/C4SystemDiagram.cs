@@ -60,10 +60,10 @@ public class ContainerDiagramSample : ContextDiagram
 public class C4SystemDiagram : ContainerDiagram
 {
     //list of systems... and an external entity interacting with them
-    private readonly BpnSystemProjection.BpnSystem[] _systems;
+    private readonly BpnSolutionProjection.SystemDetails[] _systems;
     private readonly string _solutionName;
 
-    public C4SystemDiagram(string solutionName, BpnSystemProjection.BpnSystem[] systems)
+    public C4SystemDiagram(string solutionName, BpnSolutionProjection.SystemDetails[] systems)
     {
         _systems = systems;
         _solutionName = solutionName;

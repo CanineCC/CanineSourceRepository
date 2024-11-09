@@ -12,6 +12,7 @@
 //    export let transitions: Array<BpnTransition> = [];
     export let diagram: BpnFeatureDiagram | undefined;
     export let readonly: boolean = false;
+    export let showDownload: boolean = true;
 
     export let taskStats: Array<TaskStats> = [];
 
@@ -203,8 +204,8 @@
         }, arr[0]);
 
 
-      width = Math.max(1000, (maxXObj.position?.x ?? 5000) + 325);
-      height = Math.max(500, (maxYObj.position?.y ?? 5000) + 175);
+      width =readonly ? maxXObj.position.x +325 : Math.max(1000, (maxXObj.position.x) + 325);
+      height =readonly ? maxYObj.position.y +175 : Math.max(500, (maxYObj.position.y) + 175);
     }
   
     // Run preparePaths when the component mounts
@@ -241,8 +242,10 @@
         />
       {/each}
     </svg>
-    
-    <a href="#top" title="Download svg" class="download button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
+
+    {#if showDownload}
+      <a href="#top" title="Download svg" class="download button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
+    {/if}
     {#if readonly==false}
       <a href="#top" title="Save diagram" class="save button" on:click={saveFeaturePositions}><i class="fas fa-save "></i></a>
     {/if}

@@ -9,5 +9,6 @@ export * from './FeatureApi';
 export * from './FeatureDiagramApi';
 export * from './FeatureTaskApi';
 export * from './ServerApi';
+export * from './SolutionApi';
 export * from './SystemApi';
 export * from './SystemDiagramApi';

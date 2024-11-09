@@ -50,6 +50,11 @@
 </script>
 
 <Layout>
+	<p style="color: red">TODO: EDIT SOLUTION (change name and description)</p>
+
+	<p style="color: red">TODO: LIST SYSTEMS as TABS</p>
+	<p style="color: red">TODO: ADD SYSTEM</p>
+
 	<h1>Containers</h1>
 	<table>
 		<thead>
@@ -133,6 +138,7 @@
 					</tr>
 				{/if}
 			{/each}
+			<p style="color: red">TODO: ADD CONTAINER</p>
 		</tbody>
 	</table>
 </Layout>

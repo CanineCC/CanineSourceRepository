@@ -16,17 +16,17 @@
 import * as runtime from '../runtime';
 import type {
   BpnSystem,
-  CreateContainerBody,
+  CreateSystemBody,
 } from '../models/index';
 import {
     BpnSystemFromJSON,
     BpnSystemToJSON,
-    CreateContainerBodyFromJSON,
-    CreateContainerBodyToJSON,
+    CreateSystemBodyFromJSON,
+    CreateSystemBodyToJSON,
 } from '../models/index';
 
 export interface CreateSystemRequest {
-    createContainerBody: CreateContainerBody;
+    createSystemBody: CreateSystemBody;
 }
 
 /**
@@ -37,10 +37,10 @@ export class SystemApi extends runtime.BaseAPI {
     /**
      */
     async createSystemRaw(requestParameters: CreateSystemRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['createContainerBody'] == null) {
+        if (requestParameters['createSystemBody'] == null) {
             throw new runtime.RequiredError(
-                'createContainerBody',
-                'Required parameter "createContainerBody" was null or undefined when calling createSystem().'
+                'createSystemBody',
+                'Required parameter "createSystemBody" was null or undefined when calling createSystem().'
             );
         }
 
@@ -55,7 +55,7 @@ export class SystemApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CreateContainerBodyToJSON(requestParameters['createContainerBody']),
+            body: CreateSystemBodyToJSON(requestParameters['createSystemBody']),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

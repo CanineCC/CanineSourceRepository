@@ -8,6 +8,7 @@ apis/FeatureApi.ts
 apis/FeatureDiagramApi.ts
 apis/FeatureTaskApi.ts
 apis/ServerApi.ts
+apis/SolutionApi.ts
 apis/SystemApi.ts
 apis/SystemDiagramApi.ts
 apis/index.ts
@@ -18,7 +19,6 @@ models/AddDraftFeatureBody.ts
 models/AddRecordToTaskBody.ts
 models/AddTestCaseToTaskBody.ts
 models/AddTransitionToDraftFeatureBody.ts
-models/Api.ts
 models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
@@ -27,6 +27,7 @@ models/BpnFeatureDiagram.ts
 models/BpnFeatureRevision.ts
 models/BpnFeatureRevisionsStat.ts
 models/BpnPosition.ts
+models/BpnSolution.ts
 models/BpnSystem.ts
 models/BpnTask.ts
 models/BpnTransition.ts
@@ -37,6 +38,8 @@ models/CompileError.ts
 models/ConnectionWaypoints.ts
 models/ContextDetails.ts
 models/CreateContainerBody.ts
+models/CreateSolutionBody.ts
+models/CreateSystemBody.ts
 models/DataDefinition.ts
 models/DeleteRecordOnTaskBody.ts
 models/DurationClassification.ts
@@ -53,6 +56,7 @@ models/RemoveTestCaseFromTask.ts
 models/ResetDraftFeatureBody.ts
 models/ServerHealth.ts
 models/Stats.ts
+models/SystemDetails.ts
 models/TaskStats.ts
 models/TestCase.ts
 models/UpdateCodeOnTaskBody.ts

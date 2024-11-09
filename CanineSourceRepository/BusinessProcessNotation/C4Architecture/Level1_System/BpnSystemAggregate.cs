@@ -34,17 +34,6 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
       .Produces(StatusCodes.Status200OK, typeof(List<BpnSystem>))
       .WithTags("System");
     
-    app.MapGet($"BpnEngine/v1/System/DiagramSvg", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
-      {
-        var bpnContexts = await session.Query<BpnSystem>().ToListAsync(ct);
-        var diagram = new C4SystemDiagram("TODO", bpnContexts.ToArray());
-        var svg = C4DiagramHelper.GenerateC4(diagram);
-
-        context.Response.ContentType = "image/svg+xml"; 
-        await context.Response.WriteAsync(svg, ct);
-      }).WithName("GetC4_Level1DiagramSvg")
-      .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("System.Diagram");
   }
   public BpnSystemProjection()
   {
@@ -63,7 +52,6 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     view.Contexts.Add(new ContextDetails(@event.Data.Id, @event.Data.Name));
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  
   public class ContextDetails(Guid Id, string Name)
   {
     [Required]
@@ -71,7 +59,6 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     [Required]
     public string Name { get; set; } = Name;
   }
-
   public class BpnSystem
   {
     [Required]

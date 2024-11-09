@@ -123,6 +123,7 @@ aria-label="Task: {name}"
 >
 <rect
 x={position.x} y={position.y} width="300" height="150"
+rx="15" ry="15"
 fill="#B0C4DE" stroke="grey" />
 <text  style="user-select: none;" x={(position.x??0) + 10} y={(position.y??0) + 20} font-size="14" font-weight="600">
 {#each wrapText(name,maxWidth) as line, index}

@@ -1,4 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSolution;
+using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 using Marten.Events.Projections;
 
@@ -69,8 +70,9 @@ public static class BpnEventStore
 
     var causationId = "GenerateDefaultData";
 
-
-    var systemId = await CreateSystemFeature.Execute(session, causationId, "User system", ct);
+    var solutionId =
+      await CreateSolutionFeature.Execute(session, causationId, "Hello world", "Simple scarfold solution", ct);
+    var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
     var contextId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", systemId, ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,
@@ -89,6 +91,10 @@ public static class BpnEventStore
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
   {
+    options.Projections.LiveStreamAggregation<BpnSolutionAggregate>();
+    options.Projections.Add<BpnSolutionProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<BpnSolutionProjection.BpnSolution>();
+
     options.Projections.LiveStreamAggregation<BpnSystemAggregate>();
     options.Projections.Add<BpnSystemProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnSystemProjection.BpnSystem>();
@@ -136,11 +142,13 @@ public static class BpnEventStore
       var registerMethod = implementation.GetMethod("RegisterBpnEventStore", BindingFlags.Public | BindingFlags.Static);
       registerMethod?.Invoke(null, [app]);
     }
+    BpnSolutionAggregate.RegisterBpnEventStore(app);
     BpnDraftFeatureAggregate.RegisterBpnEventStore(app);
     BpnBpnWebApiContainerAggregate.RegisterBpnEventStore(app);
     BpnFeatureAggregate.RegisterBpnEventStore(app);
     BpnSystemProjection.RegisterBpnEventStore(app);
 
+    BpnSolutionProjection.RegisterBpnEventStore(app);
     BpnDraftFeatureProjection.RegisterBpnEventStore(app);
     BpnFeatureProjection.RegisterBpnEventStore(app);
     BpnFeatureStatsProjection.RegisterBpnEventStore(app);

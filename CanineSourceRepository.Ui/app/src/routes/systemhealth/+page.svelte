@@ -112,6 +112,9 @@
 </script>
 
 <Layout>
+	<p style="color: red">TODO: SHOW SOLUTION (name and description)</p>
+	<p style="color: red">TODO: LIST SYSTEMS as TABS</p>
+
 	<h1>Containers</h1>
 	<table>
 		<thead>

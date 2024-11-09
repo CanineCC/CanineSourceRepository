@@ -15,6 +15,10 @@
 
 import * as runtime from '../runtime';
 
+export interface GetC4Level1DiagramSvgRequest {
+    solutionId: string;
+}
+
 /**
  * 
  */
@@ -22,13 +26,20 @@ export class SystemDiagramApi extends runtime.BaseAPI {
 
     /**
      */
-    async getC4Level1DiagramSvgRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+    async getC4Level1DiagramSvgRaw(requestParameters: GetC4Level1DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+        if (requestParameters['solutionId'] == null) {
+            throw new runtime.RequiredError(
+                'solutionId',
+                'Required parameter "solutionId" was null or undefined when calling getC4Level1DiagramSvg().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/System/DiagramSvg`,
+            path: `/BpnEngine/v1/System/DiagramSvg/{solutionId}`.replace(`{${"solutionId"}}`, encodeURIComponent(String(requestParameters['solutionId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -43,8 +54,8 @@ export class SystemDiagramApi extends runtime.BaseAPI {
 
     /**
      */
-    async getC4Level1DiagramSvg(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.getC4Level1DiagramSvgRaw(initOverrides);
+    async getC4Level1DiagramSvg(requestParameters: GetC4Level1DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
+        const response = await this.getC4Level1DiagramSvgRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
