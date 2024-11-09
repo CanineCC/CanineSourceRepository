@@ -29,7 +29,7 @@ export interface CreateContainerRequest {
     createContainerBody: CreateContainerBody;
 }
 
-export interface GetC4Level2DiagramSvgRequest {
+export interface GetAllContainersBySystemRequest {
     systemId: string;
 }
 
@@ -73,13 +73,13 @@ export class ContainerApi extends runtime.BaseAPI {
 
     /**
      */
-    async getAllContextsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<BpnWebApiContainer>>> {
+    async getAllContainersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<BpnWebApiContainer>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/Context/All`,
+            path: `/BpnEngine/v1/Container/All`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -90,18 +90,18 @@ export class ContainerApi extends runtime.BaseAPI {
 
     /**
      */
-    async getAllContexts(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BpnWebApiContainer>> {
-        const response = await this.getAllContextsRaw(initOverrides);
+    async getAllContainers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BpnWebApiContainer>> {
+        const response = await this.getAllContainersRaw(initOverrides);
         return await response.value();
     }
 
     /**
      */
-    async getC4Level2DiagramSvgRaw(requestParameters: GetC4Level2DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
+    async getAllContainersBySystemRaw(requestParameters: GetAllContainersBySystemRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<BpnWebApiContainer>>> {
         if (requestParameters['systemId'] == null) {
             throw new runtime.RequiredError(
                 'systemId',
-                'Required parameter "systemId" was null or undefined when calling getC4Level2DiagramSvg().'
+                'Required parameter "systemId" was null or undefined when calling getAllContainersBySystem().'
             );
         }
 
@@ -110,23 +110,19 @@ export class ContainerApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/Context/DiagramSvg/{systemId}`.replace(`{${"systemId"}}`, encodeURIComponent(String(requestParameters['systemId']))),
+            path: `/BpnEngine/v1/Container/BySystem/{systemId}`.replace(`{${"systemId"}}`, encodeURIComponent(String(requestParameters['systemId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(BpnWebApiContainerFromJSON));
     }
 
     /**
      */
-    async getC4Level2DiagramSvg(requestParameters: GetC4Level2DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.getC4Level2DiagramSvgRaw(requestParameters, initOverrides);
+    async getAllContainersBySystem(requestParameters: GetAllContainersBySystemRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BpnWebApiContainer>> {
+        const response = await this.getAllContainersBySystemRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

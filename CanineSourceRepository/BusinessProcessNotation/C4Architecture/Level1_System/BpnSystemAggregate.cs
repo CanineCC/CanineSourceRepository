@@ -44,7 +44,7 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
         await context.Response.WriteAsync(svg, ct);
       }).WithName("GetC4_Level1DiagramSvg")
       .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("System");
+      .WithTags("System.Diagram");
   }
   public BpnSystemProjection()
   {

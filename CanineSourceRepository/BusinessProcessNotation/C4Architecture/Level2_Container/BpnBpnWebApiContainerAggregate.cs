@@ -30,11 +30,19 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
 {
   public static void RegisterBpnEventStore(WebApplication app)
   {
-    app.MapGet($"BpnEngine/v1/Context/All", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
+    app.MapGet("BpnEngine/v1/Container/All", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
     {
       var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().ToListAsync(ct);
       return Results.Ok(bpnContexts);
-    }).WithName("GetAllContexts")
+    }).WithName("GetAllContainers")
+      .Produces(StatusCodes.Status200OK, typeof(List<BpnBpnWebApiContainerProjection.BpnWebApiContainer>))
+      .WithTags("Container");
+
+    app.MapGet("BpnEngine/v1/Container/BySystem/{systemId}", async (HttpContext context, [FromServices] IQuerySession session, Guid systemId, CancellationToken ct) =>
+      {
+        var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.SystemId == systemId).ToListAsync(ct);
+        return Results.Ok(bpnContexts);
+      }).WithName("GetAllContainersBySystem")
       .Produces(StatusCodes.Status200OK, typeof(List<BpnBpnWebApiContainerProjection.BpnWebApiContainer>))
       .WithTags("Container");
     
@@ -48,7 +56,7 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
         await context.Response.WriteAsync(svg, ct);
       }).WithName("GetC4_level2DiagramSvg")
       .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("Container");
+      .WithTags("Container.Diagram");
     
   }
   public BpnBpnWebApiContainerProjection()

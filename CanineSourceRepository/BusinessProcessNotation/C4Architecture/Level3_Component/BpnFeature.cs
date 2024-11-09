@@ -71,7 +71,7 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
         await context.Response.WriteAsync(svg, ct);
       }).WithName("GetC4_level3DiagramSvg")
       .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("Feature");
+      .WithTags("Feature.Diagram");
     
     
     

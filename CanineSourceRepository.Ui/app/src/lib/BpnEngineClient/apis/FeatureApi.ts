@@ -28,10 +28,6 @@ import {
     UpdateEnvironmentsOnFeatureBodyToJSON,
 } from '../models/index';
 
-export interface GetC4Level3DiagramSvgRequest {
-    containerId: string;
-}
-
 export interface GetFeatureRevisionRequest {
     featureId: string;
     revision: number;
@@ -50,41 +46,6 @@ export interface UpdateEnvironmentsOnFeatureRequest {
  * 
  */
 export class FeatureApi extends runtime.BaseAPI {
-
-    /**
-     */
-    async getC4Level3DiagramSvgRaw(requestParameters: GetC4Level3DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        if (requestParameters['containerId'] == null) {
-            throw new runtime.RequiredError(
-                'containerId',
-                'Required parameter "containerId" was null or undefined when calling getC4Level3DiagramSvg().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/BpnEngine/v1/Feature/DiagramSvg/{containerId}`.replace(`{${"containerId"}}`, encodeURIComponent(String(requestParameters['containerId']))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<string>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     */
-    async getC4Level3DiagramSvg(requestParameters: GetC4Level3DiagramSvgRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
-        const response = await this.getC4Level3DiagramSvgRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
 
     /**
      */

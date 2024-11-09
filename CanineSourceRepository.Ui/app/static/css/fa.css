@@ -17,4 +17,7 @@
 .fa-plus:before{content:"\2b"}
 .fa-trash:before{content:"\f1f8"}
 .fa-book:before{content:"\f02d"}
-.fa-server:before{content:"\f233"}
+.fa-eye:before{content:"\f06e"}
+.fa-code:before{content:"\f121"}
+.fa-gauge-simple-high:before,.fa-gauge-simple:before,.fa-tachometer-fast:before,.fa-tachometer:before{content:"\f62a"}
+.fa-chart-line:before,.fa-line-chart:before{content:"\f201"}

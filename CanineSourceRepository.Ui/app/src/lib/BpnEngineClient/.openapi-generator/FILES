@@ -1,12 +1,15 @@
 .openapi-generator-ignore
 apis/ContainerApi.ts
+apis/ContainerDiagramApi.ts
 apis/DraftFeatureApi.ts
 apis/DraftFeatureDiagramApi.ts
 apis/DraftFeatureTaskApi.ts
 apis/FeatureApi.ts
+apis/FeatureDiagramApi.ts
 apis/FeatureTaskApi.ts
 apis/ServerApi.ts
 apis/SystemApi.ts
+apis/SystemDiagramApi.ts
 apis/index.ts
 index.ts
 models/AddApiTaskToDraftFeatureBody.ts

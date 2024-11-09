@@ -3,7 +3,7 @@
     import { onMount, onDestroy } from 'svelte';
     import Layout from '@/+layout.svelte';
     import { FeatureApi, ServerApi  } from 'BpnEngineClient/apis'; 
-	import type { BpnTask, BpnTransition, TaskStats, BpnFeatureDiagram, BpnFeatureVersion, BpnFeatureVersionStat, DurationClassification } from 'BpnEngineClient';
+	import type { BpnTask, BpnTransition, TaskStats, BpnFeatureDiagram, BpnFeatureRevision, BpnFeatureRevisionsStat, DurationClassification } from 'BpnEngineClient';
     import Graph from 'components/diagram/Graph.svelte';
     import TaskComponent from 'components/TaskComponent.svelte';
     import Accordion from 'components/Accordion.svelte';
@@ -21,11 +21,11 @@
     let versionId: string;
 	let durationClasses: DurationClassification[] = [];
 
-    let feature : BpnFeatureVersion | null = null;
+    let feature : BpnFeatureRevision | null = null;
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
     let diagram : BpnFeatureDiagram | undefined;
-    let stats : BpnFeatureVersionStat | undefined;
+    let stats : BpnFeatureRevisionsStat | undefined;
     let taskStats: Array<TaskStats> | undefined = undefined;
     let selectedTask : BpnTask |null = null;
   
@@ -51,12 +51,12 @@
 
     async function fetchVersionDetails(contextId: string, featureId: string, versionId: string) {
         let version = parseInt(versionId);
-        feature = await featureApi.getFeatureVersion({featureId: featureId, version: version});
+        feature = await featureApi.getFeatureRevision({featureId: featureId, revision: version});
         tasks = feature.tasks??[];
         transitions = feature.transitions??[];
         diagram = feature.diagram;
 
-        stats = await featureApi.getFeatureVersionStats({featureId: featureId, version: version });
+        stats = await featureApi.getFeatureRevisionStats({featureId: featureId, revision: version });
         console.log(stats);
         taskStats = stats.taskStats ?? [];
         console.log(taskStats);
@@ -149,43 +149,43 @@
         <div class="key-value-pairs">
             <div class="pair">
                 <span class="key">Last used:</span>
-                <span class="value">{$currentTime ? formatDate(stats.versionStats.lastUsed, $currentTime): '-'}</span>
+                <span class="value">{$currentTime ? formatDate(stats.revisionStats.lastUsed, $currentTime): '-'}</span>
             </div>
             <div class="pair">
                 <span class="key">Max duration:</span>
                 <span class="value">
-                    <FeatureDuration duration={stats.versionStats.maxDurationMs}  durationClasses={durationClasses}></FeatureDuration>
+                    <FeatureDuration duration={stats.revisionStats.maxDurationMs}  durationClasses={durationClasses}></FeatureDuration>
                 </span>
             </div>
             <div class="pair">
                 <span class="key">Avg duration:</span>
                 <span class="value">
-                    <FeatureDuration duration={stats.versionStats.avgDurationMs}  durationClasses={durationClasses}></FeatureDuration>
+                    <FeatureDuration duration={stats.revisionStats.avgDurationMs}  durationClasses={durationClasses}></FeatureDuration>
                 </span>
             </div>
             <div class="pair">
                 <span class="key">Min duration:</span>
                 <span class="value">
-                    <FeatureDuration duration={stats.versionStats.minDurationMs}   durationClasses={durationClasses}></FeatureDuration>
+                    <FeatureDuration duration={stats.revisionStats.minDurationMs}   durationClasses={durationClasses}></FeatureDuration>
                 </span>
             </div>
         </div>
         <div class="key-value-pairs">
             <div class="pair">
                 <span class="key">Started:</span>
-                <span class="value">{stats.versionStats.invocationCount}</span>
+                <span class="value">{stats.revisionStats.invocationCount}</span>
             </div>
             <div class="pair">
                 <span class="key">Completed:</span>
-                <span class="value">{stats.versionStats.invocationCompletedCount}</span>
+                <span class="value">{stats.revisionStats.invocationCompletedCount}</span>
             </div>
             <div class="pair">
                 <span class="key">Failed:</span>
-                <span class="value">{stats.versionStats.invocationErrorCount}</span>
+                <span class="value">{stats.revisionStats.invocationErrorCount}</span>
             </div>
             <div class="pair">
                 <span class="key">In progresss:</span>
-                <span class="value">{stats.versionStats.invocationsInProgressCount}</span>
+                <span class="value">{stats.revisionStats.invocationsInProgressCount}</span>
             </div>
         </div>
         {/if}
@@ -197,7 +197,7 @@
     SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
 </Accordion>
 
-{#if feature && taskStats}
+{#if feature}
 <Accordion title="BPN" isOpen={false}>
     <div class="graph-wrapper">
             <Graph 
@@ -218,7 +218,7 @@
 </Accordion>
 
 {:else}
-    <p>... loading ...</p>
+    <p>... loading  ...</p>
 {/if}
 
 
