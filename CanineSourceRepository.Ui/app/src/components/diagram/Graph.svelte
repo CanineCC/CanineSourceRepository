@@ -83,6 +83,8 @@
     }
     function getTaskStats(taskId: string) : TaskStats | undefined {
       const task = taskStats?.find(t => t.task === taskId);
+      console.log("Finding stats for: " + taskId);
+      console.log(task);
       return task;
     }
 
@@ -224,7 +226,7 @@
         </marker>
       </defs>
     
-      {#each paths as { d, stroke, key }}
+      {#each paths as { d, stroke }}
         <path d={d} stroke={stroke} fill="transparent" marker-end="url(#arrow)" /> <!-- Add marker for arrows -->
       {/each}
     
@@ -246,7 +248,7 @@
     {#if showDownload}
       <a href="#top" title="Download svg" class="download button" on:click={exportAsSVG}><i class="fas fa-download "></i></a>
     {/if}
-    {#if readonly==false}
+    {#if readonly===false}
       <a href="#top" title="Save diagram" class="save button" on:click={saveFeaturePositions}><i class="fas fa-save "></i></a>
     {/if}
   </div>    

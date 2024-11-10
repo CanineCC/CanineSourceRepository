@@ -40,6 +40,12 @@ export interface FeatureRevisions {
     name: string;
     /**
      * 
+     * @type {string}
+     * @memberof FeatureRevisions
+     */
+    objective: string;
+    /**
+     * 
      * @type {number}
      * @memberof FeatureRevisions
      */
@@ -63,6 +69,7 @@ export interface FeatureRevisions {
  */
 export function instanceOfFeatureRevisions(value: object): value is FeatureRevisions {
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('objective' in value) || value['objective'] === undefined) return false;
     if (!('revision' in value) || value['revision'] === undefined) return false;
     if (!('environments' in value) || value['environments'] === undefined) return false;
     if (!('stats' in value) || value['stats'] === undefined) return false;
@@ -80,6 +87,7 @@ export function FeatureRevisionsFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'name': json['name'],
+        'objective': json['objective'],
         'revision': json['revision'],
         'environments': ((json['environments'] as Array<any>).map(EnvironmentFromJSON)),
         'stats': FeatureStatsFromJSON(json['stats']),
@@ -93,6 +101,7 @@ export function FeatureRevisionsToJSON(value?: FeatureRevisions | null): any {
     return {
         
         'name': value['name'],
+        'objective': value['objective'],
         'revision': value['revision'],
         'environments': ((value['environments'] as Array<any>).map(EnvironmentToJSON)),
         'stats': FeatureStatsToJSON(value['stats']),

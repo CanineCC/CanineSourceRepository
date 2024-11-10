@@ -55,6 +55,7 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
   {
     view.Id = @event.Data.Id;
     view.Name = @event.Data.Name;
+    view.Description = @event.Data.Description;
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }

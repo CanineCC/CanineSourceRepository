@@ -34,12 +34,13 @@
         contextId = $page.params.contextid;
         featureId = $page.params.featureid;
         versionId = $page.params.versionid;
+        taskStats = undefined;
     }
 
     let intervalId: any;
 	onMount(async () => {
         durationClasses = await serverApi.getDurationClassification();
-        fetchVersionDetails(contextId, featureId, versionId);
+        await fetchVersionDetails(contextId, featureId, versionId);
 		intervalId = setInterval(() => {
 			currentTime.set(new Date());
 		}, 1000);
@@ -47,7 +48,6 @@
 	onDestroy(() => {
 		clearInterval(intervalId); // Clear interval on component destroy
 	});
-
 
     async function fetchVersionDetails(contextId: string, featureId: string, versionId: string) {
         let version = parseInt(versionId);
@@ -57,9 +57,7 @@
         diagram = feature.diagram;
 
         stats = await featureApi.getFeatureRevisionStats({featureId: featureId, revision: version });
-        console.log(stats);
         taskStats = stats.taskStats ?? [];
-        console.log(taskStats);
     }
 
     function handleTaskSelect(event: any) {
@@ -105,9 +103,9 @@
     }
 
     .graph-wrapper {
-        padding: 0px; 
+        padding: 0;
         width: calc(100vw - 170px); 
-        height:600px; 
+/*        height:600px;*/
         overflow-x: auto; 
         overflow-y: auto; 
         box-sizing: border-box; 
@@ -197,12 +195,12 @@
     SEE:: https://www.chartjs.org/docs/latest/samples/subtitle/basic.html
 </Accordion>
 
-{#if feature}
 <Accordion title="BPN" isOpen={false}>
+    {#if feature && stats}
     <div class="graph-wrapper">
             <Graph 
-            {tasks} 
-            {diagram} 
+            tasks={tasks}
+            diagram={diagram}
             featureId={featureId}
             readonly={true}
             taskStats={taskStats}
@@ -215,11 +213,11 @@
         <TaskComponent readonly={true} task={selectedTask} featureId={featureId} />
         </div>
     {/if}
+    {:else}
+        <p>... loading  ...</p>
+    {/if}
 </Accordion>
 
-{:else}
-    <p>... loading  ...</p>
-{/if}
 
 
 

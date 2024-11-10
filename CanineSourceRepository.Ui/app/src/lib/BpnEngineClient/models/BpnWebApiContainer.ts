@@ -43,6 +43,12 @@ export interface BpnWebApiContainer {
      * @type {string}
      * @memberof BpnWebApiContainer
      */
+    systemName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnWebApiContainer
+     */
     name: string;
     /**
      * 
@@ -50,6 +56,12 @@ export interface BpnWebApiContainer {
      * @memberof BpnWebApiContainer
      */
     description: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnWebApiContainer
+     */
+    c4ComponentDiagramSvg: string;
     /**
      * 
      * @type {Date}
@@ -76,8 +88,10 @@ export interface BpnWebApiContainer {
 export function instanceOfBpnWebApiContainer(value: object): value is BpnWebApiContainer {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('systemId' in value) || value['systemId'] === undefined) return false;
+    if (!('systemName' in value) || value['systemName'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('c4ComponentDiagramSvg' in value) || value['c4ComponentDiagramSvg'] === undefined) return false;
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('createdTimestamp' in value) || value['createdTimestamp'] === undefined) return false;
     if (!('features' in value) || value['features'] === undefined) return false;
@@ -96,8 +110,10 @@ export function BpnWebApiContainerFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'id': json['id'],
         'systemId': json['systemId'],
+        'systemName': json['systemName'],
         'name': json['name'],
         'description': json['description'],
+        'c4ComponentDiagramSvg': json['c4ComponentDiagramSvg'],
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'createdTimestamp': (new Date(json['createdTimestamp'])),
         'features': ((json['features'] as Array<any>).map(FeatureDetailsFromJSON)),
@@ -112,8 +128,10 @@ export function BpnWebApiContainerToJSON(value?: BpnWebApiContainer | null): any
         
         'id': value['id'],
         'systemId': value['systemId'],
+        'systemName': value['systemName'],
         'name': value['name'],
         'description': value['description'],
+        'c4ComponentDiagramSvg': value['c4ComponentDiagramSvg'],
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),
         'features': ((value['features'] as Array<any>).map(FeatureDetailsToJSON)),

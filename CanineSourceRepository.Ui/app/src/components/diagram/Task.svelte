@@ -2,8 +2,8 @@
     import { createEventDispatcher } from 'svelte';
     import { onMount } from "svelte";
     import type {  TaskStats, DurationClassification } from "BpnEngineClient/models";
-    import { formatDurationShort, formatDurationLong } from 'lib/Duration';
-    import { FeatureTaskApi, FeatureApi, ServerApi  } from 'BpnEngineClient/apis'; // Adjust the path accordingly
+    import { formatDurationShort } from 'lib/Duration';
+    import { FeatureTaskApi  } from 'BpnEngineClient/apis'; // Adjust the path accordingly
 
     const featureTaskApi = new FeatureTaskApi();
     // Props
@@ -73,7 +73,7 @@
   }
 
   // Utility function to break text into lines
-  function wrapText(text : string, maxWidth : number, lineHeight = 20) {
+  function wrapText(text : string, maxWidth : number) {
     const words = text.split(' ');
     let lines = [];
     let currentLine = words[0];
@@ -109,7 +109,6 @@
   
   <!-- SVG group for task box and text -->
 {#if durationClasses.length > 0}
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 
 <g 
@@ -143,7 +142,7 @@ fill="#B0C4DE" stroke="grey" />
     <tspan style='fill:{getColor(stats.avgDurationMs??0)};' x={(position.x??0)+150- (getTextWidth('Avg: ' + (stats.avgDurationMs ? formatDurationShort(stats.avgDurationMs) : '-'))/2)} dy={0}>
       Avg: {stats.avgDurationMs ? formatDurationShort(stats.avgDurationMs) : '-'}
     </tspan>
-    <tspan style='fill:{getColor(stats.minDurationMs??0)};'x={(position.x??0)+300-getTextWidth('Min: ' + (stats.minDurationMs ? formatDurationShort(stats.minDurationMs) : '-'))} dy={0}>
+    <tspan style='fill:{getColor(stats.minDurationMs??0)};' x={(position.x??0)+300-getTextWidth('Min: ' + (stats.minDurationMs ? formatDurationShort(stats.minDurationMs) : '-'))} dy={0}>
       Min: {stats.minDurationMs ? formatDurationShort(stats.minDurationMs) : '-'}
     </tspan>
   </text>

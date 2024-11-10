@@ -32,12 +32,12 @@
     <p style="color: red">TODO: Revision dropdown, and show diagrams based on that (default to newest)</p>
 
     <h1>1. System context diagram</h1>
-    <p>{solution.description}</p>
     {#await Promise.resolve(systemDiagramApi.getC4Level1DiagramSvg({ solutionId:solution.id})) then c4level1}
         <div class="svgWrapper">
             {@html c4level1}
         </div>
     {/await}
+    <p>{solution.description}</p>
     <hr>
 
     <h1>2. Container diagram</h1>
@@ -84,6 +84,7 @@
 
                     </div>
                 {/await}
+                <p>{feature.revisions[0].objective}</p>
             {/each}
         {/each}
     {/if}
