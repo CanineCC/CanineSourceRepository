@@ -38,10 +38,12 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
       {
         var bpnSolution = await session.Query<BpnSolution>().Where(p => p.Id == solutionId).FirstAsync();
         context.Response.ContentType = "image/svg+xml"; 
-        await context.Response.WriteAsync(bpnSolution.C4DiagramSvg, ct);
+        await context.Response.WriteAsync(bpnSolution.C4SystemDiagramSvg, ct);
       }).WithName("GetC4_Level1DiagramSvg")
       .Produces(StatusCodes.Status200OK, typeof(string))
       .WithTags("System.Diagram");
+    
+    
   }
   public BpnSolutionProjection()
   {
@@ -52,6 +54,7 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
   {
     view.Id = @event.Data.Id;
     view.Name = @event.Data.Name;
+    view.Description = @event.Data.Description;
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
@@ -61,7 +64,7 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
     view.LastUpdatedTimestamp = @event.Timestamp;
     
     var diagram = new C4SystemDiagram("TODO", view.Systems.ToArray());
-    view.C4DiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
 
   }
   public class SystemDetails(Guid Id, string Name, string Description)
@@ -82,7 +85,7 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
     [Required]
     public string Description { get; set; } = "";
     [Required]
-    public string C4DiagramSvg { get; set; } = "<svg />";
+    public string C4SystemDiagramSvg { get; set; } = "<svg />";
     
     [Required]
     public DateTimeOffset CreatedTimestamp { get; set; }

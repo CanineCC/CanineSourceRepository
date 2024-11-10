@@ -31,6 +31,12 @@ export interface ContextDetails {
      * @memberof ContextDetails
      */
     name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ContextDetails
+     */
+    description: string;
 }
 
 /**
@@ -39,6 +45,7 @@ export interface ContextDetails {
 export function instanceOfContextDetails(value: object): value is ContextDetails {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -54,6 +61,7 @@ export function ContextDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'name': json['name'],
+        'description': json['description'],
     };
 }
 
@@ -65,6 +73,7 @@ export function ContextDetailsToJSON(value?: ContextDetails | null): any {
         
         'id': value['id'],
         'name': value['name'],
+        'description': value['description'],
     };
 }
 

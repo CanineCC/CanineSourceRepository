@@ -23,13 +23,6 @@
     });
     onDestroy(() => {
     });
-    function editVersion(containerId: string, featureId: string, versionId: string) {
-        if (versionId === "-1")
-            goto(`/draftfeature/edit/${containerId}/${featureId}`);
-        else
-            goto(`/feature/edit/${containerId}/${featureId}/${versionId}`);
-    }
-
 </script>
 
 <Layout>
@@ -112,9 +105,6 @@
     svg {
         width: 100%;               /* Ensure SVG scales to fit the container */
         height: auto;              /* Maintain aspect ratio */
-    }
-    .technology {
-        color: #555;
     }
     .actionRow {
         color: #e0e0e0;

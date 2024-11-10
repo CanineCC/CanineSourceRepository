@@ -1,28 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnContext;
 
 public class CreateContainerFeature : IFeature
 {
-  public record WebApiContainerCreated(Guid Id, Guid SystemId, string Name);
+  public record WebApiContainerCreated(Guid Id, Guid SystemId, string SystemName, string Name, string Descrption);
   public class CreateContainerBody
   {
-    public CreateContainerBody(string name, Guid systemId)
+    public CreateContainerBody(string name, string descrption, Guid systemId)
     {
       SystemId = systemId;
       Name = name ?? throw new ArgumentNullException(nameof(name));
+      Descrption = descrption ?? throw new ArgumentNullException(nameof(descrption));
     }
 
     [Required]
     public Guid SystemId { get; set; }
     [Required]
     public string Name { get; set; }
+    [Required]
+    public string Descrption { get; set; }
   }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/Container/Add", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CreateContainerBody request, CancellationToken ct) =>
     {
-      var id = await Execute(session, "WebApplication/v1/BpnEngine/Container/Add", request.Name, request.SystemId, ct);
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/Container/Add", request.Name,  request.Descrption,request.SystemId, ct);
       return Results.Ok(id);
     }).WithName("CreateContainer")
      .Produces(StatusCodes.Status200OK)
@@ -34,10 +38,11 @@ public class CreateContainerFeature : IFeature
   {
     options.Events.AddEventType<WebApiContainerCreated>();
   }
-  public static async Task<Guid> Execute(IDocumentSession session, string causationId, string name, Guid systemId, CancellationToken ct)
+  public static async Task<Guid> Execute(IDocumentSession session, string causationId, string name, string description, Guid systemId, CancellationToken ct)
   {
+    var system = await session.Events.AggregateStreamAsync<BpnSystemAggregate>(systemId, token: ct);
     var newId = Guid.CreateVersion7();
-    await session.RegisterEventsOnBpnContext(ct, newId, causationId, new WebApiContainerCreated(Id: newId, Name: name, SystemId: systemId));
+    await session.RegisterEventsOnBpnContext(ct, newId, causationId, new WebApiContainerCreated(Id: newId, Name: name, Descrption:description, SystemId: systemId, SystemName: system.Name));
     return newId;
   }
 }

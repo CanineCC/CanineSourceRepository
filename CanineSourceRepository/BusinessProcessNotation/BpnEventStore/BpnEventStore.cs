@@ -73,11 +73,11 @@ public static class BpnEventStore
     var solutionId =
       await CreateSolutionFeature.Execute(session, causationId, "Hello world", "Simple scarfold solution", ct);
     var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
-    var contextId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", systemId, ct);
+    var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,
                           causationId: causationId,
-                          bpnContextId: contextId,
+                          bpnContextId: containerId,
                           name: "Create user",
                           objective: "Enable users to register, validate their email, and gain access to premium content.",
                           flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",

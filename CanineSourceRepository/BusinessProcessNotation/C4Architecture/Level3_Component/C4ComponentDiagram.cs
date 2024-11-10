@@ -7,24 +7,24 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_C
 
 public class C4ComponentDiagram : ComponentDiagram
 {
-    private readonly BpnSystemProjection.BpnSystem _system;
+    private readonly string _systemName;
     private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer _container;
-    private readonly BpnFeatureProjection.BpnFeature[] _components;
-    private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer[] _containers;
+    private readonly BpnBpnWebApiContainerProjection.FeatureDetails[] _components;
+ //   private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer[] _containers;
 
     public C4ComponentDiagram(
-        BpnSystemProjection.BpnSystem system, 
+        string systemName, 
         BpnBpnWebApiContainerProjection.BpnWebApiContainer container,
-        BpnBpnWebApiContainerProjection.BpnWebApiContainer[] containers,
-        BpnFeatureProjection.BpnFeature[] components
+      //  BpnBpnWebApiContainerProjection.BpnWebApiContainer[] containers,
+      BpnBpnWebApiContainerProjection.FeatureDetails[] components
         )
     {
-        _system = system;
+        _systemName = systemName;
         _container = container;
         _components = components;
-        _containers = containers;
+      //  _containers = containers;
     }
-    protected override string Title => $"{_system.Name} - {_container.Name}";
+    protected override string Title => $"{_systemName} - {_container.Name}";
 
     protected override IEnumerable<Structure> Structures
     {//TODO: Also build in features/components

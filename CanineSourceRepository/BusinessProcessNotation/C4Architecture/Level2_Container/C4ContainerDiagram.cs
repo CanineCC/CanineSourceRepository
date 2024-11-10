@@ -8,9 +8,9 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_C
 public class C4ContainerDiagram : ContainerDiagram
 {
     private readonly BpnSystemProjection.BpnSystem _system;
-    private readonly BpnBpnWebApiContainerProjection.BpnWebApiContainer[] _containers;
+    private readonly BpnSystemProjection.ContextDetails[] _containers;
 
-    public C4ContainerDiagram(BpnSystemProjection.BpnSystem system, BpnBpnWebApiContainerProjection.BpnWebApiContainer[] containers)
+    public C4ContainerDiagram(BpnSystemProjection.BpnSystem system, BpnSystemProjection.ContextDetails[] containers)
     {
         _system = system;
         _containers = containers;

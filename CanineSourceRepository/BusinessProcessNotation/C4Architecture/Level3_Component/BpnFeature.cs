@@ -54,24 +54,7 @@ public class BpnFeatureProjection : SingleStreamProjection<BpnFeatureProjection.
   .Produces(StatusCodes.Status200OK, typeof(BpnFeatureProjection.BpnFeatureRevision))
   .WithTags("Feature");
     
-    app.MapGet("BpnEngine/v1/Feature/DiagramSvg/{containerId}", async (HttpContext context, [FromServices] IQuerySession session,  Guid containerId, CancellationToken ct) =>
-      {
-        //TODO: /{revision} <-- kræver at vi får revision på container? eller ihvertfald at publish/versionering sker på tværs af features i en container!
-        //TODO: Generate all C4 documentation "on events", so this will purely be a fetch from db instead of a rendering
-        var bpnContext = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.Id == containerId).FirstAsync(ct);
-        var bpnSystem = await session.Query<BpnSystemProjection.BpnSystem>().Where(p=>p.Id == bpnContext.SystemId).FirstAsync(ct);
-        var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.SystemId == bpnContext.SystemId).ToListAsync(ct);
-        var featureIds = bpnContext.Features.Select(p => p.Id);
-        var bpnFeatures = (await session.Query<BpnFeatureProjection.BpnFeature>().ToListAsync(ct));
-          
-        bpnFeatures = bpnFeatures.Where(p => featureIds.Contains(p.Id)).ToList();//TODO: SUB OPTIMAL (DO FIX)
-        var diagram = new C4ComponentDiagram(bpnSystem, bpnContext,bpnContexts.ToArray(), bpnFeatures.ToArray());
-        var svg = C4DiagramHelper.GenerateC4(diagram);
-        context.Response.ContentType = "image/svg+xml"; 
-        await context.Response.WriteAsync(svg, ct);
-      }).WithName("GetC4_level3DiagramSvg")
-      .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("Feature.Diagram");
+
     
     
     

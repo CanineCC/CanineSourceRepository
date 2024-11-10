@@ -39,7 +39,7 @@ export class ContainerDiagramApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/BpnEngine/v1/Context/DiagramSvg/{systemId}`.replace(`{${"systemId"}}`, encodeURIComponent(String(requestParameters['systemId']))),
+            path: `/BpnEngine/v1/Container/DiagramSvg/{systemId}`.replace(`{${"systemId"}}`, encodeURIComponent(String(requestParameters['systemId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,

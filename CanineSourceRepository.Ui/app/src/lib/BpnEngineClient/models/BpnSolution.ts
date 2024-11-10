@@ -49,7 +49,7 @@ export interface BpnSolution {
      * @type {string}
      * @memberof BpnSolution
      */
-    c4DiagramSvg: string;
+    c4SystemDiagramSvg: string;
     /**
      * 
      * @type {Date}
@@ -77,7 +77,7 @@ export function instanceOfBpnSolution(value: object): value is BpnSolution {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('c4DiagramSvg' in value) || value['c4DiagramSvg'] === undefined) return false;
+    if (!('c4SystemDiagramSvg' in value) || value['c4SystemDiagramSvg'] === undefined) return false;
     if (!('createdTimestamp' in value) || value['createdTimestamp'] === undefined) return false;
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('systems' in value) || value['systems'] === undefined) return false;
@@ -97,7 +97,7 @@ export function BpnSolutionFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'c4DiagramSvg': json['c4DiagramSvg'],
+        'c4SystemDiagramSvg': json['c4SystemDiagramSvg'],
         'createdTimestamp': (new Date(json['createdTimestamp'])),
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'systems': ((json['systems'] as Array<any>).map(SystemDetailsFromJSON)),
@@ -113,7 +113,7 @@ export function BpnSolutionToJSON(value?: BpnSolution | null): any {
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'c4DiagramSvg': value['c4DiagramSvg'],
+        'c4SystemDiagramSvg': value['c4SystemDiagramSvg'],
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'systems': ((value['systems'] as Array<any>).map(SystemDetailsToJSON)),

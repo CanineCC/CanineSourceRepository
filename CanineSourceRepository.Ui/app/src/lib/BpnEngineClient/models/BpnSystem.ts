@@ -62,6 +62,12 @@ export interface BpnSystem {
      * @memberof BpnSystem
      */
     contexts: Array<ContextDetails>;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnSystem
+     */
+    c4ContainerDiagramSvg: string;
 }
 
 /**
@@ -74,6 +80,7 @@ export function instanceOfBpnSystem(value: object): value is BpnSystem {
     if (!('createdTimestamp' in value) || value['createdTimestamp'] === undefined) return false;
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('contexts' in value) || value['contexts'] === undefined) return false;
+    if (!('c4ContainerDiagramSvg' in value) || value['c4ContainerDiagramSvg'] === undefined) return false;
     return true;
 }
 
@@ -93,6 +100,7 @@ export function BpnSystemFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'createdTimestamp': (new Date(json['createdTimestamp'])),
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'contexts': ((json['contexts'] as Array<any>).map(ContextDetailsFromJSON)),
+        'c4ContainerDiagramSvg': json['c4ContainerDiagramSvg'],
     };
 }
 
@@ -108,6 +116,7 @@ export function BpnSystemToJSON(value?: BpnSystem | null): any {
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'contexts': ((value['contexts'] as Array<any>).map(ContextDetailsToJSON)),
+        'c4ContainerDiagramSvg': value['c4ContainerDiagramSvg'],
     };
 }
 

@@ -31,6 +31,12 @@ export interface CreateSystemBody {
      * @memberof CreateSystemBody
      */
     name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateSystemBody
+     */
+    description: string;
 }
 
 /**
@@ -39,6 +45,7 @@ export interface CreateSystemBody {
 export function instanceOfCreateSystemBody(value: object): value is CreateSystemBody {
     if (!('solutionId' in value) || value['solutionId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -54,6 +61,7 @@ export function CreateSystemBodyFromJSONTyped(json: any, ignoreDiscriminator: bo
         
         'solutionId': json['solutionId'],
         'name': json['name'],
+        'description': json['description'],
     };
 }
 
@@ -65,6 +73,7 @@ export function CreateSystemBodyToJSON(value?: CreateSystemBody | null): any {
         
         'solutionId': value['solutionId'],
         'name': value['name'],
+        'description': value['description'],
     };
 }
 

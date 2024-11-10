@@ -46,18 +46,17 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
       .Produces(StatusCodes.Status200OK, typeof(List<BpnBpnWebApiContainerProjection.BpnWebApiContainer>))
       .WithTags("Container");
     
-    app.MapGet("BpnEngine/v1/Context/DiagramSvg/{systemId}", async (HttpContext context, [FromServices] IQuerySession session, Guid systemId, CancellationToken ct) =>
+
+    app.MapGet("BpnEngine/v1/Feature/DiagramSvg/{containerId}", async (HttpContext context, [FromServices] IQuerySession session,  Guid containerId, CancellationToken ct) =>
       {
-        var bpnSystem = await session.Query<BpnSystemProjection.BpnSystem>().Where(p=>p.Id == systemId).FirstAsync(ct);
-        var bpnContexts = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.SystemId == systemId).ToListAsync(ct);
-        var diagram = new C4ContainerDiagram(bpnSystem, bpnContexts.ToArray());
-        var svg = C4DiagramHelper.GenerateC4(diagram);
+        //TODO: /{revision} <-- kræver at vi får revision på container? eller ihvertfald at publish/versionering sker på tværs af features i en container!
+        //TODO: Generate all C4 documentation "on events", so this will purely be a fetch from db instead of a rendering
+        var bpnContext = await session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Where(p=>p.Id == containerId).FirstAsync(ct);
         context.Response.ContentType = "image/svg+xml"; 
-        await context.Response.WriteAsync(svg, ct);
-      }).WithName("GetC4_level2DiagramSvg")
+        await context.Response.WriteAsync(bpnContext.C4ComponentDiagramSvg, ct);
+      }).WithName("GetC4_level3DiagramSvg")
       .Produces(StatusCodes.Status200OK, typeof(string))
-      .WithTags("Container.Diagram");
-    
+      .WithTags("Feature.Diagram");    
   }
   public BpnBpnWebApiContainerProjection()
   {
@@ -74,7 +73,9 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
   {
     view.Id = @event.Data.Id;
     view.SystemId = @event.Data.SystemId;
+    view.SystemName = @event.Data.SystemName;
     view.Name = @event.Data.Name;
+    view.Description = @event.Data.Descrption;
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
@@ -85,6 +86,7 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
       Revisions: new List<FeatureRevisions>() {
         new FeatureRevisions(
             Name: @event.Data.Name,
+            Objective: @event.Data.Objective,
             Revision: -1,
             Environments: [],
             Stats : new FeatureStats(
@@ -102,6 +104,9 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
       }
     ));
     view.LastUpdatedTimestamp = @event.Timestamp;
+    var diagram = new C4ComponentDiagram(view.SystemName, view,view.Features.ToArray());
+    view.C4ComponentDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    
   }
   public static void Apply(BpnWebApiContainer view, IEvent<FeatureReleased> @event)
   {
@@ -112,6 +117,7 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
       DateTimeOffset? dateTimeOffset = null;
       entry.Revisions.Add(new FeatureRevisions(
         Name: @event.Data.Name, 
+        Objective: @event.Data.Objective,
         Revision: @event.Data.Revision, 
         Environments: [],
         Stats: new FeatureStats(
@@ -216,10 +222,12 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required]
     public DateTimeOffset Published { get; set; } = Published;
   }
-  public class FeatureRevisions(string Name, long Revision, Environment[] Environments, FeatureStats Stats)
+  public class FeatureRevisions(string Name, long Revision, string Objective, Environment[] Environments, FeatureStats Stats)
   {
     [Required]
     public string Name { get; set; } = Name;
+    [Required]
+    public string Objective { get; set; } = Objective;
     [Required]
     public long Revision { get; set; } = Revision;
     [Required]
@@ -236,20 +244,16 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
   }
   public class BpnWebApiContainer
   {
-    [Required]
-    public Guid Id { get; set; } = Guid.Empty;
-    [Required]
-    public Guid SystemId { get; set; } = Guid.Empty;
-    [Required]
-    public string Name { get; set; } = "";
-    [Required]
-    public string Description { get; set; } = "";
-    [Required]
-    public DateTimeOffset LastUpdatedTimestamp { get; set; }
-    [Required]
-    public DateTimeOffset CreatedTimestamp { get; set; }
-    [Required]
-    public List<FeatureDetails> Features { get; set; } = [];
+    [Required] public Guid Id { get; set; } = Guid.Empty;
+    [Required] public Guid SystemId { get; set; } = Guid.Empty;
+    [Required] public string SystemName { get; set; } = "";
+    [Required] public string Name { get; set; } = "";
+    [Required] public string Description { get; set; } = "";
+
+    [Required] public string C4ComponentDiagramSvg { get; set; } = "<svg/>";
+    [Required] public DateTimeOffset LastUpdatedTimestamp { get; set; }
+    [Required] public DateTimeOffset CreatedTimestamp { get; set; }
+    [Required] public List<FeatureDetails> Features { get; set; } = [];
     public BpnWebApiContainer() { }
 
     //Person/Customer for documentation (including relation to context)
