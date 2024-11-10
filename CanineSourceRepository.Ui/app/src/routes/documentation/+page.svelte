@@ -26,29 +26,30 @@
 </script>
 
 <Layout>
-    {#if solutions}
+   <p style="color: red">TODO: CONSIDER UX - one solution, many systems - one system - many container, one container - many components, one component - many codes ... this will be a mess once we start to have many-to-many-to-many-to-many</p>
+   <p style="color: red">The diagrams can not be made interactive, but we can make text/buttons/links etc. around them - also it is possible to make a graph/tree representation if needed</p>
+   <br/>
+   {#if solutions}
    {#each solutions as solution}
     <p style="color: red">TODO: SELECT SOLUTION from Dropdown (default to first-or-default)</p>
-    <p style="color: red">TODO: Revision dropdown, and show diagrams based on that (default to newest)</p>
-
     <h1>1. System context diagram</h1>
+    <p>{solution.description}</p>
     {#await Promise.resolve(systemDiagramApi.getC4Level1DiagramSvg({ solutionId:solution.id})) then c4level1}
         <div class="svgWrapper">
             {@html c4level1}
         </div>
     {/await}
-    <p>{solution.description}</p>
     <hr>
 
     <h1>2. Container diagram</h1>
     {#if systems !== null}
         {#each systems as system}
+            <p>{system.description}</p>
             {#await Promise.resolve(containerDiagramApi.getC4Level2DiagramSvg({ systemId:system.id })) then c4level2}
                 <div class="svgWrapper">
                     {@html c4level2}
                 </div>
             {/await}
-            <p>{system.description}</p>
         {/each}
     {/if}
     <hr>
@@ -56,15 +57,15 @@
     <h1>3. Component diagram</h1>
     {#if containers !== null}
         {#each containers as container}
+            <p>{container.description}</p>
             {#await Promise.resolve(featureDiagramApi.getC4Level3DiagramSvg({  containerId:container.id })) then c4level3}
                 <div class="svgWrapper">
                     {@html c4level3}
                 </div>
             {/await}
-            <p>{container.description}</p>
             {#each container.features as feature}
-                {#await Promise.resolve(featureApi.getFeatureRevision({featureId:feature.id, revision:1/*TODO*/ })) then c4level4}
-                    <h2>4. Code diagram for '{c4level4.name}'
+                {#await Promise.resolve(featureApi.getFeatureRevision({featureId:feature.id, revision: feature.revisions[feature.revisions.length -1].revision })) then c4level4}
+                    <h2>4. Code diagram for '{c4level4.name} (v. {c4level4.revision})'
                         <button title="view" aria-label="view"
                                 on:click={() => goto(`/feature/edit/${container.id}/${feature.id}/${c4level4.revision}`)}
                                 style="border: none; background: none; cursor: pointer; user-select: none;">
@@ -73,6 +74,7 @@
                                 </span>
                         </button>
                     </h2>
+                    <p>{feature.revisions[feature.revisions.length -1].objective}</p>
                     <div class="svgWrapper">
                         <Graph
                                 tasks={c4level4.tasks??[]}
@@ -84,7 +86,6 @@
 
                     </div>
                 {/await}
-                <p>{feature.revisions[0].objective}</p>
             {/each}
         {/each}
     {/if}

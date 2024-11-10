@@ -118,10 +118,10 @@ public class BpnSignalRService : IHostedService
 
         _lastUpdated = data.LastModified;
         await _hubContext.Clients.Group($"{data.Name}-{data.Id}")
-            .SendAsync("onEntityUpdate", data);
+            .SendAsync("onEntityUpdate", data, ct);
 
         await _hubContext.Clients.Group($"{data.Name}")
-            .SendAsync("onGroupUpdate", data);
+            .SendAsync("onGroupUpdate", data, ct);
 
       }
     }

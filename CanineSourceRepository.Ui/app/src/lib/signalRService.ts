@@ -33,56 +33,56 @@ connection.onreconnected(connectionId => {
 // Subscribe to the "ReceiveModelUpdate" event from the server
 export function onModelUpdate(callback: (message: string) => void) {
     connection.on("ReceiveMessage", callback);
-};
+}
 export function onEntityUpdate(callback: (name: string, id: string, message: string) => void) {
     connection.on("onEntityUpdate", callback);
-};
-export function onGroupUpdate(callback: (name: string, message: string) => void) {
+}
+export function onGroupUpdate(callback: (name: string, id: string, message: string) => void) {
     connection.on("onGroupUpdate", callback);
-};
+}
 
 export function offModelUpdate(callback: (message: string) => void) {
     connection.off("ReceiveMessage", callback);
-};
+}
 export function offEntityUpdate(callback: (name: string, id: string, message: string)=> void) {
     connection.off("onEntityUpdate", callback);
-};
+}
 export function offGroupUpdate(callback: (name: string, message: string)=> void) {
     connection.off("onGroupUpdate", callback);
-};
+}
 
 
 export async function joinEntityView(name: string, id: string) {
     try {
         await connection.invoke("JoinEntityView", name, id);
-        console.log(`Joined entity: ${id} for ressource : ${name}`);
+        console.log(`Joined entity: ${id} for resource : ${name}`);
     } catch (err) {
-        console.error(`Error joining entity: ${id} for ressource : ${name}`, err);
+        console.error(`Error joining entity: ${id} for resource : ${name}`, err);
     }
-};
+}
 export async function leaveEntityView(name: string, id: string) {
     try {
         await connection.invoke("LeaveEntityView", name, id);
-        console.log(`Left entity: ${id} for ressource : ${name}`);
+        console.log(`Left entity: ${id} for resource : ${name}`);
     } catch (err) {
-        console.error(`Error leaving entity: ${id} for ressource : ${name}`, err);
+        console.error(`Error leaving entity: ${id} for resource : ${name}`, err);
     }
-};
+}
 
 export async function joinGroupView(name: string) {
     try {
         await connection.invoke("JoinGroupView", name);
-        console.log(`Joined group for ressource : ${name}`);
+        console.log(`Joined group for resource : ${name}`);
     } catch (err) {
-        console.error(`Error joining group for ressource : ${name}`, err);
+        console.error(`Error joining group for resource : ${name}`, err);
     }
-};
+}
 export async function leaveGroupView(name: string) {
     try {
         await connection.invoke("LeaveGroupView", name);
-        console.log(`left group for ressource : ${name}`);
+        console.log(`left group for resource : ${name}`);
     } catch (err) {
-        console.error(`Error leaving group for ressource : ${name}`, err);
+        console.error(`Error leaving group for resource : ${name}`, err);
     }
-};
+}
 

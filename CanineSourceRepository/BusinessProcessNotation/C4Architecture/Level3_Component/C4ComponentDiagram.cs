@@ -31,20 +31,16 @@ public class C4ComponentDiagram : ComponentDiagram
         get
         {//boundry around features in the "container"
          //include contains that communicates with features (via events? or direct calls?)
-         
             List<Structure> structures = new List<Structure>();
-            //List<Container> containers = new List<Container>();
             List<Component> components = new List<Component>();
 
             var c4container = Container.None | (ContainerType.WebApplication, _container.Name.ToPascalCase(), _container.Name,
                 "C#, WebApi", _container.Description);
-            //containers.Add(c4container);
             structures.Add(c4container);
-
             
             foreach (var component in _components)
             {
-                var newestVersion = component.Revisions.Last(); //TODO: how to document different versions?
+                var newestVersion = component.Revisions.Last(); 
                 components.Add(new (newestVersion.Name.ToPascalCase(), newestVersion.Name, "C#", newestVersion.Objective));
             }
             structures.Add(Bound("c1", _container.Name, components.ToArray()));

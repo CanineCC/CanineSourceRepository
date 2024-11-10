@@ -10,13 +10,13 @@
     import {  onEntityUpdate, offEntityUpdate, joinEntityView,leaveEntityView } from 'signalRService'
     
     const draftFeatureApi = new DraftFeatureApi();
-    const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
+//    const draftFeatureDiagramApi = new DraftFeatureDiagramApi();
 
     let contextId: string = "";
     let featureId: string = "";
     let feature : BpnDraftFeature | null = null;
     let tasks : Array<BpnTask> =[];
-    let transitions : Array<BpnTransition> =[];
+//    let transitions : Array<BpnTransition> =[];
     let diagram : BpnFeatureDiagram | undefined = undefined;
     let selectedTask : BpnTask |null = null;
 
@@ -41,7 +41,7 @@
     async function fetchDetails(contextId: string, featureId: string) {
         feature = await draftFeatureApi.getDraftFeature({featureId: featureId});
         tasks = feature.tasks;
-        transitions = feature.transitions;
+      //  transitions = feature.transitions;
         diagram = feature.diagram;
         if (selectedTask)
         {
@@ -72,19 +72,23 @@
          }});
     }
     async function addTask() {
-        await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: { featureId: featureId, task: {  
-            id: "",
-            name: "<task>",
-            code: "",
-            businessPurpose: "",
-            behavioralGoal: "",
-            input: null,
-            output: null,
-            serviceDependency: "",
-            namedConfiguration: "",
-            recordTypes: [],
-            validDatatypes: []
-        }} });
+        await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: {
+            featureId: featureId,
+            task: {
+                id: "",
+                name: "<task>",
+                code: "",
+                businessPurpose: "",
+                behavioralGoal: "",
+                input: null,
+                output: null,
+                serviceDependency: "",
+                namedConfiguration: "",
+                recordTypes: [],
+                validDatatypes: [],
+                testCases: []
+            }
+        } });
     }
 </script>
 
