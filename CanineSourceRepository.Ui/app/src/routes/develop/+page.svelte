@@ -1,5 +1,8 @@
 <script lang="ts">
 	import Layout from '@/+layout.svelte';
+	import CreateSystemDialog from "./createSystemDialog.svelte";
+	import CreateContainerDialog from './createContainerDialog.svelte';
+	import CreateDraftFeatureDialog from './createDraftFeatureDialog.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
 	import {  SystemApi, ContainerApi/*, ServerApi, DraftFeatureApi*/, SolutionApi } from 'BpnEngineClient/apis';
@@ -8,10 +11,10 @@
 	import { goto } from '$app/navigation';
 	import { formatDate	} from 'lib/Duration'
 	import {
-		onEntityUpdate,
 		joinGroupView,
-		leaveGroupView, onGroupUpdate
-	} from 'signalRService'
+		leaveGroupView,
+		onGroupUpdate
+	} from 'signalRService';
 
 	let systemId : string = "";
 	let solutionId : string = "";
@@ -34,6 +37,7 @@
 		let solutions = await solutionApi.getAllSolutions();
 		solutionId = solutions[0].id;//TODO: select from dropdown?
 		intervalId = setInterval(() => { currentTime.set(new Date()); }, 1000);
+
 
 		onGroupUpdate(callback);
 		await joinGroupView("bpnsystem");
@@ -72,17 +76,9 @@
 		expandedContainerRow = expandedContainerRow === index ? null : index;
 	}
 
-	async function addSystem()
-	{
-		await systemApi.createSystem({ createSystemBody : { name:"<new>", description:"<new>", solutionId: solutionId} });
-	}
 </script>
 
 <Layout>
-<p style="color: red">TODO: EDIT SOLUTION (change name and description)</p>
-
-<p style="color: red">TODO: On "add system" show dialog asking for 'name and description'</p>
-
 <div class="tabs">
 	<ul>
 		{#each systems as system}
@@ -91,12 +87,16 @@
 			</li>
 		{/each}
 		<li>
-			<div on:click={addSystem}><i class="fas fa-plus"></i></div>
+			<CreateSystemDialog solutionId={solutionId} ></CreateSystemDialog>
 		</li>
 	</ul>
 </div>
 {#await loadContainers(systemId) then containers}
-<h1>Containers</h1>
+<div style="display: flex; align-items: center; gap: 15px">
+	<h1>Containers</h1>
+	<CreateContainerDialog systemId={systemId} />
+</div>
+
 <table>
 	<thead>
 		<tr>
@@ -127,6 +127,11 @@
 			</td>
 		</tr>
 		{#if expandedContainerRow === index}
+		<tr>
+			<td colspan="3">
+				<CreateDraftFeatureDialog bpnContextId={container.id} />
+			</td>
+		</tr>
 		<tr class="expandable-row">
 			<td colspan="11" style="padding:25px 50px; border:0;">
 				<div transition:slide>
@@ -161,8 +166,6 @@
 												</td>
 											</tr>
 									{/each}
-									<p style="color: red">TODO: ADD COMPONENT</p>
-									<p style="color: red">TODO: Release draft = approved draft for release, then release drafts here, so all features in a container have the same revision (show pre-release changelog and color code drafts to indicate updates)</p>
 								{/each}
 							{/if}
 						</tbody>
@@ -172,7 +175,6 @@
 		</tr>
 		{/if}
 		{/each}
-		<p style="color: red">TODO: ADD CONTAINER</p>
 	</tbody>
 </table>
 {/await}

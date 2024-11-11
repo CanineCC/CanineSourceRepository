@@ -6,6 +6,7 @@ export * from './AddDraftFeatureBody';
 export * from './AddRecordToTaskBody';
 export * from './AddTestCaseToTaskBody';
 export * from './AddTransitionToDraftFeatureBody';
+export * from './Api';
 export * from './ApiInputTask';
 export * from './AssertDefinition';
 export * from './AssertOperation';

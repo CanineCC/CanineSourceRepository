@@ -36,7 +36,7 @@ export interface CreateContainerBody {
      * @type {string}
      * @memberof CreateContainerBody
      */
-    descrption: string;
+    description: string;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface CreateContainerBody {
 export function instanceOfCreateContainerBody(value: object): value is CreateContainerBody {
     if (!('systemId' in value) || value['systemId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('descrption' in value) || value['descrption'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -61,7 +61,7 @@ export function CreateContainerBodyFromJSONTyped(json: any, ignoreDiscriminator:
         
         'systemId': json['systemId'],
         'name': json['name'],
-        'descrption': json['descrption'],
+        'description': json['description'],
     };
 }
 
@@ -73,7 +73,7 @@ export function CreateContainerBodyToJSON(value?: CreateContainerBody | null): a
         
         'systemId': value['systemId'],
         'name': value['name'],
-        'descrption': value['descrption'],
+        'description': value['description'],
     };
 }
 

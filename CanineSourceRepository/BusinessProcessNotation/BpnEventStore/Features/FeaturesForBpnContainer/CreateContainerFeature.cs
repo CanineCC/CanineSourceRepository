@@ -8,11 +8,11 @@ public class CreateContainerFeature : IFeature
   public record WebApiContainerCreated(Guid Id, Guid SystemId, string SystemName, string Name, string Descrption);
   public class CreateContainerBody
   {
-    public CreateContainerBody(string name, string descrption, Guid systemId)
+    public CreateContainerBody(string name, string description, Guid systemId)
     {
       SystemId = systemId;
       Name = name ?? throw new ArgumentNullException(nameof(name));
-      Descrption = descrption ?? throw new ArgumentNullException(nameof(descrption));
+      Description = description ?? throw new ArgumentNullException(nameof(description));
     }
 
     [Required]
@@ -20,13 +20,13 @@ public class CreateContainerFeature : IFeature
     [Required]
     public string Name { get; set; }
     [Required]
-    public string Descrption { get; set; }
+    public string Description { get; set; }
   }
   public static void RegisterBpnEventStore(WebApplication app)
   {
     app.MapPost($"BpnEngine/v1/Container/Add", async (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CreateContainerBody request, CancellationToken ct) =>
     {
-      var id = await Execute(session, "WebApplication/v1/BpnEngine/Container/Add", request.Name,  request.Descrption,request.SystemId, ct);
+      var id = await Execute(session, "WebApplication/v1/BpnEngine/Container/Add", request.Name,  request.Description,request.SystemId, ct);
       return Results.Ok(id);
     }).WithName("CreateContainer")
      .Produces(StatusCodes.Status200OK)

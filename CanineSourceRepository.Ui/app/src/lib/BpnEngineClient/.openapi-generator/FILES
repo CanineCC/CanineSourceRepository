@@ -19,6 +19,7 @@ models/AddDraftFeatureBody.ts
 models/AddRecordToTaskBody.ts
 models/AddTestCaseToTaskBody.ts
 models/AddTransitionToDraftFeatureBody.ts
+models/Api.ts
 models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
