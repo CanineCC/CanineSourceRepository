@@ -13,61 +13,54 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Persona } from './Persona';
-import {
-    PersonaFromJSON,
-    PersonaFromJSONTyped,
-    PersonaToJSON,
-} from './Persona';
-
 /**
  * 
  * @export
- * @interface SystemDetails
+ * @interface Persona
  */
-export interface SystemDetails {
+export interface Persona {
     /**
      * 
      * @type {string}
-     * @memberof SystemDetails
+     * @memberof Persona
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof SystemDetails
+     * @memberof Persona
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof SystemDetails
+     * @memberof Persona
      */
     description: string;
     /**
      * 
-     * @type {Array<Persona>}
-     * @memberof SystemDetails
+     * @type {string}
+     * @memberof Persona
      */
-    personas: Array<Persona>;
+    relationToSystem: string;
 }
 
 /**
- * Check if a given object implements the SystemDetails interface.
+ * Check if a given object implements the Persona interface.
  */
-export function instanceOfSystemDetails(value: object): value is SystemDetails {
+export function instanceOfPersona(value: object): value is Persona {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('personas' in value) || value['personas'] === undefined) return false;
+    if (!('relationToSystem' in value) || value['relationToSystem'] === undefined) return false;
     return true;
 }
 
-export function SystemDetailsFromJSON(json: any): SystemDetails {
-    return SystemDetailsFromJSONTyped(json, false);
+export function PersonaFromJSON(json: any): Persona {
+    return PersonaFromJSONTyped(json, false);
 }
 
-export function SystemDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): SystemDetails {
+export function PersonaFromJSONTyped(json: any, ignoreDiscriminator: boolean): Persona {
     if (json == null) {
         return json;
     }
@@ -76,11 +69,11 @@ export function SystemDetailsFromJSONTyped(json: any, ignoreDiscriminator: boole
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
+        'relationToSystem': json['relationToSystem'],
     };
 }
 
-export function SystemDetailsToJSON(value?: SystemDetails | null): any {
+export function PersonaToJSON(value?: Persona | null): any {
     if (value == null) {
         return value;
     }
@@ -89,7 +82,7 @@ export function SystemDetailsToJSON(value?: SystemDetails | null): any {
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
+        'relationToSystem': value['relationToSystem'],
     };
 }
 

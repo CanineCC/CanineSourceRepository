@@ -24,13 +24,16 @@ public class C4ContainerDiagram : ContainerDiagram
             List<Structure> structures = new List<Structure>();
             List<Container> containers = new List<Container>();
 
-            structures.Add(Person.None | Boundary.External | ("User", "TODO-user", "Todo-user description."));
-            //TODO: External systems
+            foreach (var persona in _system.Personas)
+            {
+                structures.Add(Person.None | Boundary.Internal | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
+            }
             foreach (var container in _containers)
             {
                 containers.Add(Container.None | (ContainerType.WebApplication, container.Name.ToPascalCase(), container.Name, "C#, WebApi", container.Description));
             }
-            structures.Add(Bound("c1", _system.Name, containers.ToArray()));
+            structures.Add(Bound(_system.Name.ToPascalCase(), _system.Name, containers.ToArray()));
+            //TODO: External systems
             //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Database, "SqlDatabase", "SqlDatabase", "SQL Database", "Stores user registration information, hashed auth credentials, access logs, etc."),
             //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Queue, "RabbitMQ", "RabbitMQ", "RabbitMQ", "Stores user registration information, hashed auth credentials, access logs, etc."),
             
@@ -44,8 +47,17 @@ public class C4ContainerDiagram : ContainerDiagram
     {
         get
         {//TODO: relations between containers and services
+            var relationships = new List<Relationship>();
+            
+            foreach (var persona in _system.Personas)
+            {
+                relationships.Add(this[persona.Name.ToPascalCase()] > this[_system.Name.ToPascalCase()] | persona.RelationToSystem);
+            }
+
+            
+            
             //TODO: relations between containers (using events?)
-            return [];
+            return relationships.ToArray();
             /*{
         this["Customer"] > this["WebApp"] | ("Uses", "HTTPS"),
         this["Customer"] > this["Spa"] | ("Uses", "HTTPS"),

@@ -73,6 +73,8 @@ public static class BpnEventStore
     var solutionId =
       await CreateSolutionFeature.Execute(session, causationId, "Hello world", "Simple scarfold solution", ct);
     var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
+    await AddPersonaFeature.Execute(session, causationId, systemId, "System Administrator", "An administrator in the system", "uses", ct);
+    
     var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,

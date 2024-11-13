@@ -19,19 +19,12 @@
 	let systemId : string = "";
 	let solutionId : string = "";
 	let systems : BpnSystem[] = [];
-	//let webApiContainer: BpnWebApiContainer[] = [];
 	let expandedContainerRow: number | null = null; // Track which row is expanded
 	const containerApi = new ContainerApi();
 	const solutionApi = new SolutionApi();
-	//const serverApi = new ServerApi();
 	const systemApi = new SystemApi();
-	//const draftFeatureApi = new DraftFeatureApi();
 	const currentTime = writable(new Date());
 
-	/*
-	containerApi.createContainer({ createContainerBody:{ name: "", descrption:"", systemId: ""} });
-	draftFeatureApi.addDraftFeature({ addDraftFeatureBody : { bpnContextId:"", name:"", flowOverview:"", objective: ""}});
- 	*/
 	let intervalId: any;
 	onMount(async () => {
 		let solutions = await solutionApi.getAllSolutions();
@@ -127,11 +120,6 @@
 			</td>
 		</tr>
 		{#if expandedContainerRow === index}
-		<tr>
-			<td colspan="3">
-				<CreateDraftFeatureDialog bpnContextId={container.id} />
-			</td>
-		</tr>
 		<tr class="expandable-row">
 			<td colspan="11" style="padding:25px 50px; border:0;">
 				<div transition:slide>
@@ -168,6 +156,11 @@
 									{/each}
 								{/each}
 							{/if}
+							<tr>
+								<td colspan="2">
+									<CreateDraftFeatureDialog bpnContextId={container.id} />
+								</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>

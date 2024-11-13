@@ -11,6 +11,7 @@ public class BpnSystemAggregate
   }
 
   public Guid Id { get; internal set; }
+  public Guid SolutionId { get; internal set; }
   public string Name { get; internal set; }
   
   public void Apply(
@@ -19,8 +20,10 @@ public class BpnSystemAggregate
   )
   {
     aggregate.Id = @event.Id;
+    aggregate.SolutionId = @event.SolutionId;
     aggregate.Name = @event.Name;
   }
+
 }
 
 
@@ -50,7 +53,22 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
   {
     Identity<CreateSystemFeature.SystemCreated>(x => x.Id);
     Identity<WebApiContainerCreated>(x => x.SystemId);
+    Identity<RemovePersonaFeature.PersonaRemoved>(x => x.SystemId);
+    Identity<AddPersonaFeature.PersonaAdded>(x => x.SystemId);
+
   }
+  
+  public static void Apply(BpnSystem view, IEvent<RemovePersonaFeature.PersonaRemoved> @event)
+  {
+    view.LastUpdatedTimestamp = @event.Timestamp;
+    view.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
+  }
+  public static void Apply(BpnSystem view, IEvent<AddPersonaFeature.PersonaAdded> @event)
+  {
+    view.LastUpdatedTimestamp = @event.Timestamp;
+    view.Personas.Add(new Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description , Name = @event.Data.Name, RelationToSystem = @event.Data.RelationToSystem });
+  }
+
   public static void Apply(BpnSystem view, IEvent<CreateSystemFeature.SystemCreated> @event)
   {
     view.Id = @event.Data.Id;
@@ -76,6 +94,19 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     public string Description { get; set; } = Description;
     
   }
+
+  public class Persona
+  {
+    [Required]
+    public Guid Id { get; set; }
+    
+    [Required]
+    public string Name { get; set; } = "";
+    [Required]
+    public string Description { get; set; } = "";
+    [Required]
+    public string RelationToSystem { get; set; } = "";
+  }
   public class BpnSystem
   {
     [Required]
@@ -98,5 +129,7 @@ public class BpnSystemProjection : MultiStreamProjection<BpnSystemProjection.Bpn
     //Relations to other systems? (maybe determin by: messages sendt and received? + services called)
     //Person/Customer for documentation (including relation to system) - https://c4model.com/diagrams/system-context
     public BpnSystem() { }
+    [Required]
+    public List<Persona> Personas { get; set; } = [];
   }
 }

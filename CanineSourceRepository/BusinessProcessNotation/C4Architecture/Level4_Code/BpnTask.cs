@@ -18,7 +18,7 @@ public abstract class BpnTask(Guid Id, string Name)
   //  //Global settings? (multiple named instances?!)
   //}
 
-  [Required]
+  //[Required]
   public Guid Id { get; set; } = Id;
   [Required]
   public string Name { get; set; } = Name; //sanitize?

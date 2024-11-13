@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Persona } from './Persona';
+import {
+    PersonaFromJSON,
+    PersonaFromJSONTyped,
+    PersonaToJSON,
+} from './Persona';
 import type { ContextDetails } from './ContextDetails';
 import {
     ContextDetailsFromJSON,
@@ -68,6 +74,12 @@ export interface BpnSystem {
      * @memberof BpnSystem
      */
     c4ContainerDiagramSvg: string;
+    /**
+     * 
+     * @type {Array<Persona>}
+     * @memberof BpnSystem
+     */
+    personas: Array<Persona>;
 }
 
 /**
@@ -81,6 +93,7 @@ export function instanceOfBpnSystem(value: object): value is BpnSystem {
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('contexts' in value) || value['contexts'] === undefined) return false;
     if (!('c4ContainerDiagramSvg' in value) || value['c4ContainerDiagramSvg'] === undefined) return false;
+    if (!('personas' in value) || value['personas'] === undefined) return false;
     return true;
 }
 
@@ -101,6 +114,7 @@ export function BpnSystemFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'contexts': ((json['contexts'] as Array<any>).map(ContextDetailsFromJSON)),
         'c4ContainerDiagramSvg': json['c4ContainerDiagramSvg'],
+        'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
     };
 }
 
@@ -117,6 +131,7 @@ export function BpnSystemToJSON(value?: BpnSystem | null): any {
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'contexts': ((value['contexts'] as Array<any>).map(ContextDetailsToJSON)),
         'c4ContainerDiagramSvg': value['c4ContainerDiagramSvg'],
+        'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
     };
 }
 

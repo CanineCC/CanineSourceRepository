@@ -20,9 +20,52 @@
         solutions = await solutionApi.getAllSolutions();
         systems = await systemApi.getAllSystems();
         containers = await containerApi.getAllContainers();
+
+        addEventListeners();
     });
     onDestroy(() => {
     });
+    function addEventListeners() {
+        const svgElement = document.querySelector('svg');
+        const userSystemElement = svgElement?.getElementById('elem_UserSystem');//todo: get id+next resource url from server...
+        //also: create breadcrumb on the way in, to give the user a way back....
+
+        if (userSystemElement) {
+            console.log("Adding event");
+            userSystemElement.addEventListener('dblclick', handleDoubleClick);
+            userSystemElement.addEventListener('mouseover', handleMouseOver);
+            userSystemElement.addEventListener('mouseout', handleMouseOut);
+        } else {
+            console.log("Did NOT add the event");
+        }
+    }
+    function handleMouseOver(event) {
+        event.target.style.cursor = 'pointer';
+    }
+
+    function handleMouseOut(event) {
+        event.target.style.cursor = '';
+    }
+    function handleDoubleClick() {
+        console.log("User clicked on the UserSystem element!");
+    }
+    //{solution.systems[0].name /*TODO: Get "id"/"alias" of the system in svg...*/}
+    // Add a listener for a double-click event on the 'elem_UserSystem' element
+//    document.getElementById('elem_UserSystem').addEventListener('dblclick', function() {
+        // Replace the SVG content with a detailed SVG when the element is double-clicked
+  //      console.log("User clicked on the UserSystem element!");
+
+        // This is just a sample replacement. You can customize it to load a more detailed SVG or content.
+/*        const detailedSvg = `
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 500 500">
+                    <circle cx="250" cy="250" r="200" fill="#FF5733"/>
+                    <text x="250" y="250" font-size="20" text-anchor="middle" fill="white">Detailed UserSystem</text>
+                </svg>
+            `;
+
+        document.body.innerHTML = detailedSvg;*/
+    //});
+
 </script>
 
 <Layout>
@@ -38,6 +81,8 @@
         <div class="svgWrapper">
             {@html c4level1}
         </div>
+
+
     {/await}
     <hr>
 
@@ -115,3 +160,4 @@
     }
 
 </style>
+

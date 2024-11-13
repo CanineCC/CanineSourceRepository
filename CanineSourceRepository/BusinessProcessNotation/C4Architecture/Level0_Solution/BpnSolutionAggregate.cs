@@ -1,5 +1,6 @@
 ﻿using Marten.Events.Projections;
 using System.ComponentModel.DataAnnotations;
+using C4Sharp.Elements;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSolution;
 using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
 
@@ -49,6 +50,8 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
   {
     Identity<CreateSystemFeature.SystemCreated>(x => x.SolutionId);
     Identity<CreateSolutionFeature.SolutionCreated>(x => x.Id);
+    Identity<RemovePersonaFeature.PersonaRemoved>(x => x.SolutionId);
+    Identity<AddPersonaFeature.PersonaAdded>(x => x.SolutionId);
   }
   public static void Apply(BpnSolution view, IEvent<CreateSolutionFeature.SolutionCreated> @event)
   {
@@ -63,10 +66,27 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
     view.Systems.Add(new SystemDetails(@event.Data.Id, @event.Data.Name, @event.Data.Description));
     view.LastUpdatedTimestamp = @event.Timestamp;
     
-    var diagram = new C4SystemDiagram("TODO", view.Systems.ToArray());
+    var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
     view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
-
   }
+  
+  public static void Apply(BpnSolution view, IEvent<RemovePersonaFeature.PersonaRemoved> @event)
+  {
+    view.LastUpdatedTimestamp = @event.Timestamp;
+    var system = view.Systems.FirstOrDefault(p => p.Id == @event.Data.SystemId);
+    system.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
+    var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
+    view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+  }
+  public static void Apply(BpnSolution view, IEvent<AddPersonaFeature.PersonaAdded> @event)
+  {
+    view.LastUpdatedTimestamp = @event.Timestamp;
+    var system = view.Systems.FirstOrDefault(p => p.Id == @event.Data.SystemId);
+    system.Personas.Add(new BpnSystemProjection.Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description , Name = @event.Data.Name, RelationToSystem = @event.Data.RelationToSystem });
+    var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
+    view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+  }
+  
   public class SystemDetails(Guid Id, string Name, string Description)
   {
     [Required]
@@ -75,6 +95,8 @@ public class BpnSolutionProjection : MultiStreamProjection<BpnSolutionProjection
     public string Name { get; set; } = Name;
     [Required]
     public string Description { get; set; } = Description;
+    [Required]
+    public List<BpnSystemProjection.Persona> Personas { get; set; } = [];
   }
   public class BpnSolution
   {

@@ -195,6 +195,7 @@
 									<tbody>
 										{#if container && container.features}
 											{#each container.features as feature, featureindex}
+												{#if feature.revisions.length > 0}
 												{#await getHighestVersion(feature.revisions) then highestVersionFeature}
 													<tr>
 														<td class="title-column">
@@ -235,6 +236,7 @@
 														</td>
 													</tr>
 												{/await}
+												{/if}
 
 												{#if expandedFeatureRow === featureindex}
 													<tr class="expandable-row">

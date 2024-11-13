@@ -37,7 +37,7 @@ export interface CodeTask {
      * @type {string}
      * @memberof CodeTask
      */
-    id: string;
+    id?: string;
     /**
      * 
      * @type {string}
@@ -122,7 +122,6 @@ export interface CodeTask {
  * Check if a given object implements the CodeTask interface.
  */
 export function instanceOfCodeTask(value: object): value is CodeTask {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
@@ -145,7 +144,7 @@ export function CodeTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'id': json['id'],
+        'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'],
         'businessPurpose': json['businessPurpose'],
         'behavioralGoal': json['behavioralGoal'],

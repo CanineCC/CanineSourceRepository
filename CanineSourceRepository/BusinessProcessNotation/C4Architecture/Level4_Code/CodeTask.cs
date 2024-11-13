@@ -7,6 +7,14 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_C
 
 public record TestCase
 {
+  //TODO::Role-base
+  //admin: ["nameOfFeature". "nameOfAnotherFeature"] + method hasPermission
+  //ex: "GetUserById" or "GetUserById:[id]" 
+  //setup create role + check feature
+  
+  //TODO: USE SNAPSHOTTING
+  //https://youtu.be/JG4zt9CnIl4
+  
   [Required]
   public Guid Id { get; set; }
   [Required]
@@ -15,6 +23,9 @@ public record TestCase
   public string Input { get; set; }
   [Required]
   public AssertDefinition[] Asserts { get; set; }
+  //vs. expected output (ex. json)
+  //variable from input, expected in output? (aka dynamiske værdier) -- f.eks. NewGuid() inde i metoden 
+  //hvad med stream og byte[] ... store data?!
 }
 public record AssertDefinition
 {
@@ -51,10 +62,6 @@ public class CodeTask(string Name) : BpnTask(Guid.CreateVersion7(), Name)
 {
   [Required]
   public string? Code { get; set; }
-
-
-
-
 
   public string RecordsAsCode
   {

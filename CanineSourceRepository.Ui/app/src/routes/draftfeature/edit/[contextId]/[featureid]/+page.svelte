@@ -4,8 +4,8 @@
     import Layout from '@/+layout.svelte';
     import TaskComponent from 'components/TaskComponent.svelte';
     import Accordion from 'components/Accordion.svelte';
-    import { DraftFeatureApi, DraftFeatureDiagramApi  } from 'BpnEngineClient/apis';
-	import { type BpnTask, type BpnTransition, type BpnFeatureDiagram, type BpnDraftFeature } from 'BpnEngineClient';
+    import { DraftFeatureApi  } from 'BpnEngineClient/apis';
+	import { type BpnTask, type BpnFeatureDiagram, type BpnDraftFeature } from 'BpnEngineClient';
     import Graph from 'components/diagram/Graph.svelte';
     import {  onEntityUpdate, offEntityUpdate, joinEntityView,leaveEntityView } from 'signalRService'
     
@@ -75,7 +75,6 @@
         await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: {
             featureId: featureId,
             task: {
-                id: "",
                 name: "<task>",
                 code: "",
                 businessPurpose: "",

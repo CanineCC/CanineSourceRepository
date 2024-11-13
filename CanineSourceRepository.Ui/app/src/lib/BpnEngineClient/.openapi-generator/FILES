@@ -16,10 +16,10 @@ index.ts
 models/AddApiTaskToDraftFeatureBody.ts
 models/AddCodeTaskToDraftFeatureBody.ts
 models/AddDraftFeatureBody.ts
+models/AddPersonaBody.ts
 models/AddRecordToTaskBody.ts
 models/AddTestCaseToTaskBody.ts
 models/AddTransitionToDraftFeatureBody.ts
-models/Api.ts
 models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
@@ -49,10 +49,12 @@ models/FeatureDetails.ts
 models/FeatureRevisions.ts
 models/FeatureStats.ts
 models/MapField.ts
+models/Persona.ts
 models/Position.ts
 models/PositionUpdatedOnDraftFeatureBody.ts
 models/RecordDefinition.ts
 models/ReleaseFeatureBody.ts
+models/RemovePersonaBody.ts
 models/RemoveTestCaseFromTask.ts
 models/ResetDraftFeatureBody.ts
 models/ServerHealth.ts

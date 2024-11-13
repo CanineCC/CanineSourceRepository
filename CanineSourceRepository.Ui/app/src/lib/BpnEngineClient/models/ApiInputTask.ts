@@ -37,7 +37,7 @@ export interface ApiInputTask {
      * @type {string}
      * @memberof ApiInputTask
      */
-    id: string;
+    id?: string;
     /**
      * 
      * @type {string}
@@ -110,7 +110,6 @@ export interface ApiInputTask {
  * Check if a given object implements the ApiInputTask interface.
  */
 export function instanceOfApiInputTask(value: object): value is ApiInputTask {
-    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
@@ -133,7 +132,7 @@ export function ApiInputTaskFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'id': json['id'],
+        'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'],
         'businessPurpose': json['businessPurpose'],
         'behavioralGoal': json['behavioralGoal'],

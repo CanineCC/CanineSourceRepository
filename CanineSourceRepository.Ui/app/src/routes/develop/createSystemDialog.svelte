@@ -23,7 +23,7 @@
 
 </script>
 
-<div class="showCreateDialog" on:click={openDialog}><i class="fas fa-plus"></i></div>
+<div class="showCreateDialog" title="Create new system" on:click={openDialog}><i class="fas fa-plus"></i></div>
 
 {#if isOpen}
 <div class="backdrop" on:click={closeDialog}></div>
