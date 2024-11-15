@@ -1,5 +1,5 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSolution;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.FeaturesForBpnSystem;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SolutionFeatures;
+using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SystemFeatures;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 using Marten.Events.Projections;
 
@@ -73,13 +73,13 @@ public static class BpnEventStore
     var solutionId =
       await CreateSolutionFeature.Execute(session, causationId, "Hello world", "Simple scarfold solution", ct);
     var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
-    await AddPersonaFeature.Execute(session, causationId, systemId, "System Administrator", "An administrator in the system", "uses", ct);
     
     var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
+    await AddPersonaFeature.Execute(session, causationId, containerId, "System Administrator", "An administrator in the system", "Login via api", ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,
                           causationId: causationId,
-                          bpnContextId: containerId,
+                          containerId: containerId,
                           name: "Create user",
                           objective: "Enable users to register, validate their email, and gain access to premium content.",
                           flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",
@@ -93,29 +93,29 @@ public static class BpnEventStore
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
   {
-    options.Projections.LiveStreamAggregation<BpnSolutionAggregate>();
-    options.Projections.Add<BpnSolutionProjection>(ProjectionLifecycle.Async);
-    options.Schema.For<BpnSolutionProjection.BpnSolution>();
+    options.Projections.LiveStreamAggregation<SolutionAggregate>();
+    options.Projections.Add<SolutionProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<SolutionProjection.BpnSolution>();
 
-    options.Projections.LiveStreamAggregation<BpnSystemAggregate>();
-    options.Projections.Add<BpnSystemProjection>(ProjectionLifecycle.Async);
-    options.Schema.For<BpnSystemProjection.BpnSystem>();
+    options.Projections.LiveStreamAggregation<SystemAggregate>();
+    options.Projections.Add<SystemProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<SystemProjection.BpnSystem>();
 
-    options.Projections.LiveStreamAggregation<BpnBpnWebApiContainerAggregate>();
+    options.Projections.LiveStreamAggregation<WebApiContainerAggregate>();
     options.Projections.Add<BpnBpnWebApiContainerProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnBpnWebApiContainerProjection.BpnWebApiContainer>();
   
-    options.Projections.LiveStreamAggregation<BpnFeatureAggregate>();
-    options.Projections.Add<BpnFeatureProjection>(ProjectionLifecycle.Async);
+    options.Projections.LiveStreamAggregation<FeatureComponentAggregate>();
+    options.Projections.Add<FeatureComponentProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnFeature>();
     options.Projections.Add<BpnFeatureStatsProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnFeatureStatsProjection.BpnFeatureStat>();
 
 
 
-    options.Projections.LiveStreamAggregation<BpnDraftFeatureAggregate>();
-    options.Projections.Add<BpnDraftFeatureProjection>(ProjectionLifecycle.Async);
-    options.Schema.For<BpnDraftFeatureProjection.BpnDraftFeature>();
+    options.Projections.LiveStreamAggregation<DraftFeatureComponentAggregate>();
+    options.Projections.Add<DraftFeatureComponentProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<DraftFeatureComponentProjection.BpnDraftFeature>();
 
 
     var interfaceType = typeof(IFeature);
@@ -144,15 +144,12 @@ public static class BpnEventStore
       var registerMethod = implementation.GetMethod("RegisterBpnEventStore", BindingFlags.Public | BindingFlags.Static);
       registerMethod?.Invoke(null, [app]);
     }
-    BpnSolutionAggregate.RegisterBpnEventStore(app);
-    BpnDraftFeatureAggregate.RegisterBpnEventStore(app);
-    BpnBpnWebApiContainerAggregate.RegisterBpnEventStore(app);
-    BpnFeatureAggregate.RegisterBpnEventStore(app);
-    BpnSystemProjection.RegisterBpnEventStore(app);
+    DraftFeatureComponentAggregate.RegisterBpnEventStore(app);
 
-    BpnSolutionProjection.RegisterBpnEventStore(app);
-    BpnDraftFeatureProjection.RegisterBpnEventStore(app);
-    BpnFeatureProjection.RegisterBpnEventStore(app);
+    SystemProjection.RegisterBpnEventStore(app);
+    SolutionProjection.RegisterBpnEventStore(app);
+    DraftFeatureComponentProjection.RegisterBpnEventStore(app);
+    FeatureComponentProjection.RegisterBpnEventStore(app);
     BpnFeatureStatsProjection.RegisterBpnEventStore(app);
     BpnBpnWebApiContainerProjection.RegisterBpnEventStore(app);
   }
@@ -171,7 +168,7 @@ public static class DocumentSessionExtension
     session.CorrelationId = id.ToString("N");
     session.CausationId = causationId;
 
-    await session.Events.WriteToAggregate<BpnBpnWebApiContainerAggregate>(
+    await session.Events.WriteToAggregate<WebApiContainerAggregate>(
             id,
             stream => stream.AppendMany(@events),
             ct);
@@ -187,7 +184,7 @@ public static class DocumentSessionExtension
     session.CorrelationId = id.ToString("N");
     session.CausationId = causationId;
 
-    await session.Events.WriteToAggregate<BpnFeatureAggregate>(
+    await session.Events.WriteToAggregate<FeatureComponentAggregate>(
             id,
             stream => stream.AppendMany(@events),
             ct);
@@ -204,7 +201,7 @@ public static class DocumentSessionExtension
     session.CorrelationId = id.ToString("N");
     session.CausationId = causationId;
 
-    await session.Events.WriteToAggregate<BpnDraftFeatureAggregate>(
+    await session.Events.WriteToAggregate<DraftFeatureComponentAggregate>(
             id,
             stream => stream.AppendMany(@events),
             ct);

@@ -2,7 +2,7 @@
 
 public class GivenAComplexFeature
 {
-  private readonly BpnDraftFeatureAggregate feature;
+  private readonly DraftFeatureComponentAggregate _featureComponent;
   public GivenAComplexFeature()
   {
     var entryBlock = new ApiInputTask("Create user endpoint", ["Anonymous"]);
@@ -60,14 +60,14 @@ public class GivenAComplexFeature
       new MapField("output.Id", "Id")
       );
 
-    feature = new BpnDraftFeatureAggregate();
-    feature.Apply(feature, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
-    feature.Apply(feature, new DraftFeatureTaskAdded(entryBlock));
-    feature.Apply(feature, new DraftFeatureTaskAdded(createUserBlock));
-    feature.Apply(feature, new DraftFeatureTaskAdded(logUserBlock));
+    _featureComponent = new DraftFeatureComponentAggregate();
+    _featureComponent.Apply(_featureComponent, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
+    _featureComponent.Apply(_featureComponent, new DraftFeatureTaskAdded(entryBlock));
+    _featureComponent.Apply(_featureComponent, new DraftFeatureTaskAdded(createUserBlock));
+    _featureComponent.Apply(_featureComponent, new DraftFeatureTaskAdded(logUserBlock));
 
-    feature.Apply(feature, new DraftFeatureTransitionAdded(transition));
-    feature.Apply(feature, new DraftFeatureTransitionAdded(logTransition));
+    _featureComponent.Apply(_featureComponent, new DraftFeatureTransitionAdded(transition));
+    _featureComponent.Apply(_featureComponent, new DraftFeatureTransitionAdded(logTransition));
 
     //BpnFeatureAggregate.Apply(feature, new BpnFeature.EnvironmentsUpdated(feature.Id, [BpnFeature.Environment.Testing]));
 
@@ -100,7 +100,7 @@ public class GivenAComplexFeature
   {
     //ARRANGE
     //ACT
-    var result = feature.IsValid();
+    var result = _featureComponent.IsValid();
 
     //ASSERT
     Assert.True(result.IsValid, result.InvalidReason);

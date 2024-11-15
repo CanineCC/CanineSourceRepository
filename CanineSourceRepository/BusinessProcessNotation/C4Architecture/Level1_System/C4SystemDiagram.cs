@@ -8,10 +8,10 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_S
 public class C4SystemDiagram : ContainerDiagram
 {
     //list of systems... and an external entity interacting with them
-    private readonly BpnSolutionProjection.SystemDetails[] _systems;
+    private readonly SolutionProjection.SystemDetails[] _systems;
     private readonly string _solutionName;
 
-    public C4SystemDiagram(string solutionName, BpnSolutionProjection.SystemDetails[] systems)
+    public C4SystemDiagram(string solutionName, SolutionProjection.SystemDetails[] systems)
     {
         _systems = systems;
         _solutionName = solutionName;
@@ -47,7 +47,7 @@ public class C4SystemDiagram : ContainerDiagram
             {
                 foreach (var persona in system.Personas)
                 {
-                    relationships.Add(this[persona.Name.ToPascalCase()] > this[system.Name.ToPascalCase()] | persona.RelationToSystem);
+                    relationships.Add(this[persona.Name.ToPascalCase()] > this[system.Name.ToPascalCase()] | "uses");
                 }
             }
             return relationships.ToArray();

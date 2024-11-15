@@ -42,7 +42,7 @@ export interface Persona {
      * @type {string}
      * @memberof Persona
      */
-    relationToSystem: string;
+    relationToContainer: string;
 }
 
 /**
@@ -52,7 +52,7 @@ export function instanceOfPersona(value: object): value is Persona {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('relationToSystem' in value) || value['relationToSystem'] === undefined) return false;
+    if (!('relationToContainer' in value) || value['relationToContainer'] === undefined) return false;
     return true;
 }
 
@@ -69,7 +69,7 @@ export function PersonaFromJSONTyped(json: any, ignoreDiscriminator: boolean): P
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'relationToSystem': json['relationToSystem'],
+        'relationToContainer': json['relationToContainer'],
     };
 }
 
@@ -82,7 +82,7 @@ export function PersonaToJSON(value?: Persona | null): any {
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'relationToSystem': value['relationToSystem'],
+        'relationToContainer': value['relationToContainer'],
     };
 }
 

@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BpnFeatureDiagram } from './BpnFeatureDiagram';
+import type { FeatureComponentDiagram } from './FeatureComponentDiagram';
 import {
-    BpnFeatureDiagramFromJSON,
-    BpnFeatureDiagramFromJSONTyped,
-    BpnFeatureDiagramToJSON,
-} from './BpnFeatureDiagram';
+    FeatureComponentDiagramFromJSON,
+    FeatureComponentDiagramFromJSONTyped,
+    FeatureComponentDiagramToJSON,
+} from './FeatureComponentDiagram';
 import type { BpnTransition } from './BpnTransition';
 import {
     BpnTransitionFromJSON,
@@ -46,10 +46,10 @@ import {
 export interface BpnFeatureRevision {
     /**
      * 
-     * @type {BpnFeatureDiagram}
+     * @type {FeatureComponentDiagram}
      * @memberof BpnFeatureRevision
      */
-    diagram?: BpnFeatureDiagram;
+    componentDiagram?: FeatureComponentDiagram;
     /**
      * 
      * @type {string}
@@ -123,7 +123,7 @@ export function BpnFeatureRevisionFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'diagram': json['diagram'] == null ? undefined : BpnFeatureDiagramFromJSON(json['diagram']),
+        'componentDiagram': json['componentDiagram'] == null ? undefined : FeatureComponentDiagramFromJSON(json['componentDiagram']),
         'name': json['name'] == null ? undefined : json['name'],
         'objective': json['objective'] == null ? undefined : json['objective'],
         'flowOverview': json['flowOverview'] == null ? undefined : json['flowOverview'],
@@ -142,7 +142,7 @@ export function BpnFeatureRevisionToJSON(value?: BpnFeatureRevision | null): any
     }
     return {
         
-        'diagram': BpnFeatureDiagramToJSON(value['diagram']),
+        'componentDiagram': FeatureComponentDiagramToJSON(value['componentDiagram']),
         'name': value['name'],
         'objective': value['objective'],
         'flowOverview': value['flowOverview'],

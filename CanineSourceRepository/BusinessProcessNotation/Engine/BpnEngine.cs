@@ -42,7 +42,7 @@ public static class BpnEngine
     foreach (var context in contexts)
     {
       var usedIds = context.Features.Select(feature => feature.Id).ToList();
-      var features = session.Query<BpnFeatureProjection.BpnFeature>().Where(p=> usedIds.Contains(p.Id)).ToList();
+      var features = session.Query<FeatureComponentProjection.BpnFeature>().Where(p=> usedIds.Contains(p.Id)).ToList();
       foreach (var feature in features)
       {
         var assembly = feature.ToAssembly();
@@ -60,10 +60,10 @@ public static class BpnEngine
 
   public static string[] ApiRevision(IDocumentSession session)
   {
-    return session.Query<BpnFeatureProjection.BpnFeature>().ToList().SelectMany(feat => feat.Revisions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
+    return session.Query<FeatureComponentProjection.BpnFeature>().ToList().SelectMany(feat => feat.Revisions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
   }
 
-  private static void AddEnpoint(WebApplication app, string name, BpnBpnWebApiContainerProjection.BpnWebApiContainer bpnWebApiContainer, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly)
+  private static void AddEnpoint(WebApplication app, string name, BpnBpnWebApiContainerProjection.BpnWebApiContainer bpnWebApiContainer, BpnFeature feature, FeatureComponentProjection.BpnFeatureRevision revision, Assembly assembly)
   {
     var groupName = bpnWebApiContainer.Name.ToPascalCase();
 
@@ -105,7 +105,7 @@ public static class BpnEngine
       .Accepts(startTask.GetCompiledType(assembly), false, "application/json"); // Define input content type
   }
 
-  public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, BpnFeature feature, BpnFeatureProjection.BpnFeatureRevision revision, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
+  public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid containerId, BpnFeature feature, FeatureComponentProjection.BpnFeatureRevision revision, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
     var initial = nextTask == null;
@@ -116,13 +116,13 @@ public static class BpnEngine
     if (nextTask == null)
     {
       nextTask = revision.Tasks.First();
-      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureStarted(contextId, feature.Id, revision.Revision, DateTime.UtcNow, correlationId.Value));
+      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureStarted(containerId, feature.Id, revision.Revision, DateTime.UtcNow, correlationId.Value));
     }
 
     ServiceInjection DiService = nextTask.GetServiceDependency();
 
     //consider if we can start a transaction in this scope, if it runs across multiple nodes
-    var response = await DiService.Execute(session, ct, inputJson, contextId, feature.Id, revision.Revision, nextTask, correlationId.Value, assembly);//version!?
+    var response = await DiService.Execute(session, ct, inputJson, containerId, feature.Id, revision.Revision, nextTask, correlationId.Value, assembly);//version!?
 
     if (response.Success == false) return false;
     var success = true;
@@ -132,28 +132,28 @@ public static class BpnEngine
 
       if (featureTransition.ConditionIsMeet(response.Result, assembly))
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionUsed(correlationId.Value, contextId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionUsed(correlationId.Value, containerId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
         var mapToTask = revision.Tasks.FirstOrDefault(task => task.Id == featureTransition.ToBPN);
         if (mapToTask == null)
         {
-          EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureError(correlationId.Value, contextId, feature.Id, revision.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
+          EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureError(correlationId.Value, containerId, feature.Id, revision.Revision, new ErrorEvent($"Critical feature error, the node:'{featureTransition.ToBPN}' from transition does not exist", string.Empty)));
           continue;
         }
 
         var map = featureTransition.MapObject(response.Result, mapToTask.GetCompiledType(assembly));
-        if (await Run(session, ct, map, contextId, feature, revision, assembly, correlationId, mapToTask) == false)
+        if (await Run(session, ct, map, containerId, feature, revision, assembly, correlationId, mapToTask) == false)
         {
           success = false;
         }
       }
       else
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionSkipped(correlationId.Value, contextId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTransitionSkipped(correlationId.Value, containerId, feature.Id, revision.Revision, nextTask.Id, featureTransition.ToBPN));
       }
     }
     if (initial && success)
     {
-      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureCompleted(correlationId.Value, contextId, feature.Id, revision.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
+      EngineEventsQueue.EnqueueEngineEvents(new BpnFeatureCompleted(correlationId.Value, containerId, feature.Id, revision.Revision, DateTime.UtcNow, stopwatch.Elapsed.TotalMilliseconds));
       stopwatch.Stop();
     }
 

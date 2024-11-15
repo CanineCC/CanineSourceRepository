@@ -24,7 +24,7 @@ export interface RemovePersonaBody {
      * @type {string}
      * @memberof RemovePersonaBody
      */
-    systemId: string;
+    containerId: string;
     /**
      * 
      * @type {string}
@@ -37,7 +37,7 @@ export interface RemovePersonaBody {
  * Check if a given object implements the RemovePersonaBody interface.
  */
 export function instanceOfRemovePersonaBody(value: object): value is RemovePersonaBody {
-    if (!('systemId' in value) || value['systemId'] === undefined) return false;
+    if (!('containerId' in value) || value['containerId'] === undefined) return false;
     if (!('personaId' in value) || value['personaId'] === undefined) return false;
     return true;
 }
@@ -52,7 +52,7 @@ export function RemovePersonaBodyFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'systemId': json['systemId'],
+        'containerId': json['containerId'],
         'personaId': json['personaId'],
     };
 }
@@ -63,7 +63,7 @@ export function RemovePersonaBodyToJSON(value?: RemovePersonaBody | null): any {
     }
     return {
         
-        'systemId': value['systemId'],
+        'containerId': value['containerId'],
         'personaId': value['personaId'],
     };
 }

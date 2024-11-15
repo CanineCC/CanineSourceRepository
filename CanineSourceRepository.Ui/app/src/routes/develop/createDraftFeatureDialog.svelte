@@ -17,7 +17,7 @@
 
     async function submit() {
         // Handle form submission, e.g., send data to an API
-        await draftFeatureApi.addDraftFeature({ addDraftFeatureBody: { name:name, objective:objective, flowOverview:flowOverview, bpnContextId:bpnContextId} });
+        await draftFeatureApi.addDraftFeature({ addDraftFeatureBody: { name:name, objective:objective, flowOverview:flowOverview, containerId:bpnContextId} });
         closeDialog(); // Close the modal after submission
     }
 

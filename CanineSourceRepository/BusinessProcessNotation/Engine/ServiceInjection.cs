@@ -27,8 +27,8 @@ public abstract class ServiceInjection
   public abstract CodeSnippet[] ApiSnippets { get; }
   public abstract void Setup(string namedConfiguration);
 
-  public abstract Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly);
-  internal async Task<TaskResult> RunAndLog(IDocumentSession session, CancellationToken ct, dynamic input, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
+  public abstract Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid containerId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly);
+  internal async Task<TaskResult> RunAndLog(IDocumentSession session, CancellationToken ct, dynamic input, Guid containerId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
   {
     var stopwatch = Stopwatch.StartNew();
     dynamic? result = null;
@@ -36,7 +36,7 @@ public abstract class ServiceInjection
     {
       var evt = new BpnTaskInitialized(
           CorrelationId: correlationId,
-          ContextId: contextId,
+          ContainerId: containerId,
           FeatureId: featureId,
           FeatureRevision: featureVersion,
           TaskId: task.Id,
@@ -48,7 +48,7 @@ public abstract class ServiceInjection
 
       if (isOk == false)
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
 
@@ -61,17 +61,17 @@ public abstract class ServiceInjection
           result = await apiInputBlock.Execute(input, new UserContext("userId", "userName", ["Anonymous"], "ipaddress", true, "auth type", null), assembly);
           break;
         default:
-          EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
+          EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
           return new TaskResult(false, result);
       }
 
-      EngineEventsQueue.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, contextId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
+      EngineEventsQueue.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, containerId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)
     {
       if (ex.InnerException != null)
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent(ex.InnerException.Message, ex.InnerException.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
 
         if (ex.InnerException is UnauthorizedAccessException)
         {
@@ -80,7 +80,7 @@ public abstract class ServiceInjection
       }
       else
       {
-        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, contextId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
+        EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent(ex.Message, ex.StackTrace ?? ""), stopwatch.Elapsed.TotalMilliseconds));
         throw;
       }
       return new TaskResult(false, result);
@@ -99,9 +99,9 @@ public class NoService : ServiceInjection
   public override CodeSnippet[] ApiSnippets => [];
   public override void Setup(string namedConfiguration) { }
 
-  public override async Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
+  public override async Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid containerId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
   {
-    return await RunAndLog(session, ct, inputJson, contextId, featureId, featureVersion, task, correlationId, assembly);
+    return await RunAndLog(session, ct, inputJson, containerId, featureId, featureVersion, task, correlationId, assembly);
   }
 }
 
@@ -166,7 +166,7 @@ public class PostgreSqlService : ServiceInjection, IAsyncDisposable
     return result;
   }
 
-  public override async Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid contextId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
+  public override async Task<TaskResult> Execute(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid containerId, Guid featureId, long featureVersion, BpnTask task, Guid correlationId, Assembly assembly)
   {
     if (_connection == null)
     {
@@ -176,7 +176,7 @@ public class PostgreSqlService : ServiceInjection, IAsyncDisposable
     await _connection.OpenAsync();
     _transaction = await _connection.BeginTransactionAsync();
 
-    var res = await RunAndLog(session, ct, inputJson, contextId, featureId, featureVersion, task, correlationId, assembly);
+    var res = await RunAndLog(session, ct, inputJson, containerId, featureId, featureVersion, task, correlationId, assembly);
     if (res.success)
     {
       await _transaction.CommitAsync(); // Commit transaction on success

@@ -2,11 +2,11 @@
 
 public class GivenANewFeature
 {
-  private readonly BpnDraftFeatureAggregate feature;
+  private readonly DraftFeatureComponentAggregate _featureComponent;
   public GivenANewFeature()
   {
-    feature = new BpnDraftFeatureAggregate();
-    feature.Apply(feature, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
+    _featureComponent = new DraftFeatureComponentAggregate();
+    _featureComponent.Apply(_featureComponent, new DraftFeatureCreated(Guid.Empty, Guid.CreateVersion7(), "Test diagram", "An objective", "An overview"));
   }
 
   //[Fact]

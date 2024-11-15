@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
+//TODO: Move to container / simplify task to be just code-tasks (and maybe manual-tasks) 
 public class ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
 {
   [Required]

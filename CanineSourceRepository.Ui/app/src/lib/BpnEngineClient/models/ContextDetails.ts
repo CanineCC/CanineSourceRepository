@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Persona } from './Persona';
+import {
+    PersonaFromJSON,
+    PersonaFromJSONTyped,
+    PersonaToJSON,
+} from './Persona';
+
 /**
  * 
  * @export
@@ -37,6 +44,12 @@ export interface ContextDetails {
      * @memberof ContextDetails
      */
     description: string;
+    /**
+     * 
+     * @type {Array<Persona>}
+     * @memberof ContextDetails
+     */
+    personas: Array<Persona>;
 }
 
 /**
@@ -46,6 +59,7 @@ export function instanceOfContextDetails(value: object): value is ContextDetails
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('personas' in value) || value['personas'] === undefined) return false;
     return true;
 }
 
@@ -62,6 +76,7 @@ export function ContextDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
+        'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
     };
 }
 
@@ -74,6 +89,7 @@ export function ContextDetailsToJSON(value?: ContextDetails | null): any {
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
+        'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
     };
 }
 

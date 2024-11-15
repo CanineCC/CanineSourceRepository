@@ -7,10 +7,10 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_C
 
 public class C4ContainerDiagram : ContainerDiagram
 {
-    private readonly BpnSystemProjection.BpnSystem _system;
-    private readonly BpnSystemProjection.ContextDetails[] _containers;
+    private readonly SystemProjection.BpnSystem _system;
+    private readonly SystemProjection.ContextDetails[] _containers;
 
-    public C4ContainerDiagram(BpnSystemProjection.BpnSystem system, BpnSystemProjection.ContextDetails[] containers)
+    public C4ContainerDiagram(SystemProjection.BpnSystem system, SystemProjection.ContextDetails[] containers)
     {
         _system = system;
         _containers = containers;
@@ -24,13 +24,13 @@ public class C4ContainerDiagram : ContainerDiagram
             List<Structure> structures = new List<Structure>();
             List<Container> containers = new List<Container>();
 
-            foreach (var persona in _system.Personas)
-            {
-                structures.Add(Person.None | Boundary.Internal | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
-            }
             foreach (var container in _containers)
             {
                 containers.Add(Container.None | (ContainerType.WebApplication, container.Name.ToPascalCase(), container.Name, "C#, WebApi", container.Description));
+                foreach (var persona in container.Personas)
+                {
+                    structures.Add(Person.None | Boundary.Internal | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
+                }
             }
             structures.Add(Bound(_system.Name.ToPascalCase(), _system.Name, containers.ToArray()));
             //TODO: External systems
@@ -48,14 +48,19 @@ public class C4ContainerDiagram : ContainerDiagram
         get
         {//TODO: relations between containers and services
             var relationships = new List<Relationship>();
-            
-            foreach (var persona in _system.Personas)
+
+            foreach (var container in _containers)
             {
-                relationships.Add(this[persona.Name.ToPascalCase()] > this[_system.Name.ToPascalCase()] | persona.RelationToSystem);
+
+                foreach (var persona in container.Personas)
+                {
+                    relationships.Add(this[persona.Name.ToPascalCase()] > this[container.Name.ToPascalCase()] |
+                                      persona.RelationToContainer);
+                }
             }
 
-            
-            
+
+
             //TODO: relations between containers (using events?)
             return relationships.ToArray();
             /*{

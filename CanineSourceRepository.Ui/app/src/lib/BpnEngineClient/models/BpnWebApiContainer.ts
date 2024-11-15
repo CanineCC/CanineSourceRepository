@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Persona2 } from './Persona2';
+import {
+    Persona2FromJSON,
+    Persona2FromJSONTyped,
+    Persona2ToJSON,
+} from './Persona2';
 import type { FeatureDetails } from './FeatureDetails';
 import {
     FeatureDetailsFromJSON,
@@ -26,6 +32,12 @@ import {
  * @interface BpnWebApiContainer
  */
 export interface BpnWebApiContainer {
+    /**
+     * 
+     * @type {Array<Persona2>}
+     * @memberof BpnWebApiContainer
+     */
+    personas: Array<Persona2>;
     /**
      * 
      * @type {string}
@@ -86,6 +98,7 @@ export interface BpnWebApiContainer {
  * Check if a given object implements the BpnWebApiContainer interface.
  */
 export function instanceOfBpnWebApiContainer(value: object): value is BpnWebApiContainer {
+    if (!('personas' in value) || value['personas'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('systemId' in value) || value['systemId'] === undefined) return false;
     if (!('systemName' in value) || value['systemName'] === undefined) return false;
@@ -108,6 +121,7 @@ export function BpnWebApiContainerFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'personas': ((json['personas'] as Array<any>).map(Persona2FromJSON)),
         'id': json['id'],
         'systemId': json['systemId'],
         'systemName': json['systemName'],
@@ -126,6 +140,7 @@ export function BpnWebApiContainerToJSON(value?: BpnWebApiContainer | null): any
     }
     return {
         
+        'personas': ((value['personas'] as Array<any>).map(Persona2ToJSON)),
         'id': value['id'],
         'systemId': value['systemId'],
         'systemName': value['systemName'],

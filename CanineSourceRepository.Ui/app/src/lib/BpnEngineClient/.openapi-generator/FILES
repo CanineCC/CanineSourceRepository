@@ -24,7 +24,6 @@ models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
 models/BpnDraftFeature.ts
-models/BpnFeatureDiagram.ts
 models/BpnFeatureRevision.ts
 models/BpnFeatureRevisionsStat.ts
 models/BpnPosition.ts
@@ -45,11 +44,13 @@ models/DataDefinition.ts
 models/DeleteRecordOnTaskBody.ts
 models/DurationClassification.ts
 models/Environment.ts
+models/FeatureComponentDiagram.ts
 models/FeatureDetails.ts
 models/FeatureRevisions.ts
 models/FeatureStats.ts
 models/MapField.ts
 models/Persona.ts
+models/Persona2.ts
 models/Position.ts
 models/PositionUpdatedOnDraftFeatureBody.ts
 models/RecordDefinition.ts

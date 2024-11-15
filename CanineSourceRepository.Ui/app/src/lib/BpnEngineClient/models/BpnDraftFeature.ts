@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BpnFeatureDiagram } from './BpnFeatureDiagram';
+import type { FeatureComponentDiagram } from './FeatureComponentDiagram';
 import {
-    BpnFeatureDiagramFromJSON,
-    BpnFeatureDiagramFromJSONTyped,
-    BpnFeatureDiagramToJSON,
-} from './BpnFeatureDiagram';
+    FeatureComponentDiagramFromJSON,
+    FeatureComponentDiagramFromJSONTyped,
+    FeatureComponentDiagramToJSON,
+} from './FeatureComponentDiagram';
 import type { BpnTransition } from './BpnTransition';
 import {
     BpnTransitionFromJSON,
@@ -46,10 +46,10 @@ export interface BpnDraftFeature {
     id: string;
     /**
      * 
-     * @type {BpnFeatureDiagram}
+     * @type {FeatureComponentDiagram}
      * @memberof BpnDraftFeature
      */
-    diagram: BpnFeatureDiagram;
+    componentDiagram: FeatureComponentDiagram;
     /**
      * 
      * @type {string}
@@ -87,7 +87,7 @@ export interface BpnDraftFeature {
  */
 export function instanceOfBpnDraftFeature(value: object): value is BpnDraftFeature {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('diagram' in value) || value['diagram'] === undefined) return false;
+    if (!('componentDiagram' in value) || value['componentDiagram'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('objective' in value) || value['objective'] === undefined) return false;
     if (!('flowOverview' in value) || value['flowOverview'] === undefined) return false;
@@ -107,7 +107,7 @@ export function BpnDraftFeatureFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'id': json['id'],
-        'diagram': BpnFeatureDiagramFromJSON(json['diagram']),
+        'componentDiagram': FeatureComponentDiagramFromJSON(json['componentDiagram']),
         'name': json['name'],
         'objective': json['objective'],
         'flowOverview': json['flowOverview'],
@@ -123,7 +123,7 @@ export function BpnDraftFeatureToJSON(value?: BpnDraftFeature | null): any {
     return {
         
         'id': value['id'],
-        'diagram': BpnFeatureDiagramToJSON(value['diagram']),
+        'componentDiagram': FeatureComponentDiagramToJSON(value['componentDiagram']),
         'name': value['name'],
         'objective': value['objective'],
         'flowOverview': value['flowOverview'],

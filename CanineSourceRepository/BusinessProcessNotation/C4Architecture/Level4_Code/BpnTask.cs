@@ -6,19 +6,6 @@ namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_C
 
 public abstract class BpnTask(Guid Id, string Name)
 {
-  //public enum ServiceInjection
-  //{
-  //  None,
-  //  Sql,           // PostgreSql, (settings?)
-  //  EventSourcing, // Marten (settings?)
-  //  Smtp,          // Send email (settings?) --> maybe get-pop3, get-imap, send-imap, send-smtp
-  //  Pop3,          // Get email
-  //  WebApi,        // WebApi (settings?, including selecting THE http-verb) -> force to one endpoint?
-  //  Ado,           // generic sql client for legacy integration
-  //  //Global settings? (multiple named instances?!)
-  //}
-
-  //[Required]
   public Guid Id { get; set; } = Id;
   [Required]
   public string Name { get; set; } = Name; //sanitize?

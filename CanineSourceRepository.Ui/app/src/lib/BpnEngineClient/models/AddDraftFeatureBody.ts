@@ -24,7 +24,7 @@ export interface AddDraftFeatureBody {
      * @type {string}
      * @memberof AddDraftFeatureBody
      */
-    bpnContextId: string;
+    containerId: string;
     /**
      * 
      * @type {string}
@@ -49,7 +49,7 @@ export interface AddDraftFeatureBody {
  * Check if a given object implements the AddDraftFeatureBody interface.
  */
 export function instanceOfAddDraftFeatureBody(value: object): value is AddDraftFeatureBody {
-    if (!('bpnContextId' in value) || value['bpnContextId'] === undefined) return false;
+    if (!('containerId' in value) || value['containerId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('objective' in value) || value['objective'] === undefined) return false;
     if (!('flowOverview' in value) || value['flowOverview'] === undefined) return false;
@@ -66,7 +66,7 @@ export function AddDraftFeatureBodyFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'bpnContextId': json['bpnContextId'],
+        'containerId': json['containerId'],
         'name': json['name'],
         'objective': json['objective'],
         'flowOverview': json['flowOverview'],
@@ -79,7 +79,7 @@ export function AddDraftFeatureBodyToJSON(value?: AddDraftFeatureBody | null): a
     }
     return {
         
-        'bpnContextId': value['bpnContextId'],
+        'containerId': value['containerId'],
         'name': value['name'],
         'objective': value['objective'],
         'flowOverview': value['flowOverview'],

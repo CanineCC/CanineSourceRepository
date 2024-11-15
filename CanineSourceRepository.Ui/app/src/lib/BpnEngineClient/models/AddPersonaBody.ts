@@ -24,7 +24,7 @@ export interface AddPersonaBody {
      * @type {string}
      * @memberof AddPersonaBody
      */
-    systemId: string;
+    containerId: string;
     /**
      * 
      * @type {string}
@@ -49,7 +49,7 @@ export interface AddPersonaBody {
  * Check if a given object implements the AddPersonaBody interface.
  */
 export function instanceOfAddPersonaBody(value: object): value is AddPersonaBody {
-    if (!('systemId' in value) || value['systemId'] === undefined) return false;
+    if (!('containerId' in value) || value['containerId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('relationToSystem' in value) || value['relationToSystem'] === undefined) return false;
@@ -66,7 +66,7 @@ export function AddPersonaBodyFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'systemId': json['systemId'],
+        'containerId': json['containerId'],
         'name': json['name'],
         'description': json['description'],
         'relationToSystem': json['relationToSystem'],
@@ -79,7 +79,7 @@ export function AddPersonaBodyToJSON(value?: AddPersonaBody | null): any {
     }
     return {
         
-        'systemId': value['systemId'],
+        'containerId': value['containerId'],
         'name': value['name'],
         'description': value['description'],
         'relationToSystem': value['relationToSystem'],
