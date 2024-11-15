@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
-
+/*
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.ContainerFeatures;
 
 public class AddPersonaFeature : IFeature
@@ -57,4 +55,4 @@ public class AddPersonaFeature : IFeature
         await session.RegisterEventsOnBpnContext(ct, containerId, causationId, new PersonaAdded(SolutionId: systemAggregate.SolutionId, SystemId: aggregate.SystemId, ContainerId:containerId, PersonaId: newId, Name: name, Description: description, RelationToContainer: relationToSystem));
         return newId;
     }
-}
+}*/

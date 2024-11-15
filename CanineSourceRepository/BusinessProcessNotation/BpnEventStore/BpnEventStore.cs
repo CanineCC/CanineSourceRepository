@@ -1,7 +1,4 @@
-﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SolutionFeatures;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SystemFeatures;
-using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
-using Marten.Events.Projections;
+﻿using Marten.Events.Projections;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -75,7 +72,7 @@ public static class BpnEventStore
     var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
     
     var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
-    await AddPersonaFeature.Execute(session, causationId, containerId, "System Administrator", "An administrator in the system", "Login via api", ct);
+    var personaId = await AddPersonaFeature.Execute(session, causationId, "System Administrator",  "An administrator in the system",Scope.Internal, ct);
     var featureId = await AddDraftFeatureFeature.Execute(
                           session,
                           causationId: causationId,
@@ -84,6 +81,8 @@ public static class BpnEventStore
                           objective: "Enable users to register, validate their email, and gain access to premium content.",
                           flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",
                           ct: ct);
+    await PersonaConsumeComponentFeature.Execute(session, causationId, personaId, featureId, "Calls api to create a user", ct);
+
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: entryBlock, ct);
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: createUserBlock, ct);
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);

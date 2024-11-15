@@ -10,7 +10,11 @@ global using System.Text.RegularExpressions;
 global using Microsoft.AspNetCore.Mvc;
 global using System.Diagnostics;
 global using Npgsql;
+global using System.ComponentModel.DataAnnotations;
 
+
+global using CanineSourceRepository.BusinessProcessNotation.C4Architecture.SupportingElements;
+global using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 global using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level2_Container;
 global using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 global using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
@@ -19,8 +23,11 @@ global using static CanineSourceRepository.BusinessProcessNotation.C4Architectur
 global using static CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component.FeatureComponentProjection;
 global using static CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
+global using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SolutionFeatures;
+global using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SystemFeatures;
 global using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.ContainerFeatures;
 global using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.DraftComponentFeatures;
+global using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.PersonaFeatures;
 global using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.AddRecordToTaskFeature;
 global using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.DeleteRecordOnTaskFeature;
 global using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.UpdateCodeOnTaskFeature;

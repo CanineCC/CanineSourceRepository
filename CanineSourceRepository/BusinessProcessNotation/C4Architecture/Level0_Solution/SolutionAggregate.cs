@@ -1,8 +1,4 @@
 ﻿using Marten.Events.Projections;
-using System.ComponentModel.DataAnnotations;
-using C4Sharp.Elements;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SolutionFeatures;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SystemFeatures;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
@@ -46,8 +42,9 @@ public class SolutionProjection : MultiStreamProjection<SolutionProjection.BpnSo
   {
     Identity<CreateSystemFeature.SystemCreated>(x => x.SolutionId);
     Identity<CreateSolutionFeature.SolutionCreated>(x => x.Id);
-    Identity<RemovePersonaFeature.PersonaRemoved>(x => x.SolutionId);
-    Identity<AddPersonaFeature.PersonaAdded>(x => x.SolutionId);
+    
+    Identity<PersonaConsumeComponentFeature.ComponentCosumedByPersona>(x => x.SolutionId);
+    Identity<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona>(x => x.SolutionId);
   }
   public static void Apply(BpnSolution view, IEvent<CreateSolutionFeature.SolutionCreated> @event)
   {
@@ -57,21 +54,34 @@ public class SolutionProjection : MultiStreamProjection<SolutionProjection.BpnSo
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
-  public static void Apply(BpnSolution view, IEvent<RemovePersonaFeature.PersonaRemoved> @event)
+  public static void Apply(BpnSolution view, IEvent<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona> @event)
   {
     view.LastUpdatedTimestamp = @event.Timestamp;
     var system = view.Systems.First(p => p.Id == @event.Data.SystemId);
-    system.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
-    var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
-    view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    var persona = system.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
+    if (persona == null) return;
+
+    persona.Components.RemoveAll(p=>p== @event.Data.ComponentId);
+    if (persona.Components.Count == 0)
+    {
+      system.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
+      var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
+      view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    }
   }
-  public static void Apply(BpnSolution view, IEvent<AddPersonaFeature.PersonaAdded> @event)
+  public static void Apply(BpnSolution view, IEvent<PersonaConsumeComponentFeature.ComponentCosumedByPersona> @event)
   {
     view.LastUpdatedTimestamp = @event.Timestamp;
     var system = view.Systems.First(p => p.Id == @event.Data.SystemId);
-    system.Personas.Add(new SystemProjection.Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description , Name = @event.Data.Name, RelationToContainer = @event.Data.RelationToContainer });
-    var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
-    view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    var persona = system.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
+    if (persona == null)
+    {
+      persona = new SystemProjection.Persona() { Id = @event.Data.PersonaId, Name = @event.Data.Name };
+      system.Personas.Add(persona);
+      var diagram = new C4SystemDiagram(view.Name, view.Systems.ToArray());
+      view.C4SystemDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    };  
+    persona.Components.Add(@event.Data.ComponentId);
   }  
   
   public static void Apply(BpnSolution view, IEvent<CreateSystemFeature.SystemCreated> @event)

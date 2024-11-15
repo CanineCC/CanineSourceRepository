@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
-
+/*
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.ContainerFeatures;
 
 public class RemovePersonaFeature : IFeature
@@ -44,4 +42,4 @@ public class RemovePersonaFeature : IFeature
 
         await session.RegisterEventsOnBpnContext(ct, containerId, causationId, new PersonaRemoved( SolutionId: systemAggregate.SolutionId, SystemId: aggregate.SystemId, ContainerId: containerId, PersonaId: personaId));
     }
-}
+}*/

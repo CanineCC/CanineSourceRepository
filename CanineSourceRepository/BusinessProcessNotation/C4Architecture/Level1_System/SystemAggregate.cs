@@ -1,6 +1,4 @@
 ﻿using Marten.Events.Projections;
-using System.ComponentModel.DataAnnotations;
-using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.SystemFeatures;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
 
@@ -49,26 +47,39 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
   {
     Identity<CreateSystemFeature.SystemCreated>(x => x.Id);
     Identity<WebApiContainerCreated>(x => x.SystemId);
-    Identity<RemovePersonaFeature.PersonaRemoved>(x => x.SystemId);
-    Identity<AddPersonaFeature.PersonaAdded>(x => x.SystemId);
+    Identity<PersonaConsumeComponentFeature.ComponentCosumedByPersona>(x => x.SystemId);
+    Identity<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona>(x => x.SystemId);
+    
 
   }
   
-  public static void Apply(BpnSystem view, IEvent<RemovePersonaFeature.PersonaRemoved> @event)
+  public static void Apply(BpnSystem view, IEvent<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona> @event)
   {
     view.LastUpdatedTimestamp = @event.Timestamp;
     var container = view.Containers.First(p => p.Id == @event.Data.ContainerId);
-    container.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
-    var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
-    view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    var persona = container.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
+    if (persona == null) return;
+    persona.Components.RemoveAll(p=>p == @event.Data.ComponentId);
+    if (persona.Components.Count == 0)
+    {
+      container.Personas.RemoveAll(p=>p.Id == @event.Data.PersonaId);
+      var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
+      view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    }
   }
-  public static void Apply(BpnSystem view, IEvent<AddPersonaFeature.PersonaAdded> @event)
+  public static void Apply(BpnSystem view, IEvent<PersonaConsumeComponentFeature.ComponentCosumedByPersona> @event)
   {
     view.LastUpdatedTimestamp = @event.Timestamp;
     var container = view.Containers.First(p => p.Id == @event.Data.ContainerId);
-    container.Personas.Add(new Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description , Name = @event.Data.Name, RelationToContainer = @event.Data.RelationToContainer });
-    var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
-    view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    var persona = container.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
+    if (persona == null)
+    {
+      persona = new Persona() { Id = @event.Data.PersonaId, Name = @event.Data.Name, Description = @event.Data.Description};
+      container.Personas.Add(persona);
+      var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
+      view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    }
+    persona.Components.Add(@event.Data.ComponentId);
   }
 
   public static void Apply(BpnSystem view, IEvent<CreateSystemFeature.SystemCreated> @event)
@@ -81,12 +92,12 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
   }
   public static void Apply(BpnSystem view, IEvent<WebApiContainerCreated> @event)
   {
-    view.Containers.Add(new ContextDetails(@event.Data.Id, @event.Data.Name, @event.Data.Descrption));
+    view.Containers.Add(new ContainerDetails(@event.Data.Id, @event.Data.Name, @event.Data.Descrption));
     view.LastUpdatedTimestamp = @event.Timestamp;
     var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
     view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
   }
-  public class ContextDetails(Guid Id, string Name, string Description)
+  public class ContainerDetails(Guid Id, string Name, string Description)
   {
     [Required]
     public Guid Id { get; set; } = Id;
@@ -103,13 +114,15 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
   {
     [Required]
     public Guid Id { get; set; }
+    [Required]
+    public List<Guid> Components { get; set; } = [];
     
     [Required]
     public string Name { get; set; } = "";
     [Required]
     public string Description { get; set; } = "";
     [Required]
-    public string RelationToContainer { get; set; } = "";
+    public string RelationToContainer { get; set; } = "uses";
   }
   public class BpnSystem
   {
@@ -125,7 +138,7 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
     [Required]
     public DateTimeOffset LastUpdatedTimestamp { get; set; }
     [Required]
-    public List<ContextDetails> Containers { get; set; } = [];
+    public List<ContainerDetails> Containers { get; set; } = [];
     
     [Required]
     public string C4ContainerDiagramSvg { get; set; } = "<svg />";
