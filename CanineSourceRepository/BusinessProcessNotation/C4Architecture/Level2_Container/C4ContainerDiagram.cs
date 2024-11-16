@@ -29,7 +29,7 @@ public class C4ContainerDiagram : ContainerDiagram
                 containers.Add(Container.None | (ContainerType.WebApplication, container.Name.ToPascalCase(), container.Name, "C#, WebApi", container.Description));
                 foreach (var persona in container.Personas)
                 {
-                    structures.Add(Person.None | Boundary.Internal | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
+                    structures.Add(Person.None | Boundary.Internal  | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
                 }
             }
             structures.Add(Bound(_system.Name.ToPascalCase(), _system.Name, containers.ToArray()));

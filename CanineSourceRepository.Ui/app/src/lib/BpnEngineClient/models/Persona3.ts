@@ -13,61 +13,54 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Persona } from './Persona';
-import {
-    PersonaFromJSON,
-    PersonaFromJSONTyped,
-    PersonaToJSON,
-} from './Persona';
-
 /**
  * 
  * @export
- * @interface ContextDetails
+ * @interface Persona3
  */
-export interface ContextDetails {
+export interface Persona3 {
     /**
      * 
      * @type {string}
-     * @memberof ContextDetails
+     * @memberof Persona3
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof ContextDetails
+     * @memberof Persona3
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof ContextDetails
+     * @memberof Persona3
      */
     description: string;
     /**
      * 
-     * @type {Array<Persona>}
-     * @memberof ContextDetails
+     * @type {string}
+     * @memberof Persona3
      */
-    personas: Array<Persona>;
+    relationToComponent: string;
 }
 
 /**
- * Check if a given object implements the ContextDetails interface.
+ * Check if a given object implements the Persona3 interface.
  */
-export function instanceOfContextDetails(value: object): value is ContextDetails {
+export function instanceOfPersona3(value: object): value is Persona3 {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('personas' in value) || value['personas'] === undefined) return false;
+    if (!('relationToComponent' in value) || value['relationToComponent'] === undefined) return false;
     return true;
 }
 
-export function ContextDetailsFromJSON(json: any): ContextDetails {
-    return ContextDetailsFromJSONTyped(json, false);
+export function Persona3FromJSON(json: any): Persona3 {
+    return Persona3FromJSONTyped(json, false);
 }
 
-export function ContextDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ContextDetails {
+export function Persona3FromJSONTyped(json: any, ignoreDiscriminator: boolean): Persona3 {
     if (json == null) {
         return json;
     }
@@ -76,11 +69,11 @@ export function ContextDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
+        'relationToComponent': json['relationToComponent'],
     };
 }
 
-export function ContextDetailsToJSON(value?: ContextDetails | null): any {
+export function Persona3ToJSON(value?: Persona3 | null): any {
     if (value == null) {
         return value;
     }
@@ -89,7 +82,7 @@ export function ContextDetailsToJSON(value?: ContextDetails | null): any {
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
+        'relationToComponent': value['relationToComponent'],
     };
 }
 

@@ -27,6 +27,12 @@ export interface Persona {
     id: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof Persona
+     */
+    components: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof Persona
      */
@@ -50,6 +56,7 @@ export interface Persona {
  */
 export function instanceOfPersona(value: object): value is Persona {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('components' in value) || value['components'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('relationToContainer' in value) || value['relationToContainer'] === undefined) return false;
@@ -67,6 +74,7 @@ export function PersonaFromJSONTyped(json: any, ignoreDiscriminator: boolean): P
     return {
         
         'id': json['id'],
+        'components': json['components'],
         'name': json['name'],
         'description': json['description'],
         'relationToContainer': json['relationToContainer'],
@@ -80,6 +88,7 @@ export function PersonaToJSON(value?: Persona | null): any {
     return {
         
         'id': value['id'],
+        'components': value['components'],
         'name': value['name'],
         'description': value['description'],
         'relationToContainer': value['relationToContainer'],

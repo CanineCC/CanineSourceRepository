@@ -23,25 +23,31 @@ import {
 /**
  * 
  * @export
- * @interface AddPersonaBody
+ * @interface UpdatePersonaInformationBody
  */
-export interface AddPersonaBody {
+export interface UpdatePersonaInformationBody {
     /**
      * 
      * @type {string}
-     * @memberof AddPersonaBody
+     * @memberof UpdatePersonaInformationBody
+     */
+    personaId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdatePersonaInformationBody
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof AddPersonaBody
+     * @memberof UpdatePersonaInformationBody
      */
     description: string;
     /**
      * 
      * @type {Scope}
-     * @memberof AddPersonaBody
+     * @memberof UpdatePersonaInformationBody
      */
     scope: Scope;
 }
@@ -49,37 +55,40 @@ export interface AddPersonaBody {
 
 
 /**
- * Check if a given object implements the AddPersonaBody interface.
+ * Check if a given object implements the UpdatePersonaInformationBody interface.
  */
-export function instanceOfAddPersonaBody(value: object): value is AddPersonaBody {
+export function instanceOfUpdatePersonaInformationBody(value: object): value is UpdatePersonaInformationBody {
+    if (!('personaId' in value) || value['personaId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('scope' in value) || value['scope'] === undefined) return false;
     return true;
 }
 
-export function AddPersonaBodyFromJSON(json: any): AddPersonaBody {
-    return AddPersonaBodyFromJSONTyped(json, false);
+export function UpdatePersonaInformationBodyFromJSON(json: any): UpdatePersonaInformationBody {
+    return UpdatePersonaInformationBodyFromJSONTyped(json, false);
 }
 
-export function AddPersonaBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): AddPersonaBody {
+export function UpdatePersonaInformationBodyFromJSONTyped(json: any, ignoreDiscriminator: boolean): UpdatePersonaInformationBody {
     if (json == null) {
         return json;
     }
     return {
         
+        'personaId': json['personaId'],
         'name': json['name'],
         'description': json['description'],
         'scope': ScopeFromJSON(json['scope']),
     };
 }
 
-export function AddPersonaBodyToJSON(value?: AddPersonaBody | null): any {
+export function UpdatePersonaInformationBodyToJSON(value?: UpdatePersonaInformationBody | null): any {
     if (value == null) {
         return value;
     }
     return {
         
+        'personaId': value['personaId'],
         'name': value['name'],
         'description': value['description'],
         'scope': ScopeToJSON(value['scope']),

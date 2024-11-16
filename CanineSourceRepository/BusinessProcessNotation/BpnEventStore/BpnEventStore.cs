@@ -110,12 +110,15 @@ public static class BpnEventStore
     options.Projections.Add<BpnFeatureStatsProjection>(ProjectionLifecycle.Async);
     options.Schema.For<BpnFeatureStatsProjection.BpnFeatureStat>();
 
-
-
     options.Projections.LiveStreamAggregation<DraftFeatureComponentAggregate>();
     options.Projections.Add<DraftFeatureComponentProjection>(ProjectionLifecycle.Async);
     options.Schema.For<DraftFeatureComponentProjection.BpnDraftFeature>();
 
+    options.Projections.LiveStreamAggregation<PersonaAggregate>();
+    options.Projections.Add<PersonaProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<PersonaProjection.Persona>();
+    
+    
 
     var interfaceType = typeof(IFeature);
     var implementations = Assembly.GetExecutingAssembly().GetTypes()
@@ -151,6 +154,7 @@ public static class BpnEventStore
     FeatureComponentProjection.RegisterBpnEventStore(app);
     BpnFeatureStatsProjection.RegisterBpnEventStore(app);
     BpnBpnWebApiContainerProjection.RegisterBpnEventStore(app);
+    PersonaProjection.RegisterBpnEventStore(app);
   }
 }
 

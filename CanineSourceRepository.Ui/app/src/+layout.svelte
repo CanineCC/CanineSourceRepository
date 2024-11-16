@@ -42,10 +42,10 @@
     <aside class="left-menu">
         <ul>
             <li><a href="/dashboard" title="Dashboard" aria-label="Dashboard" ><i class="fas fa-chart-line"></i></a></li>
+            <li><a href="/persona" title="Persona" aria-label="Persona"><i class="fas fa-user"></i></a></li>
             <li><a href="/systemhealth" title="System health" aria-label="System health"><i class="fas fa-gauge-simple"></i></a></li>
             <li><a href="/develop" title="Develop" aria-label="Develop"><i class="fas fa-code"></i></a></li>
             <li><a href="/documentation" title="C4 documentation" aria-label="Documentation"><i class="fas fa-book"></i></a></li>
-            <li><a href="/profile" title="Profile" aria-label="Profile"><i class="fas fa-user"></i></a></li>
         </ul>
     </aside>
 

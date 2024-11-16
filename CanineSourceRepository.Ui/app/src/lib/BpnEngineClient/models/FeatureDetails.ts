@@ -19,6 +19,12 @@ import {
     FeatureRevisionsFromJSONTyped,
     FeatureRevisionsToJSON,
 } from './FeatureRevisions';
+import type { Persona3 } from './Persona3';
+import {
+    Persona3FromJSON,
+    Persona3FromJSONTyped,
+    Persona3ToJSON,
+} from './Persona3';
 
 /**
  * 
@@ -38,6 +44,12 @@ export interface FeatureDetails {
      * @memberof FeatureDetails
      */
     revisions: Array<FeatureRevisions>;
+    /**
+     * 
+     * @type {Array<Persona3>}
+     * @memberof FeatureDetails
+     */
+    personas: Array<Persona3>;
 }
 
 /**
@@ -46,6 +58,7 @@ export interface FeatureDetails {
 export function instanceOfFeatureDetails(value: object): value is FeatureDetails {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('revisions' in value) || value['revisions'] === undefined) return false;
+    if (!('personas' in value) || value['personas'] === undefined) return false;
     return true;
 }
 
@@ -61,6 +74,7 @@ export function FeatureDetailsFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'revisions': ((json['revisions'] as Array<any>).map(FeatureRevisionsFromJSON)),
+        'personas': ((json['personas'] as Array<any>).map(Persona3FromJSON)),
     };
 }
 
@@ -72,6 +86,7 @@ export function FeatureDetailsToJSON(value?: FeatureDetails | null): any {
         
         'id': value['id'],
         'revisions': ((value['revisions'] as Array<any>).map(FeatureRevisionsToJSON)),
+        'personas': ((value['personas'] as Array<any>).map(Persona3ToJSON)),
     };
 }
 

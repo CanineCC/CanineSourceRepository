@@ -13,84 +13,83 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Persona } from './Persona';
+import {
+    PersonaFromJSON,
+    PersonaFromJSONTyped,
+    PersonaToJSON,
+} from './Persona';
+
 /**
  * 
  * @export
- * @interface Persona2
+ * @interface ContainerDetails
  */
-export interface Persona2 {
+export interface ContainerDetails {
     /**
      * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof ContainerDetails
      */
     id: string;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof Persona2
-     */
-    components?: Array<string>;
-    /**
-     * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof ContainerDetails
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof ContainerDetails
      */
     description: string;
     /**
      * 
-     * @type {string}
-     * @memberof Persona2
+     * @type {Array<Persona>}
+     * @memberof ContainerDetails
      */
-    relationToContainer: string;
+    personas: Array<Persona>;
 }
 
 /**
- * Check if a given object implements the Persona2 interface.
+ * Check if a given object implements the ContainerDetails interface.
  */
-export function instanceOfPersona2(value: object): value is Persona2 {
+export function instanceOfContainerDetails(value: object): value is ContainerDetails {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('relationToContainer' in value) || value['relationToContainer'] === undefined) return false;
+    if (!('personas' in value) || value['personas'] === undefined) return false;
     return true;
 }
 
-export function Persona2FromJSON(json: any): Persona2 {
-    return Persona2FromJSONTyped(json, false);
+export function ContainerDetailsFromJSON(json: any): ContainerDetails {
+    return ContainerDetailsFromJSONTyped(json, false);
 }
 
-export function Persona2FromJSONTyped(json: any, ignoreDiscriminator: boolean): Persona2 {
+export function ContainerDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ContainerDetails {
     if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
-        'components': json['components'] == null ? undefined : json['components'],
         'name': json['name'],
         'description': json['description'],
-        'relationToContainer': json['relationToContainer'],
+        'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
     };
 }
 
-export function Persona2ToJSON(value?: Persona2 | null): any {
+export function ContainerDetailsToJSON(value?: ContainerDetails | null): any {
     if (value == null) {
         return value;
     }
     return {
         
         'id': value['id'],
-        'components': value['components'],
         'name': value['name'],
         'description': value['description'],
-        'relationToContainer': value['relationToContainer'],
+        'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
     };
 }
 

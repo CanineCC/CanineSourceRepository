@@ -15,25 +15,15 @@
 
 import * as runtime from '../runtime';
 import type {
-  AddPersonaBody,
   BpnWebApiContainer,
   CreateContainerBody,
-  RemovePersonaBody,
 } from '../models/index';
 import {
-    AddPersonaBodyFromJSON,
-    AddPersonaBodyToJSON,
     BpnWebApiContainerFromJSON,
     BpnWebApiContainerToJSON,
     CreateContainerBodyFromJSON,
     CreateContainerBodyToJSON,
-    RemovePersonaBodyFromJSON,
-    RemovePersonaBodyToJSON,
 } from '../models/index';
-
-export interface AddPersonaRequest {
-    addPersonaBody: AddPersonaBody;
-}
 
 export interface CreateContainerRequest {
     createContainerBody: CreateContainerBody;
@@ -43,47 +33,10 @@ export interface GetAllContainersBySystemRequest {
     systemId: string;
 }
 
-export interface RemovePersonaRequest {
-    removePersonaBody: RemovePersonaBody;
-}
-
 /**
  * 
  */
 export class ContainerApi extends runtime.BaseAPI {
-
-    /**
-     */
-    async addPersonaRaw(requestParameters: AddPersonaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['addPersonaBody'] == null) {
-            throw new runtime.RequiredError(
-                'addPersonaBody',
-                'Required parameter "addPersonaBody" was null or undefined when calling addPersona().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/BpnEngine/v1/Container/AddPersona`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: AddPersonaBodyToJSON(requestParameters['addPersonaBody']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async addPersona(requestParameters: AddPersonaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addPersonaRaw(requestParameters, initOverrides);
-    }
 
     /**
      */
@@ -171,39 +124,6 @@ export class ContainerApi extends runtime.BaseAPI {
     async getAllContainersBySystem(requestParameters: GetAllContainersBySystemRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<BpnWebApiContainer>> {
         const response = await this.getAllContainersBySystemRaw(requestParameters, initOverrides);
         return await response.value();
-    }
-
-    /**
-     */
-    async removePersonaRaw(requestParameters: RemovePersonaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['removePersonaBody'] == null) {
-            throw new runtime.RequiredError(
-                'removePersonaBody',
-                'Required parameter "removePersonaBody" was null or undefined when calling removePersona().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/BpnEngine/v1/Container/RemovePersona`,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-            body: RemovePersonaBodyToJSON(requestParameters['removePersonaBody']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async removePersona(requestParameters: RemovePersonaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.removePersonaRaw(requestParameters, initOverrides);
     }
 
 }

@@ -13,84 +13,83 @@
  */
 
 import { mapValues } from '../runtime';
+import type { ConsumeComponent } from './ConsumeComponent';
+import {
+    ConsumeComponentFromJSON,
+    ConsumeComponentFromJSONTyped,
+    ConsumeComponentToJSON,
+} from './ConsumeComponent';
+
 /**
  * 
  * @export
- * @interface Persona2
+ * @interface Persona4
  */
-export interface Persona2 {
+export interface Persona4 {
     /**
      * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof Persona4
      */
     id: string;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof Persona2
+     * @type {Array<ConsumeComponent>}
+     * @memberof Persona4
      */
-    components?: Array<string>;
+    components: Array<ConsumeComponent>;
     /**
      * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof Persona4
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof Persona2
+     * @memberof Persona4
      */
     description: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Persona2
-     */
-    relationToContainer: string;
 }
 
 /**
- * Check if a given object implements the Persona2 interface.
+ * Check if a given object implements the Persona4 interface.
  */
-export function instanceOfPersona2(value: object): value is Persona2 {
+export function instanceOfPersona4(value: object): value is Persona4 {
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('components' in value) || value['components'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
-    if (!('relationToContainer' in value) || value['relationToContainer'] === undefined) return false;
     return true;
 }
 
-export function Persona2FromJSON(json: any): Persona2 {
-    return Persona2FromJSONTyped(json, false);
+export function Persona4FromJSON(json: any): Persona4 {
+    return Persona4FromJSONTyped(json, false);
 }
 
-export function Persona2FromJSONTyped(json: any, ignoreDiscriminator: boolean): Persona2 {
+export function Persona4FromJSONTyped(json: any, ignoreDiscriminator: boolean): Persona4 {
     if (json == null) {
         return json;
     }
     return {
         
         'id': json['id'],
-        'components': json['components'] == null ? undefined : json['components'],
+        'components': ((json['components'] as Array<any>).map(ConsumeComponentFromJSON)),
         'name': json['name'],
         'description': json['description'],
-        'relationToContainer': json['relationToContainer'],
     };
 }
 
-export function Persona2ToJSON(value?: Persona2 | null): any {
+export function Persona4ToJSON(value?: Persona4 | null): any {
     if (value == null) {
         return value;
     }
     return {
         
         'id': value['id'],
-        'components': value['components'],
+        'components': ((value['components'] as Array<any>).map(ConsumeComponentToJSON)),
         'name': value['name'],
         'description': value['description'],
-        'relationToContainer': value['relationToContainer'],
     };
 }
 

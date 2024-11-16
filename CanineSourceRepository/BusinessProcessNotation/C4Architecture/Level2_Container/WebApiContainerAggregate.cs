@@ -72,29 +72,56 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
   
   public static void Apply(BpnWebApiContainer view, IEvent<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona> @event)
   {
+    bool updateDiagram = false;
     var persona = view.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
-    if (persona == null) return;
-    view.LastUpdatedTimestamp = @event.Timestamp;
-    persona.Components.Remove(@event.Data.ComponentId);
-    if (persona.Components.Count == 0)
+   
+    if (persona != null)
     {
-      view.Personas.RemoveAll(p => p.Id == persona.Id);
-      var diagram = new C4ComponentDiagram(view.SystemName, view,view.Features.ToArray());
+      view.LastUpdatedTimestamp = @event.Timestamp;
+      persona.Components.Remove(@event.Data.ComponentId);
+      if (persona.Components.Count == 0)
+      {
+        view.Personas.RemoveAll(p => p.Id == persona.Id);
+        updateDiagram = true;
+      }
+    }
+    var component = view.Features.FirstOrDefault(p => p.Id == @event.Data.ComponentId);
+    if (component != null)
+    {
+      component.Personas.RemoveAll(p => p.Id == @event.Data.PersonaId);
+      updateDiagram = true;
+    }
+
+    if (updateDiagram)
+    {
+      var diagram = new C4ComponentDiagram(view.SystemName, view, view.Features.ToArray());
       view.C4ComponentDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
     }
   }
   public static void Apply(BpnWebApiContainer view, IEvent<PersonaConsumeComponentFeature.ComponentCosumedByPersona> @event)
   {
+    bool updateDiagram = false;
     view.LastUpdatedTimestamp = @event.Timestamp;
     var persona = view.Personas.FirstOrDefault(p => p.Id == @event.Data.PersonaId);
     if (persona == null)
     {
       persona = new Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description, Name = @event.Data.Name };
       view.Personas.Add(persona);
-      var diagram = new C4ComponentDiagram(view.SystemName, view,view.Features.ToArray());
-      view.C4ComponentDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+      updateDiagram = true;
     }
     persona.Components.Add(@event.Data.ComponentId);
+    
+    var component = view.Features.FirstOrDefault(p => p.Id == @event.Data.ComponentId);
+    if (component != null)
+    {
+      component.Personas.Add(new FeatureDetails.Persona() { Id = @event.Data.PersonaId, Description = @event.Data.Description, Name = @event.Data.Name, RelationToComponent = @event.Data.ConsumeText });
+      updateDiagram = true;
+    }
+    if (updateDiagram)
+    {
+      var diagram = new C4ComponentDiagram(view.SystemName, view, view.Features.ToArray());
+      view.C4ComponentDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+    }
   }
   public static void Apply(BpnWebApiContainer view, IEvent<WebApiContainerCreated> @event)
   {
@@ -128,7 +155,8 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
               LastUsed: null,
               Published: @event.Timestamp)
             )
-      }
+      },
+      Personas:[]
     ));
     view.LastUpdatedTimestamp = @event.Timestamp;
     var diagram = new C4ComponentDiagram(view.SystemName, view,view.Features.ToArray());
@@ -262,12 +290,25 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required]
     public FeatureStats Stats { get; set; } = Stats;
   }
-  public class FeatureDetails(Guid Id, List<FeatureRevisions> Revisions)
+  public class FeatureDetails(Guid Id, List<FeatureRevisions> Revisions, List<FeatureDetails.Persona> Personas)
   {
-    [Required]
-    public Guid Id { get; set; } = Id;
-    [Required]
-    public List<FeatureRevisions> Revisions { get; set; } = Revisions;
+    public class Persona
+    {
+      [Required]
+      public Guid Id { get; set; }
+      [Required]
+      public string Name { get; set; } = "";
+      [Required]
+      public string Description { get; set; } = "";
+      [Required]
+      public string RelationToComponent { get; set; } = "";
+    }  
+    
+    [Required] public Guid Id { get; set; } = Id;
+    [Required] public List<FeatureRevisions> Revisions { get; set; } = Revisions;
+    
+    [Required] public List<FeatureDetails.Persona> Personas { get; set; } = Personas;
+
   }
   
   public class Persona

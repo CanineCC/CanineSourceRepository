@@ -7,6 +7,7 @@ apis/DraftFeatureTaskApi.ts
 apis/FeatureApi.ts
 apis/FeatureDiagramApi.ts
 apis/FeatureTaskApi.ts
+apis/PersonaApi.ts
 apis/ServerApi.ts
 apis/SolutionApi.ts
 apis/SystemApi.ts
@@ -35,8 +36,11 @@ models/BpnWebApiContainer.ts
 models/CodeSnippet.ts
 models/CodeTask.ts
 models/CompileError.ts
+models/ComponentCosumedByPersonaBody.ts
+models/ComponentNoLongerConsumedByPersonaBody.ts
 models/ConnectionWaypoints.ts
-models/ContextDetails.ts
+models/ConsumeComponent.ts
+models/ContainerDetails.ts
 models/CreateContainerBody.ts
 models/CreateSolutionBody.ts
 models/CreateSystemBody.ts
@@ -51,6 +55,8 @@ models/FeatureStats.ts
 models/MapField.ts
 models/Persona.ts
 models/Persona2.ts
+models/Persona3.ts
+models/Persona4.ts
 models/Position.ts
 models/PositionUpdatedOnDraftFeatureBody.ts
 models/RecordDefinition.ts
@@ -58,6 +64,7 @@ models/ReleaseFeatureBody.ts
 models/RemovePersonaBody.ts
 models/RemoveTestCaseFromTask.ts
 models/ResetDraftFeatureBody.ts
+models/Scope.ts
 models/ServerHealth.ts
 models/Stats.ts
 models/SystemDetails.ts
@@ -66,6 +73,7 @@ models/TestCase.ts
 models/UpdateCodeOnTaskBody.ts
 models/UpdateDraftFeaturePurposeBody.ts
 models/UpdateEnvironmentsOnFeatureBody.ts
+models/UpdatePersonaInformationBody.ts
 models/UpdateRecordOnTaskBody.ts
 models/UpdateServiceDependencyBody.ts
 models/UpdateTaskPurposeFeatureBody.ts

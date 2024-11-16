@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ContextDetails } from './ContextDetails';
+import type { ContainerDetails } from './ContainerDetails';
 import {
-    ContextDetailsFromJSON,
-    ContextDetailsFromJSONTyped,
-    ContextDetailsToJSON,
-} from './ContextDetails';
+    ContainerDetailsFromJSON,
+    ContainerDetailsFromJSONTyped,
+    ContainerDetailsToJSON,
+} from './ContainerDetails';
 
 /**
  * 
@@ -58,10 +58,10 @@ export interface BpnSystem {
     lastUpdatedTimestamp: Date;
     /**
      * 
-     * @type {Array<ContextDetails>}
+     * @type {Array<ContainerDetails>}
      * @memberof BpnSystem
      */
-    containers: Array<ContextDetails>;
+    containers: Array<ContainerDetails>;
     /**
      * 
      * @type {string}
@@ -99,7 +99,7 @@ export function BpnSystemFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'description': json['description'],
         'createdTimestamp': (new Date(json['createdTimestamp'])),
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
-        'containers': ((json['containers'] as Array<any>).map(ContextDetailsFromJSON)),
+        'containers': ((json['containers'] as Array<any>).map(ContainerDetailsFromJSON)),
         'c4ContainerDiagramSvg': json['c4ContainerDiagramSvg'],
     };
 }
@@ -115,7 +115,7 @@ export function BpnSystemToJSON(value?: BpnSystem | null): any {
         'description': value['description'],
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
-        'containers': ((value['containers'] as Array<any>).map(ContextDetailsToJSON)),
+        'containers': ((value['containers'] as Array<any>).map(ContainerDetailsToJSON)),
         'c4ContainerDiagramSvg': value['c4ContainerDiagramSvg'],
     };
 }

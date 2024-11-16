@@ -2,6 +2,7 @@ using C4Sharp.Diagrams.Builders;
 using C4Sharp.Elements;
 using C4Sharp.Elements.Relationships;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
+using Weasel.Postgresql.Views;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 
@@ -33,13 +34,18 @@ public class C4ComponentDiagram : ComponentDiagram
          //include contains that communicates with features (via events? or direct calls?)
             List<Structure> structures = new List<Structure>();
             List<Component> components = new List<Component>();
-
+            
             var c4container = Container.None | (ContainerType.WebApplication, _container.Name.ToPascalCase(), _container.Name,
                 "C#, WebApi", _container.Description);
             structures.Add(c4container);
             
             foreach (var component in _components)
             {
+                foreach (var persona in  component.Personas)
+                {
+                    structures.Add(Person.None | Boundary.Internal  | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
+                }
+                
                 var newestVersion = component.Revisions.Last(); 
                 components.Add(new (newestVersion.Name.ToPascalCase(), newestVersion.Name, "C#", newestVersion.Objective));
             }
@@ -56,9 +62,27 @@ public class C4ComponentDiagram : ComponentDiagram
     protected override IEnumerable<Relationship> Relationships
     {
         get
-        {//TODO: relations between containers and services
-            //TODO: relations between containers (using events?)
-            return [];
+        {
+            //TODO: relations between containers and services
+            var relationships = new List<Relationship>();
+
+            foreach (var component in _components)
+            {
+                var newestVersion = component.Revisions.Last();
+                foreach (var persona in component.Personas)
+                {
+                    relationships.Add(this[persona.Name.ToPascalCase()] > this[_container.Name.ToPascalCase()] |
+                                      persona.RelationToComponent);
+                }
+                relationships.Add(this[_container.Name.ToPascalCase()] > this[newestVersion.Name.ToPascalCase()] |
+                                  (component.Personas.Count == 0 ? "unuseed" :  "calls"));
+            }
+            return relationships.ToArray();
+
+            //get
+            //{//TODO: relations between containers and services
+            //    //TODO: relations between containers (using events?)
+            //    return [];
             /*{
         this["Customer"] > this["WebApp"] | ("Uses", "HTTPS"),
         this["Customer"] > this["Spa"] | ("Uses", "HTTPS"),
