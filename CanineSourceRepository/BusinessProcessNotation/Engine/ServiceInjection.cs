@@ -53,19 +53,6 @@ public abstract class ServiceInjection
       }
       result = await task.Execute(input, this, assembly);
 
-/*      switch (task)
-      {
-        case CodeTask codeBlock:
-          result = await codeBlock.Execute(input, this, assembly);
-          break;
-        case ApiInputTask apiInputBlock://TODO: USER CONTEXT
-          result = await apiInputBlock.Execute(input, new UserContext("userId", "userName", ["Anonymous"], "ipaddress", true, "auth type", null), assembly);
-          break;
-        default:
-          EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
-          return new TaskResult(false, result);
-      }
-*/
       EngineEventsQueue.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, containerId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)

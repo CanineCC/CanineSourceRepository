@@ -30,12 +30,6 @@ public class RemovePersonaFeature : IFeature
     }
     public static async Task Execute(IDocumentSession session, string causationId, Guid personaId, CancellationToken ct)
     {
-        /*
-        var aggregate = await session.Events.AggregateStreamAsync<WebApiContainerAggregate>(containerId, token: ct);
-        if (aggregate == null) throw new Exception($"Container '{containerId}' was not found");// return new ValidationResponse(false, $"System '{systemId}' was not found", ResultCode.NotFound);
-        var systemAggregate = await session.Events.AggregateStreamAsync<SystemAggregate>(aggregate.SystemId, token: ct);
-        if (systemAggregate == null) throw new Exception($"System '{aggregate.SystemId}' was not found");// return new ValidationResponse(false, $"System '{systemId}' was not found", ResultCode.NotFound);
-*/
         await session.RegisterEventsOnBpnContext(ct, personaId, causationId, new PersonaRemoved( PersonaId: personaId));
     }
 }

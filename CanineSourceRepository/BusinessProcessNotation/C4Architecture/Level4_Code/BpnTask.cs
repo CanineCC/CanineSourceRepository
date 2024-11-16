@@ -292,55 +292,6 @@ public static class {GetTypeName()} {{
   
 }
 
-
-/*
-public class BpnConverter : JsonConverter<BpnTask>
-{
-  public override BpnTask Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-  {
-    using var jsonDoc = JsonDocument.ParseValue(ref reader);
-    var jsonObject = jsonDoc.RootElement;
-
-    // Assuming there is a "Type" property to differentiate between Bpn types
-    var typeProperty = jsonObject.GetProperty("Type").GetString();
-
-    return typeProperty switch
-    {
-      "CodeTask" => JsonSerializer.Deserialize<CodeTask>(jsonObject.GetRawText(), options)!,
-      "ApiInputTask" => JsonSerializer.Deserialize<ApiInputTask>(jsonObject.GetRawText(), options)!,
-      _ => throw new JsonException($"Unknown Bpn type: {typeProperty}")
-    };
-  }
-
-  public override void Write(Utf8JsonWriter writer, BpnTask value, JsonSerializerOptions options)
-  {
-    // Determine the actual type of the object
-    var type = value.GetType();
-    var typeName = type.Name;
-
-    // Write start of the object
-    writer.WriteStartObject();
-
-    // Write the type information
-    writer.WriteString("Type", typeName);
-
-    // Serialize the properties of the object manually
-    var typeProperties = type.GetProperties();
-    foreach (var property in typeProperties)
-    {
-      var propertyValue = property.GetValue(value);
-      if (propertyValue != null)
-      {
-        writer.WritePropertyName(property.Name);
-        JsonSerializer.Serialize(writer, propertyValue, property.PropertyType, options);
-      }
-    }
-
-    // Write end of the object
-    writer.WriteEndObject();
-  }
-}
-*/
 public record TestCase
 {
   //TODO::Role-base

@@ -8,13 +8,6 @@ public static class BpnEventStore
   public static async Task GenerateDefaultData(this IDocumentSession session, CancellationToken ct)
   {
     if (session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Any()) return;
-
-    /*var entryBlock = new BpnTask("Create user endpoint", ["Anonymous"]);
-    entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
-      new BpnTask.DataDefinition("Name", "string")
-      )) as ApiInputTask)!;
-    entryBlock.Input = "Api";*/
-
     var createUserBlock = new BpnTask("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Output",
@@ -78,7 +71,6 @@ public static class BpnEventStore
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: createUserBlock, ct);
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);
     await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: logTransition, ct);
-    //await ReleaseFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, user: "system", ct);
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
   {
@@ -203,13 +195,3 @@ public static class DocumentSessionExtension
 
   
 }
-
-/*
-public static class TypeExtensions
-{
-  // This extension method checks if a type is a record type
-  public static bool IsRecord(this Type type)
-  {
-    return type.GetMethod("<Clone>$") != null;
-  }
-}*/
