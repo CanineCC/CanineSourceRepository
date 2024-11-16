@@ -1,13 +1,11 @@
 /* tslint:disable */
 /* eslint-disable */
-export * from './AddApiTaskToDraftFeatureBody';
-export * from './AddCodeTaskToDraftFeatureBody';
 export * from './AddDraftFeatureBody';
 export * from './AddPersonaBody';
 export * from './AddRecordToTaskBody';
+export * from './AddTaskToDraftFeatureBody';
 export * from './AddTestCaseToTaskBody';
 export * from './AddTransitionToDraftFeatureBody';
-export * from './ApiInputTask';
 export * from './AssertDefinition';
 export * from './AssertOperation';
 export * from './BpnDraftFeature';
@@ -20,7 +18,6 @@ export * from './BpnTask';
 export * from './BpnTransition';
 export * from './BpnWebApiContainer';
 export * from './CodeSnippet';
-export * from './CodeTask';
 export * from './CompileError';
 export * from './ComponentCosumedByPersonaBody';
 export * from './ComponentNoLongerConsumedByPersonaBody';

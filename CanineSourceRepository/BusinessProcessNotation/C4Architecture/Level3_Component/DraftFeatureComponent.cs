@@ -12,7 +12,7 @@ public class DraftFeatureComponentAggregate
   public static void RegisterBpnEventStore(WebApplication app)
   {
     //MOVE TO FEATURE!
-    app.MapPost($"BpnEngine/v1/Task/VerifyCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/Task/VerifyCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] BpnTask codeTask, CancellationToken ct) =>
     {
       var res = codeTask.VerifyCode();
       if (res.success)
@@ -26,7 +26,7 @@ public class DraftFeatureComponentAggregate
 
 
     //MOVE TO FEATURE!
-    app.MapPost($"BpnEngine/v1/Task/GetSnippetsForCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] CodeTask codeTask, CancellationToken ct) =>
+    app.MapPost($"BpnEngine/v1/Task/GetSnippetsForCodeBlock", (HttpContext context, [FromServices] IDocumentSession session, [FromBody] BpnTask codeTask, CancellationToken ct) =>
     {
       var input = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Input);
       var output = codeTask.RecordTypes.FirstOrDefault(p => p.Name == codeTask.Output);
@@ -73,7 +73,7 @@ public class DraftFeatureComponentAggregate
   public ValidationResponse IsValid()
   {
     if (Tasks.Count == 0) return new ValidationResponse(false, "No nodes", ResultCode.BadRequest);
-    if (Tasks.First().GetType() != typeof(ApiInputTask)) return new ValidationResponse(false, $"First node can not be {Tasks.First().GetType()}", ResultCode.BadRequest);
+   // if (Tasks.First().GetType() != typeof(ApiInputTask)) return new ValidationResponse(false, $"First node can not be {Tasks.First().GetType()}", ResultCode.BadRequest);
     if (Transitions.Count == 0) return new ValidationResponse(false, "No connections", ResultCode.BadRequest);
     if (OrphanElements().Count > 0) return new ValidationResponse(false, "Orphan elements: " + string.Join(',', OrphanElements().Select(p => p.Name)), ResultCode.BadRequest);
 
@@ -156,7 +156,7 @@ public class DraftFeatureComponentAggregate
   }
   public void Apply(DraftFeatureComponentAggregate componentAggregate, CodeUpdatedOnTask @event)
   {
-    var task = (CodeTask)componentAggregate.Tasks.First(p => p.Id == @event.TaskId);
+    var task = componentAggregate.Tasks.First(p => p.Id == @event.TaskId);
     task.Code = @event.Code;
   }
   public void Apply(DraftFeatureComponentAggregate componentAggregate, ServiceDependencyUpdated @event)
@@ -303,7 +303,7 @@ public class DraftFeatureComponentProjection : SingleStreamProjection<DraftFeatu
     }
     public void Apply(BpnDraftFeature projection, CodeUpdatedOnTask @event)
     {
-      var task = (CodeTask)projection.Tasks.First(p => p.Id == @event.TaskId);
+      var task = projection.Tasks.First(p => p.Id == @event.TaskId);
       task.Code = @event.Code;
     }
     public void Apply(BpnDraftFeature projection, ServiceDependencyUpdated @event)

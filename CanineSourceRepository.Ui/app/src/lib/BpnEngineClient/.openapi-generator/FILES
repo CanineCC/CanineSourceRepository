@@ -14,14 +14,12 @@ apis/SystemApi.ts
 apis/SystemDiagramApi.ts
 apis/index.ts
 index.ts
-models/AddApiTaskToDraftFeatureBody.ts
-models/AddCodeTaskToDraftFeatureBody.ts
 models/AddDraftFeatureBody.ts
 models/AddPersonaBody.ts
 models/AddRecordToTaskBody.ts
+models/AddTaskToDraftFeatureBody.ts
 models/AddTestCaseToTaskBody.ts
 models/AddTransitionToDraftFeatureBody.ts
-models/ApiInputTask.ts
 models/AssertDefinition.ts
 models/AssertOperation.ts
 models/BpnDraftFeature.ts
@@ -34,7 +32,6 @@ models/BpnTask.ts
 models/BpnTransition.ts
 models/BpnWebApiContainer.ts
 models/CodeSnippet.ts
-models/CodeTask.ts
 models/CompileError.ts
 models/ComponentCosumedByPersonaBody.ts
 models/ComponentNoLongerConsumedByPersonaBody.ts

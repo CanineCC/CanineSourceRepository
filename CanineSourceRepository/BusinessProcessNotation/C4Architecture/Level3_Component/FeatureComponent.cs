@@ -103,6 +103,10 @@ public class FeatureComponentProjection : SingleStreamProjection<FeatureComponen
       sb.AppendLine();
       foreach (var node in tasks)
       {
+        sb.Append(node.ToCode(false));
+        sb.Append("\n\r");
+
+        /*
         switch (node)
         {
           case CodeTask codeBlock:
@@ -115,7 +119,7 @@ public class FeatureComponentProjection : SingleStreamProjection<FeatureComponen
             break;
           default:
             throw new InvalidOperationException("Unsupported node type.");
-        }
+        }*/
       }
       foreach (var connection in transitions)
       {

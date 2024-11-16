@@ -3,7 +3,7 @@
     import { onMount, onDestroy } from 'svelte';
     import Layout from '@/+layout.svelte';
     import { FeatureApi, ServerApi  } from 'BpnEngineClient/apis'; 
-	import type { BpnTask, BpnTransition, TaskStats, BpnFeatureDiagram, BpnFeatureRevision, BpnFeatureRevisionsStat, DurationClassification } from 'BpnEngineClient';
+	import type { BpnTask, BpnTransition, TaskStats, FeatureComponentDiagram, BpnFeatureRevision, BpnFeatureRevisionsStat, DurationClassification } from 'BpnEngineClient';
     import Graph from 'components/diagram/Graph.svelte';
     import TaskComponent from 'components/TaskComponent.svelte';
     import Accordion from 'components/Accordion.svelte';
@@ -24,7 +24,7 @@
     let feature : BpnFeatureRevision | null = null;
     let tasks : Array<BpnTask> = [];
     let transitions : Array<BpnTransition> = [];
-    let diagram : BpnFeatureDiagram | undefined;
+    let diagram : FeatureComponentDiagram | undefined;
     let stats : BpnFeatureRevisionsStat | undefined;
     let taskStats: Array<TaskStats> | undefined = undefined;
     let selectedTask : BpnTask |null = null;
@@ -54,7 +54,7 @@
         feature = await featureApi.getFeatureRevision({featureId: featureId, revision: version});
         tasks = feature.tasks??[];
         transitions = feature.transitions??[];
-        diagram = feature.diagram;
+        diagram = feature.componentDiagram;
 
         stats = await featureApi.getFeatureRevisionStats({featureId: featureId, revision: version });
         taskStats = stats.taskStats ?? [];

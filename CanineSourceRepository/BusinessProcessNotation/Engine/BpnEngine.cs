@@ -11,7 +11,7 @@ public static class BpnEngine
     Converters =
     {
       new JsonStringEnumConverter(),
-      new BpnConverter(),
+   //   new BpnConverter(),
       new EventLogJsonConverter()
     }
   };
@@ -63,39 +63,50 @@ public static class BpnEngine
     return session.Query<FeatureComponentProjection.BpnFeature>().ToList().SelectMany(feat => feat.Revisions.Select(p=> $"v{p.Revision}")).Distinct().ToArray();
   }
 
-  private static void AddEnpoint(WebApplication app, string name, BpnBpnWebApiContainerProjection.BpnWebApiContainer bpnWebApiContainer, BpnFeature feature, FeatureComponentProjection.BpnFeatureRevision revision, Assembly assembly)
+  private static void AddEnpoint(WebApplication app, string name,
+    BpnBpnWebApiContainerProjection.BpnWebApiContainer bpnWebApiContainer, BpnFeature feature,
+    BpnFeatureRevision revision, Assembly assembly)
   {
     var groupName = bpnWebApiContainer.Name.ToPascalCase();
 
     var startTask = revision.Tasks.First();
     var inputType = startTask.GetCompiledType(assembly);
-    app.MapPost(name, async Task<IResult> (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
-    {
-      object? input = null;
-      using (var reader = new StreamReader(context.Request.Body))
-      {
-        var body = await reader.ReadToEndAsync();
-        input = JsonSerializer.Deserialize(body, inputType)!;
-      }
+    app.MapPost(name,
+        async Task<IResult> (HttpContext context, [FromServices] IDocumentSession session, CancellationToken ct) =>
+        {
+//TODO:: Add real personas
+          var roleFromJwt = "test".ToPascalCase();
+          var hasAccess = bpnWebApiContainer.AllowAnonymous || 
+                          (bpnWebApiContainer.Personas
+                            .FirstOrDefault(persona => persona.Name.ToPascalCase() == roleFromJwt)?.Components
+                            .Contains(feature.Id) ??
+                          false);
 
-      try
-      {
-        await Run(session, ct, input, bpnWebApiContainer.Id, feature, revision, assembly, null, null);
-        return Results.Accepted();
-      }
-      catch (UnauthorizedAccessException)
-      {
-        return Results.Unauthorized();
-      }
-      catch (ArgumentException ex)
-      {
-        return Results.BadRequest(ex.Message);
-      }
-      catch (Exception)
-      {
-        return Results.InternalServerError();
-      }
-    }).WithName($"{bpnWebApiContainer.Name.ToPascalCase()}/{name}") // Set the operation ID to the feature's name
+          object? input = null;
+          using (var reader = new StreamReader(context.Request.Body))
+          {
+            var body = await reader.ReadToEndAsync();
+            input = JsonSerializer.Deserialize(body, inputType)!;
+          }
+
+          try
+          {
+            await Run(session, ct, input, bpnWebApiContainer.Id, feature, revision, assembly, null, null);
+            return Results.Accepted();
+          }
+          catch (UnauthorizedAccessException)
+          {
+            return Results.Unauthorized();
+          }
+          catch (ArgumentException ex)
+          {
+            return Results.BadRequest(ex.Message);
+          }
+          catch (Exception)
+          {
+            return Results.InternalServerError();
+          }
+        }).WithName($"{bpnWebApiContainer.Name.ToPascalCase()}/{name}") // Set the operation ID to the feature's name
       //.WithGroupName(groupName)
       .WithTags(groupName)
       .Produces(StatusCodes.Status202Accepted) // Specify return types

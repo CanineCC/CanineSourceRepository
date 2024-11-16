@@ -9,22 +9,22 @@ public static class BpnEventStore
   {
     if (session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Any()) return;
 
-    var entryBlock = new ApiInputTask("Create user endpoint", ["Anonymous"]);
+    /*var entryBlock = new BpnTask("Create user endpoint", ["Anonymous"]);
     entryBlock = (entryBlock.AddRecordType(new BpnTask.RecordDefinition("Api",
       new BpnTask.DataDefinition("Name", "string")
       )) as ApiInputTask)!;
-    entryBlock.Input = "Api";
+    entryBlock.Input = "Api";*/
 
-    var createUserBlock = new CodeTask("Create user logic");
+    var createUserBlock = new BpnTask("Create user logic");
     createUserBlock = (createUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Output",
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string")
-      )) as CodeTask)!;
+      )) as BpnTask)!;
     createUserBlock = (createUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Input",
       new BpnTask.DataDefinition("Name", "string")
-      )) as CodeTask)!;
+      )) as BpnTask)!;
     createUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
     createUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
     createUserBlock.Input = "Input";
@@ -35,12 +35,12 @@ public static class BpnEventStore
     return new Output(userId, input.Name/*, input.AccessScope*/);
     ";
 
-    var logUserBlock = new CodeTask("Log user");
+    var logUserBlock = new BpnTask("Log user");
     logUserBlock = (logUserBlock.AddRecordType(
       new BpnTask.RecordDefinition("Input",
       new BpnTask.DataDefinition("Id", "Guid"),
       new BpnTask.DataDefinition("Name", "string")
-      )) as CodeTask)!;
+      )) as BpnTask)!;
     logUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
     logUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
     logUserBlock.Input = "Input";
@@ -48,14 +48,6 @@ public static class BpnEventStore
     Console.WriteLine(input.Id.ToString() + input.Name);
     ";
 
-    var transition = new BpnTransition(
-      entryBlock.Id,
-      createUserBlock.Id,
-      "Call Accepted",
-      "input.Name != string.Empty",
-      new MapField("input.Name", "Name")//,//issue with lists and multiple fields of same type, but with different mappings
-                                   // new Map("input.Name ?? \"Anonymous\"", "AccessScope")
-      );
     var logTransition = new BpnTransition(
       createUserBlock.Id,
       logUserBlock.Id,
@@ -68,7 +60,7 @@ public static class BpnEventStore
     var causationId = "GenerateDefaultData";
 
     var solutionId =
-      await CreateSolutionFeature.Execute(session, causationId, "Hello world", "Simple scarfold solution", ct);
+      await CreateSolutionFeature.Execute(session, causationId, "Demo solution", "Simple scarfold solution", ct);
     var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
     
     var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
@@ -83,10 +75,8 @@ public static class BpnEventStore
                           ct: ct);
     await PersonaConsumeComponentFeature.Execute(session, causationId, personaId, featureId, "Calls api to create a user", ct);
 
-    await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: entryBlock, ct);
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: createUserBlock, ct);
     await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);
-    await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: transition, ct);
     await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: logTransition, ct);
     //await ReleaseFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, user: "system", ct);
   }

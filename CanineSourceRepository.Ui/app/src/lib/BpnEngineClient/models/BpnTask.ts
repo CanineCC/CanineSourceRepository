@@ -70,6 +70,12 @@ export interface BpnTask {
     output?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    code: string;
+    /**
+     * 
      * @type {Array<TestCase>}
      * @memberof BpnTask
      */
@@ -98,6 +104,18 @@ export interface BpnTask {
      * @memberof BpnTask
      */
     validDatatypes: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    recordsAsCode?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    methodSignatureAsCode?: string;
 }
 
 /**
@@ -107,6 +125,7 @@ export function instanceOfBpnTask(value: object): value is BpnTask {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
+    if (!('code' in value) || value['code'] === undefined) return false;
     if (!('testCases' in value) || value['testCases'] === undefined) return false;
     if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
     if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
@@ -131,11 +150,14 @@ export function BpnTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): B
         'behavioralGoal': json['behavioralGoal'],
         'input': json['input'] == null ? undefined : json['input'],
         'output': json['output'] == null ? undefined : json['output'],
+        'code': json['code'],
         'testCases': ((json['testCases'] as Array<any>).map(TestCaseFromJSON)),
         'serviceDependency': json['serviceDependency'],
         'namedConfiguration': json['namedConfiguration'],
         'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
         'validDatatypes': json['validDatatypes'],
+        'recordsAsCode': json['recordsAsCode'] == null ? undefined : json['recordsAsCode'],
+        'methodSignatureAsCode': json['methodSignatureAsCode'] == null ? undefined : json['methodSignatureAsCode'],
     };
 }
 
@@ -151,11 +173,14 @@ export function BpnTaskToJSON(value?: BpnTask | null): any {
         'behavioralGoal': value['behavioralGoal'],
         'input': value['input'],
         'output': value['output'],
+        'code': value['code'],
         'testCases': ((value['testCases'] as Array<any>).map(TestCaseToJSON)),
         'serviceDependency': value['serviceDependency'],
         'namedConfiguration': value['namedConfiguration'],
         'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
         'validDatatypes': value['validDatatypes'],
+        'recordsAsCode': value['recordsAsCode'],
+        'methodSignatureAsCode': value['methodSignatureAsCode'],
     };
 }
 

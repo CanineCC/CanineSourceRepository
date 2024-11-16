@@ -4,20 +4,17 @@ using System.ComponentModel.DataAnnotations;
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 
-public abstract class BpnTask(Guid Id, string Name)
+public class BpnTask(string name)
 {
-  public Guid Id { get; set; } = Id;
-  [Required]
-  public string Name { get; set; } = Name; //sanitize?
-
+  public Guid Id { get; set; } = Guid.CreateVersion7();
+  [Required] public string Name { get; set; } = name; //sanitize?
   /// <summary>
   /// Describe why this node exists from a business perspective. What is its value in the broader workflow
   /// </summary>
   /// <example>
   /// Validate that the user has a verified email address before allowing access to premium content.
   /// </example>
-  [Required]
-  public string BusinessPurpose { get; set; } = string.Empty;
+  [Required] public string BusinessPurpose { get; set; } = string.Empty;
 
   /// <summary>
   /// Focus on what behavior this node should enforce. It should emphasize the expected result or transformation without mentioning technical specifics. This will guide the LLM to create logic that fulfills the business behavior.
@@ -25,16 +22,13 @@ public abstract class BpnTask(Guid Id, string Name)
   /// <example>
   /// Ensure the email is verified and allow access to content.
   /// </example>
-  [Required]
-  public string BehavioralGoal { get; set; } = string.Empty;
-
+  [Required] public string BehavioralGoal { get; set; } = string.Empty;
   public string? Input { get; set; }
   public string? Output { get; set; }
-
-
-
-  [Required]
-  public List<TestCase> TestCases { get; set; } = [];
+  [Required] public string? Code { get; set; }
+  [Required] public List<TestCase> TestCases { get; set; } = [];
+  [Required] public string ServiceDependency { get; set; } = typeof(NoService).Name;
+  [Required] public string NamedConfiguration { get; set; } = string.Empty;
 
   public TestCase[] UpsertTestCase(TestCase record)
   {
@@ -127,21 +121,13 @@ public abstract class BpnTask(Guid Id, string Name)
     }
     return results;
   }
-
-
-  [Required]
-  public string ServiceDependency { get; set; } = typeof(NoService).Name;
-  [Required]
-  public string NamedConfiguration { get; set; } = string.Empty;
   public ServiceInjection GetServiceDependency()
   {
     return ServiceInjection.ServiceLocator(ServiceDependency, NamedConfiguration);
   }
 
-  [Required]
-  public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
-  [Required]
-  public string[] ValidDatatypes
+  [Required] public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
+  [Required] public string[] ValidDatatypes
   {
     get
     {
@@ -158,7 +144,6 @@ public abstract class BpnTask(Guid Id, string Name)
     return res ?? throw new Exception($"The type '{className + "+" + Input}' was not found in the assembly, check code generation for the type.");
   }
   public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(ToCode());
-  public abstract string ToCode(bool includeNamespace = true);
   public Task<dynamic?> Execute(dynamic input, object? serviceInjection, Assembly assembly) => Execute(JsonSerializer.Serialize(input), serviceInjection, assembly);
   public Task<dynamic?> Execute(string inputJson, object? serviceInjection, Assembly assembly)
   {
@@ -170,7 +155,6 @@ public abstract class BpnTask(Guid Id, string Name)
     inputJson,
     serviceInjection == null ? [] : [serviceInjection]);
   }
-
   public (bool IsOk, List<string> MissingFields) VerifyInputData(dynamic input, Assembly assembly) => VerifyInputData(JsonSerializer.Serialize(input), assembly);
   public (bool IsOk, List<string> MissingFields) VerifyInputData(string inputJson, Assembly assembly)
   {
@@ -209,7 +193,6 @@ public abstract class BpnTask(Guid Id, string Name)
 
     return this;
   }
-
   public BpnTask RemoveRecordType(RecordDefinition record)
   {
     var name = record.Name.SanitizeVariableName().ToPascalCase();
@@ -242,15 +225,75 @@ public abstract class BpnTask(Guid Id, string Name)
       return $"public record {Name} ({fields});";
     }
   }
-
   internal string GetTypeName()
   {
     return GetType().Name + "_" + Id.ToString("N");
   }
+  
+  public string RecordsAsCode
+  {
+    get
+    {
+      return string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
+    }
+  }
+  public string MethodSignatureAsCode
+  {
+    get
+    {
+      return Output == null ?
+        $"public static async Task Execute({Input} input, {ServiceDependency} service)" :
+        $"public static async Task<{Output}> Execute({Input} input, {ServiceDependency} service) ";
+    }
+  }
+
+  public string ToCode(bool includeNamespace = true)
+  {
+    if (Code == null) return "";
+    var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
+    var usingAndNamespace = includeNamespace ? @$"
+using System; 
+using System.Threading.Tasks; 
+using System.Linq; 
+using CanineSourceRepository.BusinessProcessNotation.Engine;
+namespace {BpnEngine.CodeNamespace};" : string.Empty;
+    return @$"{usingAndNamespace}
+
+/* 
+<Name>{Name}</Name>
+<Purpose>{BusinessPurpose}</Purpose>
+<Goal>{BehavioralGoal}</Goal>
+*/
+public static class {GetTypeName()} {{
+  {RecordsAsCode}
+  {MethodSignatureAsCode} {{
+    {Code}
+  }}
+}}
+      ";
+  }
+
+  private int CalcCodeOffset()
+  {
+    if (Code == null) return 0;
+
+    var fullCode = ToCode();
+    int snippetStartIndex = fullCode.IndexOf(Code);
+
+    if (snippetStartIndex == -1) return 0;
+
+    string beforeSnippet = fullCode[..snippetStartIndex];
+    int lineNumber = beforeSnippet.Split("\r\n").Length - 1; //, StringSplitOptions.RemoveEmptyEntries
+    return lineNumber;
+  }
+
+
+  public (DynamicCompiler.CompileError[] errors, bool success) VerifyCode() => DynamicCompiler.VerifyCode(ToCode(), CalcCodeOffset());
+  
 }
 
 
-
+/*
 public class BpnConverter : JsonConverter<BpnTask>
 {
   public override BpnTask Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -296,4 +339,57 @@ public class BpnConverter : JsonConverter<BpnTask>
     // Write end of the object
     writer.WriteEndObject();
   }
+}
+*/
+public record TestCase
+{
+  //TODO::Role-base
+  //admin: ["nameOfFeature". "nameOfAnotherFeature"] + method hasPermission
+  //ex: "GetUserById" or "GetUserById:[id]" 
+  //setup create role + check feature
+  
+  //TODO: USE SNAPSHOTTING
+  //https://youtu.be/JG4zt9CnIl4
+  
+  [Required]
+  public Guid Id { get; set; }
+  [Required]
+  public string Name { get; set; }
+  [Required]
+  public string Input { get; set; }
+  [Required]
+  public AssertDefinition[] Asserts { get; set; }
+  //vs. expected output (ex. json)
+  //variable from input, expected in output? (aka dynamiske værdier) -- f.eks. NewGuid() inde i metoden 
+  //hvad med stream og byte[] ... store data?!
+}
+public record AssertDefinition
+{
+  [Required]  public string Field { get; set; }
+  [Required]public AssertOperation Operation { get; set; }
+  [Required]public string? ExpectedValue { get; set; } 
+}
+
+public record TestResult(string Name, bool Success, string Message = "");
+public enum AssertOperation
+{
+  True,//bool
+  False,//bool
+
+  Equal,//ALL
+  NotEqual,//ALL
+  Empty,//also null     //ALL
+  NotEmpty,//also null  //ALL
+
+  StartWith,//string
+  DoesNotStartWith,//string
+  EndWith,//string
+  DoesNotEndWith,//string
+  Contains,//string
+  DoesNotContain,//string
+  MatchRegEx,//string
+  DoesNotMatchRegEx,//string
+
+  GreaterThan,//long, decimal, date time offset, date only, time only
+  LessThan//long, decimal, date time offset, date only, time only
 }

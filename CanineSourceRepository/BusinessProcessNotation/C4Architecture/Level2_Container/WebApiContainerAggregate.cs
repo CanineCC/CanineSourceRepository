@@ -332,7 +332,7 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     [Required] public string SystemName { get; set; } = "";
     [Required] public string Name { get; set; } = "";
     [Required] public string Description { get; set; } = "";
-
+    [Required] public bool AllowAnonymous { get; set; } = true;//TODO: Default to FALSE when roles are in place
     [Required] public string C4ComponentDiagramSvg { get; set; } = "<svg/>";
     [Required] public DateTimeOffset LastUpdatedTimestamp { get; set; }
     [Required] public DateTimeOffset CreatedTimestamp { get; set; }

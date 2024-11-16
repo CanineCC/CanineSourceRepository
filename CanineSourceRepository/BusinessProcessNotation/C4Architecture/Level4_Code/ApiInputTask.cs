@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations;
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 //TODO: Move to container / simplify task to be just code-tasks (and maybe manual-tasks) 
-public class ApiInputTask(string Name, string[] AccessScopes) : BpnTask(Guid.CreateVersion7(), Name)
+public class ApiInputTask_REMOVEME(string Name, string[] AccessScopes) : BpnTask(Name)
 {
   [Required]
   public string[] AccessScopes { get; set; } = AccessScopes;
-  public override string ToCode(bool includeNamespace = true)
+  public string ToCode(bool includeNamespace = true)
   {
     var records = string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
     var usingAndNamespace = includeNamespace ? @$"using System; 

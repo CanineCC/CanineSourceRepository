@@ -51,8 +51,9 @@ public abstract class ServiceInjection
         EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent($"Missing input fields for '{task.Name}' ({task.Id}): ", string.Join(",", missingFields)), stopwatch.Elapsed.TotalMilliseconds));
         throw new ArgumentException($"Missing input fields: {string.Join(",", missingFields)}");
       }
+      result = await task.Execute(input, this, assembly);
 
-      switch (task)
+/*      switch (task)
       {
         case CodeTask codeBlock:
           result = await codeBlock.Execute(input, this, assembly);
@@ -64,7 +65,7 @@ public abstract class ServiceInjection
           EngineEventsQueue.EnqueueEngineEvents(new BpnTaskFailed(correlationId, containerId, featureId, featureVersion, task.Id, new ErrorEvent($"Execution for tasktype '{task.GetTypeName()}'is not implemented", string.Empty), stopwatch.Elapsed.TotalMilliseconds));
           return new TaskResult(false, result);
       }
-
+*/
       EngineEventsQueue.EnqueueEngineEvents(new BpnTaskSucceeded(correlationId, containerId, featureId, featureVersion, task.Id, stopwatch.Elapsed.TotalMilliseconds));
     }
     catch (Exception ex)

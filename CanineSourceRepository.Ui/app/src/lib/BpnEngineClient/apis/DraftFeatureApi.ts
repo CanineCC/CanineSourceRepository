@@ -15,33 +15,30 @@
 
 import * as runtime from '../runtime';
 import type {
-  AddApiTaskToDraftFeatureBody,
-  AddCodeTaskToDraftFeatureBody,
   AddDraftFeatureBody,
+  AddTaskToDraftFeatureBody,
   AddTransitionToDraftFeatureBody,
   BpnDraftFeature,
+  BpnTask,
   CodeSnippet,
-  CodeTask,
   CompileError,
   ReleaseFeatureBody,
   ResetDraftFeatureBody,
   UpdateDraftFeaturePurposeBody,
 } from '../models/index';
 import {
-    AddApiTaskToDraftFeatureBodyFromJSON,
-    AddApiTaskToDraftFeatureBodyToJSON,
-    AddCodeTaskToDraftFeatureBodyFromJSON,
-    AddCodeTaskToDraftFeatureBodyToJSON,
     AddDraftFeatureBodyFromJSON,
     AddDraftFeatureBodyToJSON,
+    AddTaskToDraftFeatureBodyFromJSON,
+    AddTaskToDraftFeatureBodyToJSON,
     AddTransitionToDraftFeatureBodyFromJSON,
     AddTransitionToDraftFeatureBodyToJSON,
     BpnDraftFeatureFromJSON,
     BpnDraftFeatureToJSON,
+    BpnTaskFromJSON,
+    BpnTaskToJSON,
     CodeSnippetFromJSON,
     CodeSnippetToJSON,
-    CodeTaskFromJSON,
-    CodeTaskToJSON,
     CompileErrorFromJSON,
     CompileErrorToJSON,
     ReleaseFeatureBodyFromJSON,
@@ -52,16 +49,12 @@ import {
     UpdateDraftFeaturePurposeBodyToJSON,
 } from '../models/index';
 
-export interface AddApiTaskToDraftFeatureRequest {
-    addApiTaskToDraftFeatureBody: AddApiTaskToDraftFeatureBody;
-}
-
-export interface AddCodeTaskToDraftFeatureRequest {
-    addCodeTaskToDraftFeatureBody: AddCodeTaskToDraftFeatureBody;
-}
-
 export interface AddDraftFeatureRequest {
     addDraftFeatureBody: AddDraftFeatureBody;
+}
+
+export interface AddTaskToDraftFeatureRequest {
+    addTaskToDraftFeatureBody: AddTaskToDraftFeatureBody;
 }
 
 export interface AddTransitionToDraftFeatureRequest {
@@ -73,7 +66,7 @@ export interface GetDraftFeatureRequest {
 }
 
 export interface GetSnippetsForCodeBlockRequest {
-    codeTask: CodeTask;
+    bpnTask: BpnTask;
 }
 
 export interface ReleaseFeatureRequest {
@@ -100,79 +93,13 @@ export interface UpdateDraftFeaturePurposeRequest {
 }
 
 export interface VerifyCodeBlockRequest {
-    codeTask: CodeTask;
+    bpnTask: BpnTask;
 }
 
 /**
  * 
  */
 export class DraftFeatureApi extends runtime.BaseAPI {
-
-    /**
-     */
-    async addApiTaskToDraftFeatureRaw(requestParameters: AddApiTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['addApiTaskToDraftFeatureBody'] == null) {
-            throw new runtime.RequiredError(
-                'addApiTaskToDraftFeatureBody',
-                'Required parameter "addApiTaskToDraftFeatureBody" was null or undefined when calling addApiTaskToDraftFeature().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/BpnEngine/v1/DraftFeature/AddApiTask`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: AddApiTaskToDraftFeatureBodyToJSON(requestParameters['addApiTaskToDraftFeatureBody']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async addApiTaskToDraftFeature(requestParameters: AddApiTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addApiTaskToDraftFeatureRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     */
-    async addCodeTaskToDraftFeatureRaw(requestParameters: AddCodeTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['addCodeTaskToDraftFeatureBody'] == null) {
-            throw new runtime.RequiredError(
-                'addCodeTaskToDraftFeatureBody',
-                'Required parameter "addCodeTaskToDraftFeatureBody" was null or undefined when calling addCodeTaskToDraftFeature().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: `/BpnEngine/v1/DraftFeature/AddCodeTask`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: AddCodeTaskToDraftFeatureBodyToJSON(requestParameters['addCodeTaskToDraftFeatureBody']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     */
-    async addCodeTaskToDraftFeature(requestParameters: AddCodeTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addCodeTaskToDraftFeatureRaw(requestParameters, initOverrides);
-    }
 
     /**
      */
@@ -205,6 +132,39 @@ export class DraftFeatureApi extends runtime.BaseAPI {
      */
     async addDraftFeature(requestParameters: AddDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addDraftFeatureRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     */
+    async addTaskToDraftFeatureRaw(requestParameters: AddTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['addTaskToDraftFeatureBody'] == null) {
+            throw new runtime.RequiredError(
+                'addTaskToDraftFeatureBody',
+                'Required parameter "addTaskToDraftFeatureBody" was null or undefined when calling addTaskToDraftFeature().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/BpnEngine/v1/DraftFeature/AddTask`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddTaskToDraftFeatureBodyToJSON(requestParameters['addTaskToDraftFeatureBody']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     */
+    async addTaskToDraftFeature(requestParameters: AddTaskToDraftFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addTaskToDraftFeatureRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -274,10 +234,10 @@ export class DraftFeatureApi extends runtime.BaseAPI {
     /**
      */
     async getSnippetsForCodeBlockRaw(requestParameters: GetSnippetsForCodeBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<CodeSnippet>>> {
-        if (requestParameters['codeTask'] == null) {
+        if (requestParameters['bpnTask'] == null) {
             throw new runtime.RequiredError(
-                'codeTask',
-                'Required parameter "codeTask" was null or undefined when calling getSnippetsForCodeBlock().'
+                'bpnTask',
+                'Required parameter "bpnTask" was null or undefined when calling getSnippetsForCodeBlock().'
             );
         }
 
@@ -292,7 +252,7 @@ export class DraftFeatureApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CodeTaskToJSON(requestParameters['codeTask']),
+            body: BpnTaskToJSON(requestParameters['bpnTask']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(CodeSnippetFromJSON));
@@ -488,10 +448,10 @@ export class DraftFeatureApi extends runtime.BaseAPI {
     /**
      */
     async verifyCodeBlockRaw(requestParameters: VerifyCodeBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['codeTask'] == null) {
+        if (requestParameters['bpnTask'] == null) {
             throw new runtime.RequiredError(
-                'codeTask',
-                'Required parameter "codeTask" was null or undefined when calling verifyCodeBlock().'
+                'bpnTask',
+                'Required parameter "bpnTask" was null or undefined when calling verifyCodeBlock().'
             );
         }
 
@@ -506,7 +466,7 @@ export class DraftFeatureApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: CodeTaskToJSON(requestParameters['codeTask']),
+            body: BpnTaskToJSON(requestParameters['bpnTask']),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

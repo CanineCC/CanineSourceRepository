@@ -1,7 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
-
-namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
+﻿namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 
 /// <summary>
 /// Visual representation of the BpnFeature, annotations for position on UI

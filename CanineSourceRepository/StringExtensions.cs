@@ -51,8 +51,6 @@ public static class StringExtensions
 
 public static partial class VariableRegex
 {
-  [GeneratedRegex(@"[^a-zA-Z0-9_]")]
-  public static partial Regex SanitizeVariableNameRegex();
-  [GeneratedRegex(@"[^a-zA-Z0-9]+")]
-  public static partial Regex WordsRegex();
+  [GeneratedRegex(@"[^a-zA-Z0-9_]")] public static partial Regex SanitizeVariableNameRegex();
+  [GeneratedRegex(@"[^a-zA-Z0-9]+")] public static partial Regex WordsRegex();
 }

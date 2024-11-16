@@ -123,7 +123,7 @@
                     <div class="svgWrapper">
                         <Graph
                                 tasks={c4level4.tasks??[]}
-                                diagram={c4level4.diagram}
+                                diagram={c4level4.componentDiagram}
                                 featureId={feature.id}
                                 readonly={true}
                                 showDownload={false}

@@ -5,7 +5,7 @@
     import TaskComponent from 'components/TaskComponent.svelte';
     import Accordion from 'components/Accordion.svelte';
     import { DraftFeatureApi  } from 'BpnEngineClient/apis';
-	import { type BpnTask, type BpnFeatureDiagram, type BpnDraftFeature } from 'BpnEngineClient';
+	import { type BpnTask, type FeatureComponentDiagram, type BpnDraftFeature } from 'BpnEngineClient';
     import Graph from 'components/diagram/Graph.svelte';
     import {  onEntityUpdate, offEntityUpdate, joinEntityView,leaveEntityView } from 'signalRService'
     
@@ -17,7 +17,7 @@
     let feature : BpnDraftFeature | null = null;
     let tasks : Array<BpnTask> =[];
 //    let transitions : Array<BpnTransition> =[];
-    let diagram : BpnFeatureDiagram | undefined = undefined;
+    let diagram : FeatureComponentDiagram | undefined = undefined;
     let selectedTask : BpnTask |null = null;
 
     const callback = (name: string, id: string, message: string) => {
@@ -42,7 +42,7 @@
         feature = await draftFeatureApi.getDraftFeature({featureId: featureId});
         tasks = feature.tasks;
       //  transitions = feature.transitions;
-        diagram = feature.diagram;
+        diagram = feature.componentDiagram;
         if (selectedTask)
         {
             selectedTask = tasks.find((p) => p.id === selectedTask!.id) ?? null;
@@ -72,7 +72,7 @@
          }});
     }
     async function addTask() {
-        await draftFeatureApi.addCodeTaskToDraftFeature({ addCodeTaskToDraftFeatureBody: {
+        await draftFeatureApi.addTaskToDraftFeature({ addTaskToDraftFeatureBody: {
             featureId: featureId,
             task: {
                 name: "<task>",
