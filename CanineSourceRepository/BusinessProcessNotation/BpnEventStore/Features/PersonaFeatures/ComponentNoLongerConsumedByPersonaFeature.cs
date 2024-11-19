@@ -41,6 +41,6 @@ public class ComponentNoLongerConsumedByPersonaFeature : IFeature
             SolutionId: systemAggregate.SolutionId,
             ComponentId: componentId
             );
-        await session.RegisterEventsOnBpnDraftFeature(ct, personaId, causationId, @event);
+        await session.RegisterEventsOnPersona(ct, personaId, causationId, @event);
     }
 }

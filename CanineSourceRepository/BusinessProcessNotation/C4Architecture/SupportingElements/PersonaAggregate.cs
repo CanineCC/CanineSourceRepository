@@ -13,7 +13,7 @@ public class PersonaAggregate
         aggregate.Scope = @event.Scope;
     }
     
-    public record RelationToComponent(Guid ComponentId, string Description);
+    //public record RelationToComponent(Guid ComponentId, string Description);
     [Required] public Guid Id { get; internal set; } 
     [Required] public string Name { get; internal set; } 
     [Required] public string Description { get; internal set; } 

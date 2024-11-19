@@ -46,6 +46,6 @@ public class PersonaConsumeComponentFeature : IFeature
             Name: personaAggregate.Name,
             Description: personaAggregate.Description,
             ConsumeText: ConsumeDescription);
-        await session.RegisterEventsOnBpnDraftFeature(ct, personaId, causationId, @event);
+        await session.RegisterEventsOnPersona(ct, personaId, causationId, @event);
     }
 }

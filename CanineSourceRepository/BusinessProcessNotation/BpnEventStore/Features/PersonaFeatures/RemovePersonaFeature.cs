@@ -30,6 +30,6 @@ public class RemovePersonaFeature : IFeature
     }
     public static async Task Execute(IDocumentSession session, string causationId, Guid personaId, CancellationToken ct)
     {
-        await session.RegisterEventsOnBpnContext(ct, personaId, causationId, new PersonaRemoved( PersonaId: personaId));
+        await session.RegisterEventsOnPersona(ct, personaId, causationId, new PersonaRemoved( PersonaId: personaId));
     }
 }

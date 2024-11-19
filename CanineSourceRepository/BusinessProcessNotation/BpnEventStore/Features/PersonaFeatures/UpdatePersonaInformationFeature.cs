@@ -34,6 +34,6 @@ public class UpdatePersonaInformationFeature : IFeature
       Name: name,
       Description: description,
       Scope: scope);
-    await session.RegisterEventsOnBpnDraftFeature(ct, personaId, causationId, @event);
+    await session.RegisterEventsOnPersona(ct, personaId, causationId, @event);
   }
 }

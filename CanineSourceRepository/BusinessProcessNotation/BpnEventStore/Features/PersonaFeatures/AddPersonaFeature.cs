@@ -35,7 +35,7 @@ public class AddPersonaFeature : IFeature
       Name: name,
       Description: description,
       Scope: scope);
-    await session.RegisterEventsOnBpnDraftFeature(ct, id, causationId, @event);
+    await session.RegisterEventsOnPersona(ct, id, causationId, @event);
 
     return id;
   }

@@ -27,8 +27,8 @@ public class BpnTask(string name)
   public string? Output { get; set; }
   [Required] public string? Code { get; set; }
   [Required] public List<TestCase> TestCases { get; set; } = [];
-  [Required] public string ServiceDependency { get; set; } = typeof(NoService).Name;
-  [Required] public string NamedConfiguration { get; set; } = string.Empty;
+  [Required] public string ServiceDependency { get; set; } = typeof(NoService).Name;//id?
+  [Required] public string NamedConfiguration { get; set; } = string.Empty;//id?
 
   public TestCase[] UpsertTestCase(TestCase record)
   {

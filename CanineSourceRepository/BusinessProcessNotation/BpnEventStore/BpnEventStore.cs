@@ -192,6 +192,38 @@ public static class DocumentSessionExtension
             ct);
     await session.SaveChangesAsync();
   }
+  public static async Task RegisterEventsOnPersona(
+    this IDocumentSession session,
+    CancellationToken ct,
+    Guid id,
+    string causationId,
+    params object[] @events)
+  {
+    session.CorrelationId = id.ToString("N");
+    session.CausationId = causationId;
 
+    await session.Events.WriteToAggregate<PersonaAggregate>(
+      id,
+      stream => stream.AppendMany(@events),
+      ct);
+    await session.SaveChangesAsync();
+  }
+
+  public static async Task RegisterEventsOnNamedConfiguration(
+    this IDocumentSession session,
+    CancellationToken ct,
+    Guid id,
+    string causationId,
+    params object[] @events)
+  {
+    session.CorrelationId = id.ToString("N");
+    session.CausationId = causationId;
+
+    await session.Events.WriteToAggregate<NamedConfigurationAggregate>(
+      id,
+      stream => stream.AppendMany(@events),
+      ct);
+    await session.SaveChangesAsync();
+  }
   
 }
