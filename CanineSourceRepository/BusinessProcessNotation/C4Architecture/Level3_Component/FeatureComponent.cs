@@ -4,6 +4,7 @@ using Marten.Events.Projections;
 using Microsoft.Net.Http.Headers;
 using System.ComponentModel.DataAnnotations;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 public enum Environment { Development, Testing, Staging, Production };

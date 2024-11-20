@@ -2,17 +2,17 @@ using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.Name
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.SupportingElements;
 
-public class NamedConfigurationAggregate(Guid id, Guid systemId, Guid serviceTypeId, string name, string description, Scope scope, Dictionary<string,string> configuration)
+public class NamedConfigurationAggregate
 {
-    [Required] public Guid Id { get; internal set; } = id;
-    [Required] public Guid SystemId { get; internal set; } = systemId;
-    [Required] public Guid ServiceTypeId { get; internal set; } = serviceTypeId;
-    [Required] public string Name { get; internal set; } = name;
-    [Required] public string Description { get; internal set; } = description;
-    [Required] public Scope Scope { get; internal set; } = scope;
-    [Required] public Dictionary<string,string> Configuration { get; internal set; } = configuration;
-    
-    
+    [Required] public Guid Id { get; internal set; } 
+    [Required] public Guid SystemId { get; internal set; }
+    [Required] public Guid ServiceTypeId { get; internal set; }
+    [Required] public string Name { get; internal set; }
+    [Required] public string Description { get; internal set; }
+    [Required] public Scope Scope { get; internal set; } 
+    [Required] public Dictionary<string,string> Configuration { get; internal set; } 
+
+
     public void Apply(
         NamedConfigurationAggregate aggregate,
         AddNamedConfigurationFeature.NamedConfigurationAdded @event
@@ -30,18 +30,58 @@ public class NamedConfigurationAggregate(Guid id, Guid systemId, Guid serviceTyp
     //TODO: Create an SQL configuration in default data
     //Help for code (tables+columns in db, resources/endpoints in rest, etc.) <--Maybe call/scan and provide it?
     
-    //IMAP: ServerAddress,Port,SecurityType SSL/TLS | STARTTLS, AuthenticationMethod Password | OAuth2, Username, Password
-    //SMTP: ServerAddress,Port,SecurityType SSL/TLS | STARTTLS, AuthenticationMethod Password | OAuth2, Username, Password
-    //POP3: ServerAddress,Port,SecurityType SSL/TLS | STARTTLS, AuthenticationMethod Password | OAuth2, Username, Password
-    //SQL: Hostname, Port, Databasename, Username, password
+    
+    
+
     //--> Tabels ?
     //REST: BaseUrl, Authentication APIKey | OAuth | Basic, Headers
     //--> Endpoints?
-    
-    
 }
 
-//TODO Projection...
-//AddNamedConfigurationFeature.NamedConfigurationAdded
-//RemoveNamedConfigurationFeature.NamedConfigurationRemoved
-//UpdateNamedConfigurationFeature.NamedConfigurationUpdated
+
+public class NamedConfigurationProjection : SingleStreamProjection<NamedConfigurationProjection.NamedConfiguration>
+{
+    public static void RegisterBpnEventStore(WebApplication app)
+    {
+        app.MapGet($"BpnEngine/v1/NamedConfiguration/All", async (HttpContext context, [FromServices] IQuerySession session, CancellationToken ct) =>
+            {
+                var bpnContexts = await session.Query<NamedConfiguration>().ToListAsync(ct);
+                return Results.Ok(bpnContexts);
+            }).WithName("GetAllNamedConfigurations")
+            .Produces(StatusCodes.Status200OK, typeof(List<NamedConfiguration>))
+            .WithTags("NamedConfiguration");
+    }
+    public static void Apply(NamedConfiguration view, IEvent<RemoveNamedConfigurationFeature.NamedConfigurationRemoved> @event)
+    {
+        //TODO
+    }
+    public static void Apply(NamedConfiguration view, IEvent<UpdateNamedConfigurationFeature.NamedConfigurationUpdated> @event)
+    {
+        view.Name = @event.Data.Name;
+        view.Description = @event.Data.Description;
+        view.Scope = @event.Data.Scope;
+        view.Configuration = @event.Data.Configuration;
+    }
+
+    public static void Apply(NamedConfiguration view, IEvent<AddNamedConfigurationFeature.NamedConfigurationAdded> @event)
+    {
+        view.Id = @event.Data.NamedConfigurationId;
+        view.SystemId = @event.Data.SystemId;
+        view.ServiceType = ServiceType.ServiceTypes.First(p=>p.Id == @event.Data.ServiceTypeId);
+        view.Name = @event.Data.Name;
+        view.Description = @event.Data.Description;
+        view.Scope = @event.Data.Scope;
+        view.Configuration = @event.Data.Configuration;
+    }
+    public class NamedConfiguration
+    {
+        [Required] public Guid Id { get; set; }
+        [Required] public Guid SystemId { get; set; }
+        [Required] public ServiceType ServiceType { get; set; }
+        [Required] public string Name { get; set; }
+        [Required] public string Description { get; set; }
+        [Required] public Scope Scope { get; set; }
+        [Required] public Dictionary<string,string> Configuration { get; set; }
+    }
+  
+}

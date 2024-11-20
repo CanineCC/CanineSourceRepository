@@ -1,4 +1,7 @@
-﻿using Marten.Events.Projections;
+﻿using CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.NamedConfigurationFeatures;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
+using Marten.Events.Projections;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -8,68 +11,95 @@ public static class BpnEventStore
   public static async Task GenerateDefaultData(this IDocumentSession session, CancellationToken ct)
   {
     if (session.Query<BpnBpnWebApiContainerProjection.BpnWebApiContainer>().Any()) return;
-    var createUserBlock = new BpnTask("Create user logic");
-    createUserBlock = (createUserBlock.AddRecordType(
-      new BpnTask.RecordDefinition("Output",
-      new BpnTask.DataDefinition("Id", "Guid"),
-      new BpnTask.DataDefinition("Name", "string")
-      )) as BpnTask)!;
-    createUserBlock = (createUserBlock.AddRecordType(
-      new BpnTask.RecordDefinition("Input",
-      new BpnTask.DataDefinition("Name", "string")
-      )) as BpnTask)!;
-    createUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
-    createUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
-    createUserBlock.Input = "Input";
-    createUserBlock.Output = "Output";
-    createUserBlock.Code = @$"
+    
+    
+
+    var causationId = "GenerateDefaultData";
+    var solutionId =
+      await CreateSolutionFeature.Execute(session, causationId, "Demo solution", "Simple scarfold solution", ct);
+    var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
+
+    var namedConfigurationId = await AddNamedConfigurationFeature.Execute(
+      session, 
+      causationId, 
+      systemId,
+      ServiceType.ServiceTypes.First(p => p.InjectedComponent.GetType() == typeof(PostgreSqlService)).Id, 
+      "Customer Database", 
+      "Internal customer db",
+      Scope.Internal, 
+      new Dictionary<string, string>()
+      {
+        { "Host", "localhost" },
+        { "Port", "5432" },
+        { "Database", "customerdb" },
+        { "Username", "admin" },
+        { "Password", "todo-encrypted-todo" }
+      }, ct);
+    var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
+    var featureId = await AddDraftFeatureFeature.Execute(
+      session,
+      causationId: causationId,
+      containerId: containerId,
+      name: "Create user",
+      objective: "Enable users to register, validate their email, and gain access to premium content.",
+      flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",
+      ct: ct);
+    
+    
+    
+    var createUserBlock = new AddTaskToDraftFeatureFeature.BpnTask()
+    {
+      BusinessPurpose =
+        "Validate that the user has a verified email address before allowing access to premium content.",
+      BehavioralGoal =  "Ensure the email is verified and allow access to content.",
+      Input = "Input",
+      Output = "Output",
+      Code = @$"
     var userId = Guid.CreateVersion7();
     //Add the user to the user database
     return new Output(userId, input.Name/*, input.AccessScope*/);
-    ";
+    ",
+      NamedConfigurationId = namedConfigurationId,
+      Name = "Create user logic",
+      RecordTypes = [
+        new RecordDefinition("Input",  new DataDefinition("Name", "string")),
+        new RecordDefinition("Output", new DataDefinition("Id", "Guid"), new DataDefinition("Name", "string"))
+      ]
+    };      
+    var logUserBlock = new AddTaskToDraftFeatureFeature.BpnTask()
+    {
+      BusinessPurpose =
+        "Store the user in the database for later lookup.",
+      BehavioralGoal = "Insert the user into the customer database",
+      Input = "Input",
+      Code = $"Console.WriteLine(input.Id.ToString() + input.Name);",
+      NamedConfigurationId = null,
+      Name = "Store user in db",
+      RecordTypes = [
+        new RecordDefinition("Input", new DataDefinition("Id", "Guid"), new DataDefinition("Name", "string"))
+      ]
+    };
 
-    var logUserBlock = new BpnTask("Log user");
-    logUserBlock = (logUserBlock.AddRecordType(
-      new BpnTask.RecordDefinition("Input",
-      new BpnTask.DataDefinition("Id", "Guid"),
-      new BpnTask.DataDefinition("Name", "string")
-      )) as BpnTask)!;
-    logUserBlock.BusinessPurpose = "Validate that the user has a verified email address before allowing access to premium content.";
-    logUserBlock.BehavioralGoal = "Ensure the email is verified and allow access to content.";
-    logUserBlock.Input = "Input";
-    logUserBlock.Code = @$"
-    Console.WriteLine(input.Id.ToString() + input.Name);
-    ";
+    var createUserId =await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: createUserBlock, ct);
+    var logUserId = await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);
 
     var logTransition = new BpnTransition(
-      createUserBlock.Id,
-      logUserBlock.Id,
+      createUserId,
+      logUserId,
       "Log info",
       "true",
       new MapField("output.Name", "Name"),//issue with lists and multiple fields of same type, but with different mappings
       new MapField("output.Id", "Id")
       );
 
-    var causationId = "GenerateDefaultData";
-
-    var solutionId =
-      await CreateSolutionFeature.Execute(session, causationId, "Demo solution", "Simple scarfold solution", ct);
-    var systemId = await CreateSystemFeature.Execute(session, causationId,  solutionId, "User system", "System for storing and verifying users", ct);
     
-    var containerId = await CreateContainerFeature.Execute(session, causationId, "User (Demo)", "User api",systemId, ct);
+
+    
+    
+
     var personaId = await AddPersonaFeature.Execute(session, causationId, "System Administrator",  "An administrator in the system",Scope.Internal, ct);
-    var featureId = await AddDraftFeatureFeature.Execute(
-                          session,
-                          causationId: causationId,
-                          containerId: containerId,
-                          name: "Create user",
-                          objective: "Enable users to register, validate their email, and gain access to premium content.",
-                          flowOverview: "The user enters their registration details, verifies their email, and is granted access to restricted areas.",
-                          ct: ct);
     await PersonaConsumeComponentFeature.Execute(session, causationId, personaId, featureId, "Calls api to create a user", ct);
 
-    await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: createUserBlock, ct);
-    await AddTaskToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, task: logUserBlock, ct);
     await AddTransitionToDraftFeatureFeature.Execute(session, causationId: causationId, featureId: featureId, transition: logTransition, ct);
   }
   public static void RegisterBpnEventStore(this StoreOptions options)
@@ -100,6 +130,9 @@ public static class BpnEventStore
     options.Projections.Add<PersonaProjection>(ProjectionLifecycle.Async);
     options.Schema.For<PersonaProjection.Persona>();
     
+    options.Projections.LiveStreamAggregation<NamedConfigurationAggregate>();
+    options.Projections.Add<NamedConfigurationProjection>(ProjectionLifecycle.Async);
+    options.Schema.For<NamedConfigurationProjection.NamedConfiguration>();
     
 
     var interfaceType = typeof(IFeature);
@@ -137,6 +170,7 @@ public static class BpnEventStore
     BpnFeatureStatsProjection.RegisterBpnEventStore(app);
     BpnBpnWebApiContainerProjection.RegisterBpnEventStore(app);
     PersonaProjection.RegisterBpnEventStore(app);
+    NamedConfigurationProjection.RegisterBpnEventStore(app);
   }
 }
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.DraftComponentFeatures;
 

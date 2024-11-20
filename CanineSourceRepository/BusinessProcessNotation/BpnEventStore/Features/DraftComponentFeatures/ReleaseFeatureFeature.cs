@@ -1,10 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.DraftComponentFeatures;
 
 public class ReleaseFeatureFeature : IFeature
 {
-  public record FeatureReleased(Guid ContainerId, Guid FeatureId, string ReleasedBy, string Name, string Objective, string FlowOverview, ImmutableList<BpnTask> Tasks, ImmutableList<BpnTransition> Transitions, FeatureComponentDiagram ComponentDiagram, long Revision);
+  public record FeatureReleased(
+    Guid ContainerId, 
+    Guid FeatureId, 
+    string ReleasedBy, 
+    string Name, 
+    string Objective, 
+    string FlowOverview, 
+    ImmutableList<BpnTask> Tasks, 
+    ImmutableList<BpnTransition> Transitions, 
+    FeatureComponentDiagram ComponentDiagram, 
+    long Revision);
   public class ReleaseFeatureBody
   {
     [Required]

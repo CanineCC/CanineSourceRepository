@@ -7,6 +7,7 @@ apis/DraftFeatureTaskApi.ts
 apis/FeatureApi.ts
 apis/FeatureDiagramApi.ts
 apis/FeatureTaskApi.ts
+apis/NamedConfigurationApi.ts
 apis/PersonaApi.ts
 apis/ServerApi.ts
 apis/SolutionApi.ts
@@ -15,6 +16,7 @@ apis/SystemDiagramApi.ts
 apis/index.ts
 index.ts
 models/AddDraftFeatureBody.ts
+models/AddNamedConfigurationBody.ts
 models/AddPersonaBody.ts
 models/AddRecordToTaskBody.ts
 models/AddTaskToDraftFeatureBody.ts
@@ -29,6 +31,7 @@ models/BpnPosition.ts
 models/BpnSolution.ts
 models/BpnSystem.ts
 models/BpnTask.ts
+models/BpnTask2.ts
 models/BpnTransition.ts
 models/BpnWebApiContainer.ts
 models/CodeSnippet.ts
@@ -50,6 +53,7 @@ models/FeatureDetails.ts
 models/FeatureRevisions.ts
 models/FeatureStats.ts
 models/MapField.ts
+models/NamedConfiguration.ts
 models/Persona.ts
 models/Persona2.ts
 models/Persona3.ts
@@ -58,11 +62,13 @@ models/Position.ts
 models/PositionUpdatedOnDraftFeatureBody.ts
 models/RecordDefinition.ts
 models/ReleaseFeatureBody.ts
+models/RemoveNamedConfigurationBody.ts
 models/RemovePersonaBody.ts
 models/RemoveTestCaseFromTask.ts
 models/ResetDraftFeatureBody.ts
 models/Scope.ts
 models/ServerHealth.ts
+models/ServiceType.ts
 models/Stats.ts
 models/SystemDetails.ts
 models/TaskStats.ts
@@ -70,6 +76,7 @@ models/TestCase.ts
 models/UpdateCodeOnTaskBody.ts
 models/UpdateDraftFeaturePurposeBody.ts
 models/UpdateEnvironmentsOnFeatureBody.ts
+models/UpdateNamedConfigurationBody.ts
 models/UpdatePersonaInformationBody.ts
 models/UpdateRecordOnTaskBody.ts
 models/UpdateServiceDependencyBody.ts

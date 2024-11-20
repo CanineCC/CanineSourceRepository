@@ -1,5 +1,6 @@
 ﻿using EngineEvents;
 using static CanineSourceRepository.BusinessProcessNotation.Engine.BpnEngine;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
@@ -81,7 +82,6 @@ public record TaskResult(bool Success, dynamic? Result);
 public class NoService : ServiceInjection
 {
   public override string Name => "No service";
-
   public override string Description => "No service injected";
   public override string[] ApiDescription => [];
   public override CodeSnippet[] ApiSnippets => [];

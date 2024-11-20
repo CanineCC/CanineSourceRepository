@@ -1,7 +1,9 @@
 using C4Sharp.Diagrams.Builders;
 using C4Sharp.Elements;
+using C4Sharp.Elements.Containers;
 using C4Sharp.Elements.Relationships;
 using CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level1_System;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 using Weasel.Postgresql.Views;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
@@ -46,19 +48,23 @@ public class C4ComponentDiagram : ComponentDiagram
                     structures.Add(Person.None | Boundary.Internal  | (persona.Name.ToPascalCase(), persona.Name, persona.Description));
                 }
                 
-                var newestVersion = component.Revisions.Last(); 
+                var newestVersion = component.Revisions.Last();
+                foreach (var task in newestVersion.Tasks)
+                {
+                    
+                    if (task.ServiceDependencyId == Guid.Empty)
+                         continue;
+
+                    var service = ServiceType.ServiceTypes.First(p => p.Id == task.ServiceDependencyId);
+                    //structures.Add(Database.None | (ContainerType.Database, task.NamedConfigurationName.ToPascalCase(), service.InjectedComponent.Name, service.InjectedComponent.Name));
+                    components.Add(new (task.NamedConfigurationName.ToPascalCase(), task.NamedConfigurationName, ComponentType.Database, service.InjectedComponent.Name));
+                }
                 components.Add(new (newestVersion.Name.ToPascalCase(), newestVersion.Name, "C#", newestVersion.Objective));
             }
             structures.Add(Bound("c1", _container.Name, components.ToArray()));
-            //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Database, "SqlDatabase", "SqlDatabase", "SQL Database", "Stores user registration information, hashed auth credentials, access logs, etc."),
-            //TODO:: INTERNALSERVICES:      Container.None | (ContainerType.Queue, "RabbitMQ", "RabbitMQ", "RabbitMQ", "Stores user registration information, hashed auth credentials, access logs, etc."),
-            
             return structures;
         }
     } 
-    //TODO: Service calls to internal systems:   SoftwareSystem.None | ("BankingSystem", "Internet Banking System", "Allows customers to view information about their bank accounts, and make payments."),
-    //TODO: Service calls to external systems:   SoftwareSystem.None | Boundary.External | ("MailSystem", "E-mail system", "The internal Microsoft Exchange e-mail system."),
-
     protected override IEnumerable<Relationship> Relationships
     {
         get
@@ -76,6 +82,14 @@ public class C4ComponentDiagram : ComponentDiagram
                 }
                 relationships.Add(this[_container.Name.ToPascalCase()] > this[newestVersion.Name.ToPascalCase()] |
                                   (component.Personas.Count == 0 ? "unuseed" :  "calls"));
+                
+                foreach (var task in newestVersion.Tasks)
+                {
+                    if (task.ServiceDependencyId == Guid.Empty)
+                        continue;
+                    
+                    relationships.Add(this[task.NamedConfigurationName.ToPascalCase()] < this[newestVersion.Name.ToPascalCase()] | "uses");
+                }
             }
             return relationships.ToArray();
 

@@ -49,6 +49,7 @@ public class DynamicCompiler
              MetadataReference.CreateFromFile(Path.Combine(netCoreDir, "System.Threading.dll")),
              MetadataReference.CreateFromFile(Path.Combine(netCoreDir, "System.Threading.Tasks.dll")), 
              MetadataReference.CreateFromFile(Path.Combine(netCoreDir, "Microsoft.CSharp.dll")),
+             //MetadataReference.CreateFromFile(Path.Combine(netCoreDir, "Npgsql.dll")),
              MetadataReference.CreateFromFile(executingAssemblyPath) ,
           // Add more references as needed
         ],

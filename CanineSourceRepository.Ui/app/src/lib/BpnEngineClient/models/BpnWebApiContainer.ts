@@ -70,6 +70,12 @@ export interface BpnWebApiContainer {
     description: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof BpnWebApiContainer
+     */
+    allowAnonymous: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof BpnWebApiContainer
      */
@@ -104,6 +110,7 @@ export function instanceOfBpnWebApiContainer(value: object): value is BpnWebApiC
     if (!('systemName' in value) || value['systemName'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('allowAnonymous' in value) || value['allowAnonymous'] === undefined) return false;
     if (!('c4ComponentDiagramSvg' in value) || value['c4ComponentDiagramSvg'] === undefined) return false;
     if (!('lastUpdatedTimestamp' in value) || value['lastUpdatedTimestamp'] === undefined) return false;
     if (!('createdTimestamp' in value) || value['createdTimestamp'] === undefined) return false;
@@ -127,6 +134,7 @@ export function BpnWebApiContainerFromJSONTyped(json: any, ignoreDiscriminator: 
         'systemName': json['systemName'],
         'name': json['name'],
         'description': json['description'],
+        'allowAnonymous': json['allowAnonymous'],
         'c4ComponentDiagramSvg': json['c4ComponentDiagramSvg'],
         'lastUpdatedTimestamp': (new Date(json['lastUpdatedTimestamp'])),
         'createdTimestamp': (new Date(json['createdTimestamp'])),
@@ -146,6 +154,7 @@ export function BpnWebApiContainerToJSON(value?: BpnWebApiContainer | null): any
         'systemName': value['systemName'],
         'name': value['name'],
         'description': value['description'],
+        'allowAnonymous': value['allowAnonymous'],
         'c4ComponentDiagramSvg': value['c4ComponentDiagramSvg'],
         'lastUpdatedTimestamp': ((value['lastUpdatedTimestamp']).toISOString()),
         'createdTimestamp': ((value['createdTimestamp']).toISOString()),

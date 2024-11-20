@@ -19,7 +19,7 @@ import type {
   AddTaskToDraftFeatureBody,
   AddTransitionToDraftFeatureBody,
   BpnDraftFeature,
-  BpnTask,
+  BpnTask2,
   CodeSnippet,
   CompileError,
   ReleaseFeatureBody,
@@ -35,8 +35,8 @@ import {
     AddTransitionToDraftFeatureBodyToJSON,
     BpnDraftFeatureFromJSON,
     BpnDraftFeatureToJSON,
-    BpnTaskFromJSON,
-    BpnTaskToJSON,
+    BpnTask2FromJSON,
+    BpnTask2ToJSON,
     CodeSnippetFromJSON,
     CodeSnippetToJSON,
     CompileErrorFromJSON,
@@ -66,7 +66,7 @@ export interface GetDraftFeatureRequest {
 }
 
 export interface GetSnippetsForCodeBlockRequest {
-    bpnTask: BpnTask;
+    bpnTask2: BpnTask2;
 }
 
 export interface ReleaseFeatureRequest {
@@ -93,7 +93,7 @@ export interface UpdateDraftFeaturePurposeRequest {
 }
 
 export interface VerifyCodeBlockRequest {
-    bpnTask: BpnTask;
+    bpnTask2: BpnTask2;
 }
 
 /**
@@ -234,10 +234,10 @@ export class DraftFeatureApi extends runtime.BaseAPI {
     /**
      */
     async getSnippetsForCodeBlockRaw(requestParameters: GetSnippetsForCodeBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<CodeSnippet>>> {
-        if (requestParameters['bpnTask'] == null) {
+        if (requestParameters['bpnTask2'] == null) {
             throw new runtime.RequiredError(
-                'bpnTask',
-                'Required parameter "bpnTask" was null or undefined when calling getSnippetsForCodeBlock().'
+                'bpnTask2',
+                'Required parameter "bpnTask2" was null or undefined when calling getSnippetsForCodeBlock().'
             );
         }
 
@@ -252,7 +252,7 @@ export class DraftFeatureApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: BpnTaskToJSON(requestParameters['bpnTask']),
+            body: BpnTask2ToJSON(requestParameters['bpnTask2']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(CodeSnippetFromJSON));
@@ -448,10 +448,10 @@ export class DraftFeatureApi extends runtime.BaseAPI {
     /**
      */
     async verifyCodeBlockRaw(requestParameters: VerifyCodeBlockRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['bpnTask'] == null) {
+        if (requestParameters['bpnTask2'] == null) {
             throw new runtime.RequiredError(
-                'bpnTask',
-                'Required parameter "bpnTask" was null or undefined when calling verifyCodeBlock().'
+                'bpnTask2',
+                'Required parameter "bpnTask2" was null or undefined when calling verifyCodeBlock().'
             );
         }
 
@@ -466,7 +466,7 @@ export class DraftFeatureApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: BpnTaskToJSON(requestParameters['bpnTask']),
+            body: BpnTask2ToJSON(requestParameters['bpnTask2']),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

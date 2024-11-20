@@ -1,5 +1,6 @@
 ﻿using EngineEvents;
 using Marten.Events.Projections;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.Engine;
 
@@ -116,7 +117,16 @@ public static class BpnEngine
       .Accepts(startTask.GetCompiledType(assembly), false, "application/json"); // Define input content type
   }
 
-  public static async Task<bool> Run(IDocumentSession session, CancellationToken ct, dynamic inputJson, Guid containerId, BpnFeature feature, FeatureComponentProjection.BpnFeatureRevision revision, Assembly assembly, Guid? correlationId, BpnTask? nextTask = null)
+  public static async Task<bool> Run(
+    IDocumentSession session, 
+    CancellationToken ct, 
+    dynamic inputJson, 
+    Guid containerId, 
+    BpnFeature feature, 
+    FeatureComponentProjection.BpnFeatureRevision revision, 
+    Assembly assembly, 
+    Guid? correlationId, 
+    BpnTask? nextTask = null)
   {
     Stopwatch stopwatch = Stopwatch.StartNew();
     var initial = nextTask == null;

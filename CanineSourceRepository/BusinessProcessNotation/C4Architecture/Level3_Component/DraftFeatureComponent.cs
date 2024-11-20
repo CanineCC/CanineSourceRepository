@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.AddTestCaseToTaskFeature;
+﻿using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.AddTestCaseToTaskFeature;
 using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.RemoveTestCaseFromTaskFeature;
 using static CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.TaskFeatures.UpdateTestCaseOnTaskFeature;
 using static CanineSourceRepository.DynamicCompiler;
+using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
 
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level3_Component;
 
@@ -98,8 +98,27 @@ public class DraftFeatureComponentAggregate
   }
   public void Apply(DraftFeatureComponentAggregate componentAggregate, DraftFeatureTaskAdded @event)
   {
-    componentAggregate.Tasks = componentAggregate.Tasks.Add(@event.Task);
-    ComponentDiagram.BpnPositions.Add(new BpnPosition(@event.Task.Id, new Position(0, 0)));
+    var serviceType = ServiceType.ServiceTypes.First(p => p.Id == @event.ServiceTypeId);
+    componentAggregate.Tasks = componentAggregate.Tasks.Add(
+      new BpnTask(@event.Name)
+      {
+        Input = @event.Input, 
+        Output = @event.Output, 
+        BehavioralGoal = @event.BehavioralGoal, 
+        BusinessPurpose = @event.BusinessPurpose, 
+        Code = @event.Code, 
+        Id=@event.TaskId,
+        NamedConfiguration = @event.NamedConfigurationName,
+        NamedConfigurationId = @event.NamedConfigurationId,
+        ServiceDependency = serviceType.InjectedComponent.Name,
+        ServiceDependencyId = serviceType.Id,
+        TestCases = [],
+        RecordTypes = @event.RecordTypes.Select(rt => 
+          new RecordDefinition(rt.Name, rt.Fields.Select(rf=> new DataDefinition(rf.Name, rf.Type, rf.IsCollection, rf.IsMandatory)).ToArray()
+          )
+        ).ToImmutableList()
+      });
+    ComponentDiagram.BpnPositions.Add(new BpnPosition(@event.TaskId, new Position(0, 0)));
   }
   public void Apply(DraftFeatureComponentAggregate componentAggregate, DraftFeatureTaskRemoved @event)
   {
@@ -242,8 +261,28 @@ public class DraftFeatureComponentProjection : SingleStreamProjection<DraftFeatu
     }
     public void Apply(BpnDraftFeature projection, DraftFeatureTaskAdded @event)
     {
-      projection.Tasks = projection.Tasks.Add(@event.Task);
-      ComponentDiagram.BpnPositions.Add(new BpnPosition(@event.Task.Id, new Position(0, 0)));
+      var serviceType = ServiceType.ServiceTypes.First(p => p.Id == @event.ServiceTypeId);
+      
+      projection.Tasks = projection.Tasks.Add(
+      new BpnTask(@event.Name)
+      {
+        Input = @event.Input, 
+        Output = @event.Output, 
+        BehavioralGoal = @event.BehavioralGoal, 
+        BusinessPurpose = @event.BusinessPurpose, 
+        Code = @event.Code, 
+        Id=@event.TaskId,
+        NamedConfiguration = @event.NamedConfigurationName,
+        NamedConfigurationId = @event.NamedConfigurationId,
+        ServiceDependency = serviceType.InjectedComponent.Name,
+        ServiceDependencyId = serviceType.Id,
+        TestCases = [],
+        RecordTypes = @event.RecordTypes.Select(rt => 
+          new RecordDefinition(rt.Name, rt.Fields.Select(rf=> new DataDefinition(rf.Name, rf.Type, rf.IsCollection, rf.IsMandatory)).ToArray()
+          )
+        ).ToImmutableList()
+      });      
+      ComponentDiagram.BpnPositions.Add(new BpnPosition(@event.TaskId, new Position(0, 0)));
     }
     public void Apply(BpnDraftFeature projection, DraftFeatureTaskRemoved @event)
     {

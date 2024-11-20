@@ -1,16 +1,45 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CanineSourceRepository.BusinessProcessNotation.Engine;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.DraftComponentFeatures;
 
 public class AddTaskToDraftFeatureFeature : IFeature
 {
-  public record DraftFeatureTaskAdded(BpnTask Task);
+  public record DraftFeatureTaskAdded(
+    Guid ContainerId,
+    Guid FeatureId,
+    Guid TaskId,
+    string Name,
+    string BusinessPurpose,
+    string BehavioralGoal,
+    string? Input,
+    string? Output,
+    string? Code,
+    //List<TestCase> TestCases,
+    Guid? NamedConfigurationId,
+    string NamedConfigurationName,
+    Guid ServiceTypeId,
+    ImmutableList<RecordDefinition> RecordTypes    
+  );
   public class AddTaskToDraftFeatureBody
   {
     [Required]
     public Guid FeatureId { get; set; }
     [Required]
     public BpnTask Task { get; set; }
+  }
+
+  public class BpnTask
+  {
+    [Required] public string Name { get; set; }
+    [Required] public string BusinessPurpose { get; set; }
+    [Required] public string BehavioralGoal { get; set; }
+    public string? Input { get; set; }
+    public string? Output { get; set; }
+    [Required] public string? Code { get; set; }
+    //[Required] public List<TestCase> TestCases { get; set; } = [];
+    public Guid? NamedConfigurationId { get; set; }
+    [Required] public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
   }
 
   public static void RegisterBpnEventStore(WebApplication app)
@@ -29,12 +58,36 @@ public class AddTaskToDraftFeatureFeature : IFeature
     options.Events.AddEventType<DraftFeatureTaskAdded>();
   }
 
-  public static async Task<ValidationResponse> Execute(IDocumentSession session, string causationId, Guid featureId, BpnTask task, CancellationToken ct)
+  public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid featureId, BpnTask task, CancellationToken ct)
   {
+    var featureComponentAggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
+    if (featureComponentAggregate == null) throw new Exception($"FeatureComponent '{featureId}' was not found");
+    
+    //var featureComponentAggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
+    //if (featureComponentAggregate == null) throw new Exception($"FeatureComponent '{featureId}' was not found");
+    
+    //move named-configuration-to own feature
+    var namedConfigurationAggregate = task.NamedConfigurationId == null ? null : await session.Events.AggregateStreamAsync<NamedConfigurationAggregate>(task.NamedConfigurationId.Value, token: ct);
+    if (task.NamedConfigurationId != null && namedConfigurationAggregate == null) throw new Exception($"NamedConfiguration '{task.NamedConfigurationId.Value}' was not found");
+    
     var aggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
-    if (aggregate == null) return new ValidationResponse(false, $"Draft feature '{featureId}' was not found", ResultCode.NotFound);
+    if (aggregate == null) throw new Exception($"Draft feature '{featureId}' was not found");
+    var @event = new DraftFeatureTaskAdded(
+      ContainerId:featureComponentAggregate.ContainerId,
+      FeatureId:featureComponentAggregate.Id,
+      TaskId: Guid.CreateVersion7(), 
+      Name: task.Name, 
+      BusinessPurpose: task.BusinessPurpose,
+      BehavioralGoal: task.BehavioralGoal, Input: task.Input, Output: task.Output, Code: task.Code,
+      NamedConfigurationId: namedConfigurationAggregate?.Id,
+      NamedConfigurationName: namedConfigurationAggregate?.Name ?? "",
+      ServiceTypeId: namedConfigurationAggregate == null 
+        ? ServiceType.ServiceTypes.First(p=>p.InjectedComponent.GetType() == typeof(NoService) ).Id 
+        : ServiceType.ServiceTypes.First(p=>p.Id==namedConfigurationAggregate.ServiceTypeId).Id,
+      RecordTypes: task.RecordTypes.ToImmutableList()
+    );
+    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, @event);
 
-    await session.RegisterEventsOnBpnDraftFeature(ct, featureId, causationId, new DraftFeatureTaskAdded(Task: task));
-    return new ValidationResponse(true, string.Empty, ResultCode.NoContent);
+    return @event.TaskId;
   }
 }

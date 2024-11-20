@@ -7,17 +7,13 @@ public class AddDraftFeatureFeature : IFeature
   public record DraftFeatureCreated(Guid ContainerId, Guid FeatureId, string Name, string Objective, string FlowOverview);
   public record AddDraftFeatureBody
   {
-    [Required]
-    public Guid ContainerId { get; set; }
+    [Required] public Guid ContainerId { get; set; }
 
-    [Required]
-    public string Name { get; set; }
+    [Required] public string Name { get; set; }
 
-    [Required]
-    public string Objective { get; set; }
+    [Required] public string Objective { get; set; }
 
-    [Required]
-    public string FlowOverview { get; set; }
+    [Required] public string FlowOverview { get; set; }
   }
   public static void RegisterBpnEventStore(WebApplication app)
   {

@@ -29,9 +29,12 @@ public class BpnTask(string name)
   [Required] public List<TestCase> TestCases { get; set; } = [];
   [Required] public string ServiceDependency { get; set; } = typeof(NoService).Name;//id?
   [Required] public string NamedConfiguration { get; set; } = string.Empty;//id?
+  public Guid ServiceDependencyId { get; set; } 
+  public Guid? NamedConfigurationId { get; set; } 
 
   public TestCase[] UpsertTestCase(TestCase record)
   {
+    
     TestCases.RemoveAll(p => p.Id == record.Id);
     TestCases.Add(record);
     return TestCases.OrderBy(p=>p.Name).ToArray();
@@ -241,9 +244,10 @@ public class BpnTask(string name)
   {
     get
     {
+      var injectedService = ServiceType.ServiceTypes.First(p => p.Id == ServiceDependencyId);
       return Output == null ?
-        $"public static async Task Execute({Input} input, {ServiceDependency} service)" :
-        $"public static async Task<{Output}> Execute({Input} input, {ServiceDependency} service) ";
+        $"public static async Task Execute({Input} input, {injectedService.InjectedComponent} service)" :
+        $"public static async Task<{Output}> Execute({Input} input, {injectedService.InjectedComponent} service) ";
     }
   }
 

@@ -67,9 +67,11 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     Identity<BpnFeatureCompleted>(x => x.ContainerId);
     Identity<PersonaConsumeComponentFeature.ComponentCosumedByPersona>(x => x.ContainerId);
     Identity<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona>(x => x.ContainerId);
+    Identity<DraftFeatureTaskAdded>(x => x.ContainerId);
+    
   }
-  
-  
+
+
   public static void Apply(BpnWebApiContainer view, IEvent<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona> @event)
   {
     bool updateDiagram = false;
@@ -133,6 +135,29 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     view.CreatedTimestamp = @event.Timestamp;
     view.LastUpdatedTimestamp = @event.Timestamp;
   }
+
+  public static void Apply(BpnWebApiContainer view, IEvent<DraftFeatureTaskAdded> @event)
+  {
+    var feature = view.Features.FirstOrDefault(p => p.Id == @event.Data.FeatureId);
+    if (feature == null) return;
+
+    var revision = feature.Revisions.First(p => p.Revision == -1);
+
+    revision.Tasks.Add(
+      new FeatureDetails.Task()
+      {
+        ServiceDependencyId = @event.Data.ServiceTypeId,
+        NamedConfigurationName = @event.Data.NamedConfigurationName,
+        Name = @event.Data.Name,
+        Id = @event.Data.TaskId
+      }
+    );
+    
+    var diagram = new C4ComponentDiagram(view.SystemName, view, view.Features.ToArray());
+    view.C4ComponentDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+
+  }
+
   public static void Apply(BpnWebApiContainer view, IEvent<DraftFeatureCreated> @event)
   {
     view.Features.Add(new FeatureDetails(
@@ -143,6 +168,7 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
             Objective: @event.Data.Objective,
             Revision: -1,
             Environments: [],
+            Tasks: [], //@event.Data.Tasks.Select(task=> new FeatureDetails.Task() {Id = task.Id, NamedConfigurationName = task.NamedConfiguration, Name = task.Name, ServiceDependency = task.ServiceDependency}).ToList(),
             Stats : new FeatureStats(
               InvocationCount: 0,
               InvocationErrorCount: 0,
@@ -170,11 +196,13 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
     {
       view.Features.Remove(entry);
       DateTimeOffset? dateTimeOffset = null;
+      
       entry.Revisions.Add(new FeatureRevisions(
         Name: @event.Data.Name, 
         Objective: @event.Data.Objective,
         Revision: @event.Data.Revision, 
         Environments: [],
+        Tasks: @event.Data.Tasks.Select(task=>  new FeatureDetails.Task() {Id = task.Id, NamedConfigurationName = task.NamedConfiguration, Name = task.Name, ServiceDependencyId = task.ServiceDependencyId}).ToList(),
         Stats: new FeatureStats(
               InvocationCount: 0,
               InvocationErrorCount: 0,
@@ -257,56 +285,46 @@ public class BpnBpnWebApiContainerProjection : MultiStreamProjection<BpnBpnWebAp
 
   public class FeatureStats(long InvocationCount, long InvocationErrorCount, long InvocationCompletedCount, long InvocationsInProgressCount, decimal TotalDurationMs, double MaxDurationMs, double AvgDurationMs, double MinDurationMs, DateTimeOffset? LastUsed, DateTimeOffset Published)
   {
-    [Required]
-    public long InvocationCount { get; set; } = InvocationCount;
-    [Required]
-    public long InvocationErrorCount { get; set; } = InvocationErrorCount;
-    [Required]
-    public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
-    [Required]
-    public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
-    [Required]
-    public decimal TotalDurationMs { get; set; } = TotalDurationMs;
-    [Required]
-    public double MaxDurationMs { get; set; } = MaxDurationMs;
-    [Required]
-    public double AvgDurationMs { get; set;  } = AvgDurationMs;
-    [Required]
-    public double MinDurationMs { get; set; } = MinDurationMs;
+    [Required] public long InvocationCount { get; set; } = InvocationCount;
+    [Required] public long InvocationErrorCount { get; set; } = InvocationErrorCount;
+    [Required] public long InvocationCompletedCount { get; set; } = InvocationCompletedCount;
+    [Required] public long InvocationsInProgressCount { get; set; } = InvocationsInProgressCount;
+    [Required] public decimal TotalDurationMs { get; set; } = TotalDurationMs;
+    [Required] public double MaxDurationMs { get; set; } = MaxDurationMs;
+    [Required] public double AvgDurationMs { get; set;  } = AvgDurationMs;
+    [Required] public double MinDurationMs { get; set; } = MinDurationMs;
     public DateTimeOffset? LastUsed { get; set; } = LastUsed;
-    [Required]
-    public DateTimeOffset Published { get; set; } = Published;
+    [Required] public DateTimeOffset Published { get; set; } = Published;
   }
-  public class FeatureRevisions(string Name, long Revision, string Objective, Environment[] Environments, FeatureStats Stats)
+  public class FeatureRevisions(string Name, long Revision, string Objective, Environment[] Environments, FeatureStats Stats, List<FeatureDetails.Task> Tasks)
   {
-    [Required]
-    public string Name { get; set; } = Name;
-    [Required]
-    public string Objective { get; set; } = Objective;
-    [Required]
-    public long Revision { get; set; } = Revision;
-    [Required]
-    public Environment[] Environments { get; set; } = Environments;
-    [Required]
-    public FeatureStats Stats { get; set; } = Stats;
+    [Required] public string Name { get; set; } = Name;
+    [Required] public string Objective { get; set; } = Objective;
+    [Required] public long Revision { get; set; } = Revision;
+    [Required] public Environment[] Environments { get; set; } = Environments;
+    [Required] public FeatureStats Stats { get; set; } = Stats;
+    [Required] public List<FeatureDetails.Task> Tasks { get; set; } = Tasks;
   }
   public class FeatureDetails(Guid Id, List<FeatureRevisions> Revisions, List<FeatureDetails.Persona> Personas)
   {
     public class Persona
     {
-      [Required]
+      [Required] public Guid Id { get; set; }
+      [Required] public string Name { get; set; } = "";
+      [Required] public string Description { get; set; } = "";
+      [Required] public string RelationToComponent { get; set; } = "";
+    }
+
+    public class Task
+    {
       public Guid Id { get; set; }
-      [Required]
-      public string Name { get; set; } = "";
-      [Required]
-      public string Description { get; set; } = "";
-      [Required]
-      public string RelationToComponent { get; set; } = "";
-    }  
+      public string Name { get; set; }
+      public Guid ServiceDependencyId { get; set; }
+      public string NamedConfigurationName { get; set; }
+    }
     
     [Required] public Guid Id { get; set; } = Id;
     [Required] public List<FeatureRevisions> Revisions { get; set; } = Revisions;
-    
     [Required] public List<FeatureDetails.Persona> Personas { get; set; } = Personas;
 
   }
