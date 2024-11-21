@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Task2 } from './Task2';
+import {
+    Task2FromJSON,
+    Task2FromJSONTyped,
+    Task2ToJSON,
+} from './Task2';
 import type { Persona } from './Persona';
 import {
     PersonaFromJSON,
@@ -50,6 +56,12 @@ export interface ContainerDetails {
      * @memberof ContainerDetails
      */
     personas: Array<Persona>;
+    /**
+     * 
+     * @type {Array<Task2>}
+     * @memberof ContainerDetails
+     */
+    tasksWithService: Array<Task2>;
 }
 
 /**
@@ -60,6 +72,7 @@ export function instanceOfContainerDetails(value: object): value is ContainerDet
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('personas' in value) || value['personas'] === undefined) return false;
+    if (!('tasksWithService' in value) || value['tasksWithService'] === undefined) return false;
     return true;
 }
 
@@ -77,6 +90,7 @@ export function ContainerDetailsFromJSONTyped(json: any, ignoreDiscriminator: bo
         'name': json['name'],
         'description': json['description'],
         'personas': ((json['personas'] as Array<any>).map(PersonaFromJSON)),
+        'tasksWithService': ((json['tasksWithService'] as Array<any>).map(Task2FromJSON)),
     };
 }
 
@@ -90,6 +104,7 @@ export function ContainerDetailsToJSON(value?: ContainerDetails | null): any {
         'name': value['name'],
         'description': value['description'],
         'personas': ((value['personas'] as Array<any>).map(PersonaToJSON)),
+        'tasksWithService': ((value['tasksWithService'] as Array<any>).map(Task2ToJSON)),
     };
 }
 

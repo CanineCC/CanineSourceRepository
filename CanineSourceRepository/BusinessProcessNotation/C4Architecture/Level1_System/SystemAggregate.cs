@@ -49,9 +49,29 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
     Identity<WebApiContainerCreated>(x => x.SystemId);
     Identity<PersonaConsumeComponentFeature.ComponentCosumedByPersona>(x => x.SystemId);
     Identity<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona>(x => x.SystemId);
-    
-
+    Identity<DraftFeatureTaskAdded>(x => x.SystemId);
   }
+  
+  public static void Apply(BpnSystem view, IEvent<DraftFeatureTaskAdded> @event)
+  {
+    view.LastUpdatedTimestamp = @event.Timestamp;
+    var container = view.Containers.First(p => p.Id == @event.Data.ContainerId);
+
+    if (@event.Data.ServiceTypeId == Guid.Empty) return;
+
+    container.TasksWithService.Add(
+      new Task()
+      {
+        ServiceDependencyId = @event.Data.ServiceTypeId,
+        NamedConfigurationName = @event.Data.NamedConfigurationName,
+        Id = @event.Data.TaskId
+      }
+    );
+    
+    var diagram = new C4ContainerDiagram(view, view.Containers.ToArray());
+    view.C4ContainerDiagramSvg = C4DiagramHelper.GenerateC4(diagram);
+  }
+
   
   public static void Apply(BpnSystem view, IEvent<ComponentNoLongerConsumedByPersonaFeature.ComponentNoLongerConsumedByPersona> @event)
   {
@@ -107,8 +127,19 @@ public class SystemProjection : MultiStreamProjection<SystemProjection.BpnSystem
     public string Description { get; set; } = Description;
     [Required]
     public List<Persona> Personas { get; set; } = [];
-    
+
+    [Required]
+    public List<Task> TasksWithService { get; set; } = [];
+
   }
+  
+  public class Task
+  {
+    public Guid Id { get; set; }
+    public Guid ServiceDependencyId { get; set; }
+    public string NamedConfigurationName { get; set; }
+  }
+  
 
   public class Persona
   {

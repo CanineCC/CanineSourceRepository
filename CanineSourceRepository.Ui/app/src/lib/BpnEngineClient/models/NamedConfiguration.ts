@@ -19,12 +19,6 @@ import {
     ScopeFromJSONTyped,
     ScopeToJSON,
 } from './Scope';
-import type { ServiceType } from './ServiceType';
-import {
-    ServiceTypeFromJSON,
-    ServiceTypeFromJSONTyped,
-    ServiceTypeToJSON,
-} from './ServiceType';
 
 /**
  * 
@@ -46,10 +40,16 @@ export interface NamedConfiguration {
     systemId: string;
     /**
      * 
-     * @type {ServiceType}
+     * @type {string}
      * @memberof NamedConfiguration
      */
-    serviceType: ServiceType;
+    serviceTypeName: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof NamedConfiguration
+     */
+    serviceTypeId: string;
     /**
      * 
      * @type {string}
@@ -84,7 +84,8 @@ export interface NamedConfiguration {
 export function instanceOfNamedConfiguration(value: object): value is NamedConfiguration {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('systemId' in value) || value['systemId'] === undefined) return false;
-    if (!('serviceType' in value) || value['serviceType'] === undefined) return false;
+    if (!('serviceTypeName' in value) || value['serviceTypeName'] === undefined) return false;
+    if (!('serviceTypeId' in value) || value['serviceTypeId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
     if (!('scope' in value) || value['scope'] === undefined) return false;
@@ -104,7 +105,8 @@ export function NamedConfigurationFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'id': json['id'],
         'systemId': json['systemId'],
-        'serviceType': ServiceTypeFromJSON(json['serviceType']),
+        'serviceTypeName': json['serviceTypeName'],
+        'serviceTypeId': json['serviceTypeId'],
         'name': json['name'],
         'description': json['description'],
         'scope': ScopeFromJSON(json['scope']),
@@ -120,7 +122,8 @@ export function NamedConfigurationToJSON(value?: NamedConfiguration | null): any
         
         'id': value['id'],
         'systemId': value['systemId'],
-        'serviceType': ServiceTypeToJSON(value['serviceType']),
+        'serviceTypeName': value['serviceTypeName'],
+        'serviceTypeId': value['serviceTypeId'],
         'name': value['name'],
         'description': value['description'],
         'scope': ScopeToJSON(value['scope']),

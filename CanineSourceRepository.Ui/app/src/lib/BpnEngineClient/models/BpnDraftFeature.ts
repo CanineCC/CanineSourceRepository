@@ -19,18 +19,18 @@ import {
     FeatureComponentDiagramFromJSONTyped,
     FeatureComponentDiagramToJSON,
 } from './FeatureComponentDiagram';
-import type { BpnTask2 } from './BpnTask2';
-import {
-    BpnTask2FromJSON,
-    BpnTask2FromJSONTyped,
-    BpnTask2ToJSON,
-} from './BpnTask2';
 import type { BpnTransition } from './BpnTransition';
 import {
     BpnTransitionFromJSON,
     BpnTransitionFromJSONTyped,
     BpnTransitionToJSON,
 } from './BpnTransition';
+import type { BpnTask } from './BpnTask';
+import {
+    BpnTaskFromJSON,
+    BpnTaskFromJSONTyped,
+    BpnTaskToJSON,
+} from './BpnTask';
 
 /**
  * 
@@ -70,10 +70,10 @@ export interface BpnDraftFeature {
     flowOverview: string;
     /**
      * 
-     * @type {Array<BpnTask2>}
+     * @type {Array<BpnTask>}
      * @memberof BpnDraftFeature
      */
-    tasks: Array<BpnTask2>;
+    tasks: Array<BpnTask>;
     /**
      * 
      * @type {Array<BpnTransition>}
@@ -111,7 +111,7 @@ export function BpnDraftFeatureFromJSONTyped(json: any, ignoreDiscriminator: boo
         'name': json['name'],
         'objective': json['objective'],
         'flowOverview': json['flowOverview'],
-        'tasks': ((json['tasks'] as Array<any>).map(BpnTask2FromJSON)),
+        'tasks': ((json['tasks'] as Array<any>).map(BpnTaskFromJSON)),
         'transitions': ((json['transitions'] as Array<any>).map(BpnTransitionFromJSON)),
     };
 }
@@ -127,7 +127,7 @@ export function BpnDraftFeatureToJSON(value?: BpnDraftFeature | null): any {
         'name': value['name'],
         'objective': value['objective'],
         'flowOverview': value['flowOverview'],
-        'tasks': ((value['tasks'] as Array<any>).map(BpnTask2ToJSON)),
+        'tasks': ((value['tasks'] as Array<any>).map(BpnTaskToJSON)),
         'transitions': ((value['transitions'] as Array<any>).map(BpnTransitionToJSON)),
     };
 }

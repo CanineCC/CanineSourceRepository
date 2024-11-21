@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Task3 } from './Task3';
+import {
+    Task3FromJSON,
+    Task3FromJSONTyped,
+    Task3ToJSON,
+} from './Task3';
 import type { Environment } from './Environment';
 import {
     EnvironmentFromJSON,
@@ -62,6 +68,12 @@ export interface FeatureRevisions {
      * @memberof FeatureRevisions
      */
     stats: FeatureStats;
+    /**
+     * 
+     * @type {Array<Task3>}
+     * @memberof FeatureRevisions
+     */
+    tasks: Array<Task3>;
 }
 
 /**
@@ -73,6 +85,7 @@ export function instanceOfFeatureRevisions(value: object): value is FeatureRevis
     if (!('revision' in value) || value['revision'] === undefined) return false;
     if (!('environments' in value) || value['environments'] === undefined) return false;
     if (!('stats' in value) || value['stats'] === undefined) return false;
+    if (!('tasks' in value) || value['tasks'] === undefined) return false;
     return true;
 }
 
@@ -91,6 +104,7 @@ export function FeatureRevisionsFromJSONTyped(json: any, ignoreDiscriminator: bo
         'revision': json['revision'],
         'environments': ((json['environments'] as Array<any>).map(EnvironmentFromJSON)),
         'stats': FeatureStatsFromJSON(json['stats']),
+        'tasks': ((json['tasks'] as Array<any>).map(Task3FromJSON)),
     };
 }
 
@@ -105,6 +119,7 @@ export function FeatureRevisionsToJSON(value?: FeatureRevisions | null): any {
         'revision': value['revision'],
         'environments': ((value['environments'] as Array<any>).map(EnvironmentToJSON)),
         'stats': FeatureStatsToJSON(value['stats']),
+        'tasks': ((value['tasks'] as Array<any>).map(Task3ToJSON)),
     };
 }
 

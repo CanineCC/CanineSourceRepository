@@ -2,6 +2,7 @@
 using CanineSourceRepository.BusinessProcessNotation.Engine;
 using Marten.Events.Projections;
 using BpnTask = CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code.BpnTask;
+using Task = System.Threading.Tasks.Task;
 
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore;
 
@@ -47,7 +48,7 @@ public static class BpnEventStore
     
     
     
-    var createUserBlock = new AddTaskToDraftFeatureFeature.BpnTask()
+    var createUserBlock = new AddTaskToDraftFeatureFeature.Task()
     {
       BusinessPurpose =
         "Validate that the user has a verified email address before allowing access to premium content.",
@@ -59,21 +60,21 @@ public static class BpnEventStore
     //Add the user to the user database
     return new Output(userId, input.Name/*, input.AccessScope*/);
     ",
-      NamedConfigurationId = namedConfigurationId,
+      NamedConfigurationId = null,
       Name = "Create user logic",
       RecordTypes = [
         new RecordDefinition("Input",  new DataDefinition("Name", "string")),
         new RecordDefinition("Output", new DataDefinition("Id", "Guid"), new DataDefinition("Name", "string"))
       ]
     };      
-    var logUserBlock = new AddTaskToDraftFeatureFeature.BpnTask()
+    var logUserBlock = new AddTaskToDraftFeatureFeature.Task()
     {
       BusinessPurpose =
         "Store the user in the database for later lookup.",
       BehavioralGoal = "Insert the user into the customer database",
       Input = "Input",
       Code = $"Console.WriteLine(input.Id.ToString() + input.Name);",
-      NamedConfigurationId = null,
+      NamedConfigurationId = namedConfigurationId,
       Name = "Store user in db",
       RecordTypes = [
         new RecordDefinition("Input", new DataDefinition("Id", "Guid"), new DataDefinition("Name", "string"))

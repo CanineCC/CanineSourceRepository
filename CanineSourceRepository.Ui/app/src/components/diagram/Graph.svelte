@@ -238,6 +238,7 @@
           position={getTaskPosition(task.id ?? "")}
           readonly={readonly}
           stats={getTaskStats(task.id ?? "")}
+          service={task.namedConfiguration !== "" ? task.namedConfiguration + " (" + task.serviceDependency + ")" : ""}
           on:dragmove={handleTaskDrag}
           on:dragstopped={handleTaskStopDrag}
           on:taskSelect={handleTaskSelect}

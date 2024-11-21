@@ -13,6 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
+import type { TestCase } from './TestCase';
+import {
+    TestCaseFromJSON,
+    TestCaseFromJSONTyped,
+    TestCaseToJSON,
+} from './TestCase';
 import type { RecordDefinition } from './RecordDefinition';
 import {
     RecordDefinitionFromJSON,
@@ -26,6 +32,12 @@ import {
  * @interface BpnTask
  */
 export interface BpnTask {
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    id?: string;
     /**
      * 
      * @type {string}
@@ -64,6 +76,30 @@ export interface BpnTask {
     code: string;
     /**
      * 
+     * @type {Array<TestCase>}
+     * @memberof BpnTask
+     */
+    testCases: Array<TestCase>;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    serviceDependency: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    namedConfiguration: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    serviceDependencyId?: string;
+    /**
+     * 
      * @type {string}
      * @memberof BpnTask
      */
@@ -74,6 +110,24 @@ export interface BpnTask {
      * @memberof BpnTask
      */
     recordTypes: Array<RecordDefinition>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof BpnTask
+     */
+    validDatatypes: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    recordsAsCode?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof BpnTask
+     */
+    methodSignatureAsCode?: string;
 }
 
 /**
@@ -84,7 +138,11 @@ export function instanceOfBpnTask(value: object): value is BpnTask {
     if (!('businessPurpose' in value) || value['businessPurpose'] === undefined) return false;
     if (!('behavioralGoal' in value) || value['behavioralGoal'] === undefined) return false;
     if (!('code' in value) || value['code'] === undefined) return false;
+    if (!('testCases' in value) || value['testCases'] === undefined) return false;
+    if (!('serviceDependency' in value) || value['serviceDependency'] === undefined) return false;
+    if (!('namedConfiguration' in value) || value['namedConfiguration'] === undefined) return false;
     if (!('recordTypes' in value) || value['recordTypes'] === undefined) return false;
+    if (!('validDatatypes' in value) || value['validDatatypes'] === undefined) return false;
     return true;
 }
 
@@ -98,14 +156,22 @@ export function BpnTaskFromJSONTyped(json: any, ignoreDiscriminator: boolean): B
     }
     return {
         
+        'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'],
         'businessPurpose': json['businessPurpose'],
         'behavioralGoal': json['behavioralGoal'],
         'input': json['input'] == null ? undefined : json['input'],
         'output': json['output'] == null ? undefined : json['output'],
         'code': json['code'],
+        'testCases': ((json['testCases'] as Array<any>).map(TestCaseFromJSON)),
+        'serviceDependency': json['serviceDependency'],
+        'namedConfiguration': json['namedConfiguration'],
+        'serviceDependencyId': json['serviceDependencyId'] == null ? undefined : json['serviceDependencyId'],
         'namedConfigurationId': json['namedConfigurationId'] == null ? undefined : json['namedConfigurationId'],
         'recordTypes': ((json['recordTypes'] as Array<any>).map(RecordDefinitionFromJSON)),
+        'validDatatypes': json['validDatatypes'],
+        'recordsAsCode': json['recordsAsCode'] == null ? undefined : json['recordsAsCode'],
+        'methodSignatureAsCode': json['methodSignatureAsCode'] == null ? undefined : json['methodSignatureAsCode'],
     };
 }
 
@@ -115,14 +181,22 @@ export function BpnTaskToJSON(value?: BpnTask | null): any {
     }
     return {
         
+        'id': value['id'],
         'name': value['name'],
         'businessPurpose': value['businessPurpose'],
         'behavioralGoal': value['behavioralGoal'],
         'input': value['input'],
         'output': value['output'],
         'code': value['code'],
+        'testCases': ((value['testCases'] as Array<any>).map(TestCaseToJSON)),
+        'serviceDependency': value['serviceDependency'],
+        'namedConfiguration': value['namedConfiguration'],
+        'serviceDependencyId': value['serviceDependencyId'],
         'namedConfigurationId': value['namedConfigurationId'],
         'recordTypes': ((value['recordTypes'] as Array<any>).map(RecordDefinitionToJSON)),
+        'validDatatypes': value['validDatatypes'],
+        'recordsAsCode': value['recordsAsCode'],
+        'methodSignatureAsCode': value['methodSignatureAsCode'],
     };
 }
 

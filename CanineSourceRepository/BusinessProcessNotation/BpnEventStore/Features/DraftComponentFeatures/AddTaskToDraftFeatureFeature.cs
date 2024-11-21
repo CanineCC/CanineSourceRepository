@@ -6,6 +6,7 @@ namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.
 public class AddTaskToDraftFeatureFeature : IFeature
 {
   public record DraftFeatureTaskAdded(
+    Guid SystemId,
     Guid ContainerId,
     Guid FeatureId,
     Guid TaskId,
@@ -26,10 +27,10 @@ public class AddTaskToDraftFeatureFeature : IFeature
     [Required]
     public Guid FeatureId { get; set; }
     [Required]
-    public BpnTask Task { get; set; }
+    public Task Task { get; set; }
   }
 
-  public class BpnTask
+  public class Task
   {
     [Required] public string Name { get; set; }
     [Required] public string BusinessPurpose { get; set; }
@@ -58,13 +59,13 @@ public class AddTaskToDraftFeatureFeature : IFeature
     options.Events.AddEventType<DraftFeatureTaskAdded>();
   }
 
-  public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid featureId, BpnTask task, CancellationToken ct)
+  public static async Task<Guid> Execute(IDocumentSession session, string causationId, Guid featureId, Task task, CancellationToken ct)
   {
     var featureComponentAggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
     if (featureComponentAggregate == null) throw new Exception($"FeatureComponent '{featureId}' was not found");
     
-    //var featureComponentAggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
-    //if (featureComponentAggregate == null) throw new Exception($"FeatureComponent '{featureId}' was not found");
+    var webApiContainerAggregate = await session.Events.AggregateStreamAsync<WebApiContainerAggregate>(featureComponentAggregate.ContainerId, token: ct);
+    if (webApiContainerAggregate == null) throw new Exception($"WebApiContainer '{featureComponentAggregate.ContainerId}' was not found");
     
     //move named-configuration-to own feature
     var namedConfigurationAggregate = task.NamedConfigurationId == null ? null : await session.Events.AggregateStreamAsync<NamedConfigurationAggregate>(task.NamedConfigurationId.Value, token: ct);
@@ -73,6 +74,7 @@ public class AddTaskToDraftFeatureFeature : IFeature
     var aggregate = await session.Events.AggregateStreamAsync<DraftFeatureComponentAggregate>(featureId, token: ct);
     if (aggregate == null) throw new Exception($"Draft feature '{featureId}' was not found");
     var @event = new DraftFeatureTaskAdded(
+      SystemId: webApiContainerAggregate.SystemId,
       ContainerId:featureComponentAggregate.ContainerId,
       FeatureId:featureComponentAggregate.Id,
       TaskId: Guid.CreateVersion7(), 

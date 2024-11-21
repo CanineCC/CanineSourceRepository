@@ -1,4 +1,6 @@
-﻿namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.ServerFeatures;
+﻿using Task = System.Threading.Tasks.Task;
+
+namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.ServerFeatures;
 
 public class RestartServerFeature : IFeature
 {

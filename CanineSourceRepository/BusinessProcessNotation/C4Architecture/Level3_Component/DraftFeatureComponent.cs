@@ -100,8 +100,9 @@ public class DraftFeatureComponentAggregate
   {
     var serviceType = ServiceType.ServiceTypes.First(p => p.Id == @event.ServiceTypeId);
     componentAggregate.Tasks = componentAggregate.Tasks.Add(
-      new BpnTask(@event.Name)
+      new BpnTask
       {
+        Name = @event.Name,
         Input = @event.Input, 
         Output = @event.Output, 
         BehavioralGoal = @event.BehavioralGoal, 
@@ -264,8 +265,9 @@ public class DraftFeatureComponentProjection : SingleStreamProjection<DraftFeatu
       var serviceType = ServiceType.ServiceTypes.First(p => p.Id == @event.ServiceTypeId);
       
       projection.Tasks = projection.Tasks.Add(
-      new BpnTask(@event.Name)
+      new BpnTask
       {
+        Name = @event.Name,
         Input = @event.Input, 
         Output = @event.Output, 
         BehavioralGoal = @event.BehavioralGoal, 

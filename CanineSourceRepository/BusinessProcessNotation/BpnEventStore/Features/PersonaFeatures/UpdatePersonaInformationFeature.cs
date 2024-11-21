@@ -1,4 +1,6 @@
 ﻿
+using Task = System.Threading.Tasks.Task;
+
 namespace CanineSourceRepository.BusinessProcessNotation.BpnEventStore.Features.PersonaFeatures;
 
 public class UpdatePersonaInformationFeature : IFeature

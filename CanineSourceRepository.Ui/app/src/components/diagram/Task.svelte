@@ -13,6 +13,7 @@
     export let position: { x?: number, y?: number };
     export let readonly : boolean;
     export let stats : TaskStats | undefined;
+    export let service : string;
   
     // Variables to track dragging state
     let dragging = false;
@@ -112,13 +113,13 @@
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 
 <g 
-on:mousedown={startDrag} 
-on:mousemove={drag} 
-on:mouseup={stopDrag}  
-on:click={handleClick} 
-on:keypress={handleClick}
-role="group" 
-aria-label="Task: {name}"
+    on:mousedown={startDrag}
+    on:mousemove={drag}
+    on:mouseup={stopDrag}
+    on:click={handleClick}
+    on:keypress={handleClick}
+    role="group"
+    aria-label="Task: {name}"
 >
 <rect
 x={position.x} y={position.y} width="300" height="150"
@@ -134,6 +135,13 @@ fill="#B0C4DE" stroke="grey" />
   <tspan  x={(position.x??0) + 10} dy={index === 0 ? 0 : 20}>{line}</tspan>
 {/each}        
 </text>
+{#if (service !== "")}
+    <text style="user-select: none;"  x={(position.x??0)} y={(position.y??0)+150} font-size="12">
+        <tspan style="fill: #3c3c3c" x={(position.x??0)+10} dy={-10}>
+            Uses: {service}
+        </tspan>
+    </text>
+{/if}
 {#if stats}
 <text style="user-select: none;"  x={(position.x??0)} y={(position.y??0)+150} font-size="12">
     <tspan style='fill:{getColor(stats.maxDurationMs??0)};' x={(position.x??0)} dy={10}>

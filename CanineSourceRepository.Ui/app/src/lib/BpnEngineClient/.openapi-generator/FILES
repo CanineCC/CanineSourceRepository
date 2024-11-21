@@ -31,7 +31,6 @@ models/BpnPosition.ts
 models/BpnSolution.ts
 models/BpnSystem.ts
 models/BpnTask.ts
-models/BpnTask2.ts
 models/BpnTransition.ts
 models/BpnWebApiContainer.ts
 models/CodeSnippet.ts
@@ -68,9 +67,11 @@ models/RemoveTestCaseFromTask.ts
 models/ResetDraftFeatureBody.ts
 models/Scope.ts
 models/ServerHealth.ts
-models/ServiceType.ts
 models/Stats.ts
 models/SystemDetails.ts
+models/Task.ts
+models/Task2.ts
+models/Task3.ts
 models/TaskStats.ts
 models/TestCase.ts
 models/UpdateCodeOnTaskBody.ts

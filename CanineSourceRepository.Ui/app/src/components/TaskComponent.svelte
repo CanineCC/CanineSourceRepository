@@ -1,6 +1,7 @@
 <script lang="ts">
-  import type {BpnTask, TestCase} from 'BpnEngineClient'; // Import your types
-    import { DraftFeatureTaskApi  } from 'BpnEngineClient/apis'; // Adjust the path accordingly
+  import type {BpnTask, NamedConfiguration, TestCase} from 'BpnEngineClient'; // Import your types
+    import { DraftFeatureTaskApi, NamedConfigurationApi  } from 'BpnEngineClient/apis';
+  import {onMount} from "svelte"; // Adjust the path accordingly
     export let task: BpnTask; // Accepts a BpnTask as a prop
     export let featureId: string;
     export let readonly: boolean = false;
@@ -9,25 +10,32 @@
     let selectedTestCase : TestCase | null = null;
     $: selectedTestCase = task.testCases.find(test => test.id === selectedTestCaseId) || null;
 
+    const namedConfigurationApi = new NamedConfigurationApi();
     const draftFeatureTaskApi = new DraftFeatureTaskApi();
 
+    let namedConfigurations : Array<NamedConfiguration> = [];
+  onMount(async () => {
+    namedConfigurations = await namedConfigurationApi.getAllNamedConfigurations()
+
+  });
+
   function updateDependency() {
-    draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: { featureId: featureId, taskId: task.id, serviceDependency: task.serviceDependency, namedConfiguration: task.namedConfiguration}});
+    draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: { featureId: featureId, taskId: task.id!, serviceDependency: task.serviceDependency, namedConfiguration: task.namedConfiguration}});
   }
   function addRecordType() {
-    draftFeatureTaskApi.addRecordToTaskFeature({ addRecordToTaskBody:{ featureId:featureId, taskId:task.id, recordDefinition:{ name: newRecordTypeName, fields:[]} } });
+    draftFeatureTaskApi.addRecordToTaskFeature({ addRecordToTaskBody:{ featureId:featureId, taskId:task.id!, recordDefinition:{ name: newRecordTypeName, fields:[]} } });
     newRecordTypeName = "";
   }
   function removeRecordType(index: number) {
-    draftFeatureTaskApi.deleteRecordOnTaskFeature({deleteRecordOnTaskBody: { featureId: featureId, taskId:task.id, name: task.recordTypes[index].name}});
+    draftFeatureTaskApi.deleteRecordOnTaskFeature({deleteRecordOnTaskBody: { featureId: featureId, taskId:task.id!, name: task.recordTypes[index].name}});
   }
   function updateRecordType(index :number) {
 
-    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id, recordIndex: index , recordDefinition: task.recordTypes[index]}});
+    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id!, recordIndex: index , recordDefinition: task.recordTypes[index]}});
   }
   function addFieldToRecordType(index : number){
     task.recordTypes[index].fields.push({ name:"<new>", type:"string", isMandatory:false, isCollection :false });
-    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id, recordIndex: index , recordDefinition: task.recordTypes[index]}});
+    draftFeatureTaskApi.updateRecordOnTaskFeature({updateRecordOnTaskBody: { featureId: featureId, taskId: task.id!, recordIndex: index , recordDefinition: task.recordTypes[index]}});
   }
 
   //NEXT STEPS:
@@ -38,9 +46,9 @@
   // - SOFTWARE SYSTEM (name, purpose) => CONTAINER (name, type ex. webapi) => CONTEXT => FEATURES/CODE ... C4
 
     // Dropdown options for serviceDependency (will come from actual services in future)
-    const serviceOptions = ["Database - postgresql", "Message Queue - RabbitMQ"];
+    //const serviceOptions = ["Database - postgresql", "Message Queue - RabbitMQ"];
     // Placeholder for named configuration (can later be fetched based on serviceDependency)
-    const namedConfigOptions = ["customer database", "inventory database"];
+    //const namedConfigOptions = ["customer database", "inventory database"];
   
     let activeTab = 'overview'; 
     function setActiveTab(tab: string) {
@@ -50,7 +58,7 @@
     async function saveFeaturePurpose() {
         await draftFeatureTaskApi.updateTaskPurposeFeature({updateTaskPurposeFeatureBody: {
             featureId: featureId, 
-            taskId: task.id,
+            taskId: task.id!,
             name: task.name,
             businessPurpose: task.businessPurpose,
             behavioralGoal: task.behavioralGoal
@@ -61,7 +69,7 @@
     async function  addTestCase() {
       await draftFeatureTaskApi.addTestCase({addTestCaseToTaskBody: {
         featureId: featureId,
-        taskId: task.id,
+        taskId: task.id!,
         name: "<Test case>",
         input: "{}",
         asserts: []
@@ -72,7 +80,7 @@
       selectedTestCase.asserts.push({ field:"", operation: 'Equal', expectedValue: ""});
       await  draftFeatureTaskApi.updateTestCase({ updateTestCaseOnTaskBody: {
           featureId: featureId,
-          taskId: task.id,
+          taskId: task.id!,
           testCase: selectedTestCase
       } })
 
@@ -81,7 +89,7 @@
     async function saveServiceDependency() {
         await draftFeatureTaskApi.updateServiceDependencyFeature({updateServiceDependencyBody: {
             featureId: featureId, 
-            taskId: task.id,
+            taskId: task.id!,
             serviceDependency: task.serviceDependency,
             namedConfiguration: task.namedConfiguration
         }});
@@ -159,7 +167,7 @@
       {/if}
 
       {#if activeTab === 'service-dependency'}
-        <div>
+      <!--  <div>
             <label for="service-dependency">Service Dependency:</label>
             <select id="service-dependency" disabled={readonly} bind:value={task.serviceDependency}>
             <option disabled selected>Select a service</option>
@@ -167,13 +175,13 @@
                 <option value={service}>{service}</option>
             {/each}
             </select>
-        </div>
+        </div>-->
         <div>
             <label for="named-configuration">Named Configuration:</label>
-            <select id="named-configuration" disabled={readonly} bind:value={task.namedConfiguration}>
+            <select id="named-configuration" disabled={readonly} bind:value={task.namedConfigurationId}>
             <option disabled selected>Select a configuration</option>
-            {#each namedConfigOptions as config}
-                <option value={config}>{config}</option>
+            {#each namedConfigurations as config}
+                <option value={config.id}>{config.name} ({config.serviceTypeName})</option>
             {/each}
             </select>
         </div>

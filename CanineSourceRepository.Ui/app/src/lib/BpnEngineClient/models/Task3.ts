@@ -16,47 +16,47 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ServiceType
+ * @interface Task3
  */
-export interface ServiceType {
+export interface Task3 {
     /**
      * 
      * @type {string}
-     * @memberof ServiceType
+     * @memberof Task3
      */
     id?: string;
     /**
      * 
      * @type {string}
-     * @memberof ServiceType
+     * @memberof Task3
      */
-    name?: string;
+    name?: string | null;
     /**
      * 
      * @type {string}
-     * @memberof ServiceType
+     * @memberof Task3
      */
-    type?: string;
+    serviceDependencyId?: string;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ServiceType
+     * @type {string}
+     * @memberof Task3
      */
-    keys?: Array<string>;
+    namedConfigurationName?: string | null;
 }
 
 /**
- * Check if a given object implements the ServiceType interface.
+ * Check if a given object implements the Task3 interface.
  */
-export function instanceOfServiceType(value: object): value is ServiceType {
+export function instanceOfTask3(value: object): value is Task3 {
     return true;
 }
 
-export function ServiceTypeFromJSON(json: any): ServiceType {
-    return ServiceTypeFromJSONTyped(json, false);
+export function Task3FromJSON(json: any): Task3 {
+    return Task3FromJSONTyped(json, false);
 }
 
-export function ServiceTypeFromJSONTyped(json: any, ignoreDiscriminator: boolean): ServiceType {
+export function Task3FromJSONTyped(json: any, ignoreDiscriminator: boolean): Task3 {
     if (json == null) {
         return json;
     }
@@ -64,12 +64,12 @@ export function ServiceTypeFromJSONTyped(json: any, ignoreDiscriminator: boolean
         
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
-        'type': json['type'] == null ? undefined : json['type'],
-        'keys': json['keys'] == null ? undefined : json['keys'],
+        'serviceDependencyId': json['serviceDependencyId'] == null ? undefined : json['serviceDependencyId'],
+        'namedConfigurationName': json['namedConfigurationName'] == null ? undefined : json['namedConfigurationName'],
     };
 }
 
-export function ServiceTypeToJSON(value?: ServiceType | null): any {
+export function Task3ToJSON(value?: Task3 | null): any {
     if (value == null) {
         return value;
     }
@@ -77,8 +77,8 @@ export function ServiceTypeToJSON(value?: ServiceType | null): any {
         
         'id': value['id'],
         'name': value['name'],
-        'type': value['type'],
-        'keys': value['keys'],
+        'serviceDependencyId': value['serviceDependencyId'],
+        'namedConfigurationName': value['namedConfigurationName'],
     };
 }
 

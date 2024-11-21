@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { BpnTask } from './BpnTask';
+import type { Task } from './Task';
 import {
-    BpnTaskFromJSON,
-    BpnTaskFromJSONTyped,
-    BpnTaskToJSON,
-} from './BpnTask';
+    TaskFromJSON,
+    TaskFromJSONTyped,
+    TaskToJSON,
+} from './Task';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface AddTaskToDraftFeatureBody {
     featureId: string;
     /**
      * 
-     * @type {BpnTask}
+     * @type {Task}
      * @memberof AddTaskToDraftFeatureBody
      */
-    task: BpnTask;
+    task: Task;
 }
 
 /**
@@ -60,7 +60,7 @@ export function AddTaskToDraftFeatureBodyFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'featureId': json['featureId'],
-        'task': BpnTaskFromJSON(json['task']),
+        'task': TaskFromJSON(json['task']),
     };
 }
 
@@ -71,7 +71,7 @@ export function AddTaskToDraftFeatureBodyToJSON(value?: AddTaskToDraftFeatureBod
     return {
         
         'featureId': value['featureId'],
-        'task': BpnTaskToJSON(value['task']),
+        'task': TaskToJSON(value['task']),
     };
 }
 

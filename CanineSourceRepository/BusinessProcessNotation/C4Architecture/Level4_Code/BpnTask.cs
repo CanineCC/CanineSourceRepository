@@ -4,24 +4,11 @@ using System.ComponentModel.DataAnnotations;
 namespace CanineSourceRepository.BusinessProcessNotation.C4Architecture.Level4_Code;
 
 
-public class BpnTask(string name)
+public class BpnTask
 {
   public Guid Id { get; set; } = Guid.CreateVersion7();
-  [Required] public string Name { get; set; } = name; //sanitize?
-  /// <summary>
-  /// Describe why this node exists from a business perspective. What is its value in the broader workflow
-  /// </summary>
-  /// <example>
-  /// Validate that the user has a verified email address before allowing access to premium content.
-  /// </example>
+  [Required] public string Name { get; set; } 
   [Required] public string BusinessPurpose { get; set; } = string.Empty;
-
-  /// <summary>
-  /// Focus on what behavior this node should enforce. It should emphasize the expected result or transformation without mentioning technical specifics. This will guide the LLM to create logic that fulfills the business behavior.
-  /// </summary>
-  /// <example>
-  /// Ensure the email is verified and allow access to content.
-  /// </example>
   [Required] public string BehavioralGoal { get; set; } = string.Empty;
   public string? Input { get; set; }
   public string? Output { get; set; }
@@ -39,13 +26,11 @@ public class BpnTask(string name)
     TestCases.Add(record);
     return TestCases.OrderBy(p=>p.Name).ToArray();
   }
-
   public TestCase[] RemoveTestCase(Guid id)
   {
     TestCases.RemoveAll(p => p.Id == id);
     return TestCases.OrderBy(p => p.Name).ToArray();
   }
-
   public async Task<List<TestResult>> RunTests(object? serviceInjection, Assembly assembly)
   {
 
@@ -128,7 +113,6 @@ public class BpnTask(string name)
   {
     return ServiceInjection.ServiceLocator(ServiceDependency, NamedConfiguration);
   }
-
   [Required] public ImmutableList<RecordDefinition> RecordTypes { get; set; } = [];
   [Required] public string[] ValidDatatypes
   {
@@ -139,13 +123,30 @@ public class BpnTask(string name)
            .ToArray();
     }
   }
-  public Type GetCompiledType(Assembly assembly)
+  public string RecordsAsCode
+  {
+    get
+    {
+      return string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
+    }
+  }
+  public string MethodSignatureAsCode
+  {
+    get
+    {
+      var injectedService = ServiceType.ServiceTypes.First(p => p.Id == ServiceDependencyId);
+      return Output == null ?
+        $"public static async Task Execute({Input} input, {injectedService.InjectedComponent} service)" :
+        $"public static async Task<{Output}> Execute({Input} input, {injectedService.InjectedComponent} service) ";
+    }
+  }  public Type GetCompiledType(Assembly assembly)
   {
     var className = BpnEngine.CodeNamespace + "." + GetTypeName();
     var res = assembly.GetType(className + "+" + Input) ?? throw new InvalidOperationException($"The inputType '{Input}' does not exist in {Name}'s definition (Node.Id:{Id})");
 
     return res ?? throw new Exception($"The type '{className + "+" + Input}' was not found in the assembly, check code generation for the type.");
   }
+  
   public Assembly ToAssembly() => DynamicCompiler.PrecompileCode(ToCode());
   public Task<dynamic?> Execute(dynamic input, object? serviceInjection, Assembly assembly) => Execute(JsonSerializer.Serialize(input), serviceInjection, assembly);
   public Task<dynamic?> Execute(string inputJson, object? serviceInjection, Assembly assembly)
@@ -204,7 +205,6 @@ public class BpnTask(string name)
 
     return this;
   }
-
   public class DataDefinition(string Name, string Type, bool IsCollection = false, bool IsMandatory = true)
   {
     public string Name { get; set; } = Name;
@@ -232,25 +232,6 @@ public class BpnTask(string name)
   {
     return GetType().Name + "_" + Id.ToString("N");
   }
-  
-  public string RecordsAsCode
-  {
-    get
-    {
-      return string.Join("\r\n", RecordTypes.Select(p => p.ToCode()));
-    }
-  }
-  public string MethodSignatureAsCode
-  {
-    get
-    {
-      var injectedService = ServiceType.ServiceTypes.First(p => p.Id == ServiceDependencyId);
-      return Output == null ?
-        $"public static async Task Execute({Input} input, {injectedService.InjectedComponent} service)" :
-        $"public static async Task<{Output}> Execute({Input} input, {injectedService.InjectedComponent} service) ";
-    }
-  }
-
   public string ToCode(bool includeNamespace = true)
   {
     if (Code == null) return "";
@@ -276,7 +257,6 @@ public static class {GetTypeName()} {{
 }}
       ";
   }
-
   private int CalcCodeOffset()
   {
     if (Code == null) return 0;
@@ -290,10 +270,7 @@ public static class {GetTypeName()} {{
     int lineNumber = beforeSnippet.Split("\r\n").Length - 1; //, StringSplitOptions.RemoveEmptyEntries
     return lineNumber;
   }
-
-
   public (DynamicCompiler.CompileError[] errors, bool success) VerifyCode() => DynamicCompiler.VerifyCode(ToCode(), CalcCodeOffset());
-  
 }
 
 public record TestCase

@@ -67,7 +67,8 @@ public class NamedConfigurationProjection : SingleStreamProjection<NamedConfigur
     {
         view.Id = @event.Data.NamedConfigurationId;
         view.SystemId = @event.Data.SystemId;
-        view.ServiceType = ServiceType.ServiceTypes.First(p=>p.Id == @event.Data.ServiceTypeId);
+        view.ServiceTypeName = ServiceType.ServiceTypes.First(p=>p.Id == @event.Data.ServiceTypeId).InjectedComponent.Name;
+        view.ServiceTypeId = @event.Data.ServiceTypeId;
         view.Name = @event.Data.Name;
         view.Description = @event.Data.Description;
         view.Scope = @event.Data.Scope;
@@ -77,7 +78,8 @@ public class NamedConfigurationProjection : SingleStreamProjection<NamedConfigur
     {
         [Required] public Guid Id { get; set; }
         [Required] public Guid SystemId { get; set; }
-        [Required] public ServiceType ServiceType { get; set; }
+        [Required] public string ServiceTypeName { get; set; }
+        [Required] public Guid ServiceTypeId { get; set; }
         [Required] public string Name { get; set; }
         [Required] public string Description { get; set; }
         [Required] public Scope Scope { get; set; }

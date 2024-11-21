@@ -19,12 +19,6 @@ import {
     FeatureComponentDiagramFromJSONTyped,
     FeatureComponentDiagramToJSON,
 } from './FeatureComponentDiagram';
-import type { BpnTask2 } from './BpnTask2';
-import {
-    BpnTask2FromJSON,
-    BpnTask2FromJSONTyped,
-    BpnTask2ToJSON,
-} from './BpnTask2';
 import type { BpnTransition } from './BpnTransition';
 import {
     BpnTransitionFromJSON,
@@ -37,6 +31,12 @@ import {
     EnvironmentFromJSONTyped,
     EnvironmentToJSON,
 } from './Environment';
+import type { BpnTask } from './BpnTask';
+import {
+    BpnTaskFromJSON,
+    BpnTaskFromJSONTyped,
+    BpnTaskToJSON,
+} from './BpnTask';
 
 /**
  * 
@@ -88,10 +88,10 @@ export interface BpnFeatureRevision {
     revision?: number;
     /**
      * 
-     * @type {Array<BpnTask2>}
+     * @type {Array<BpnTask>}
      * @memberof BpnFeatureRevision
      */
-    tasks?: Array<BpnTask2>;
+    tasks?: Array<BpnTask>;
     /**
      * 
      * @type {Array<BpnTransition>}
@@ -130,7 +130,7 @@ export function BpnFeatureRevisionFromJSONTyped(json: any, ignoreDiscriminator: 
         'releasedBy': json['releasedBy'] == null ? undefined : json['releasedBy'],
         'releasedDate': json['releasedDate'] == null ? undefined : (new Date(json['releasedDate'])),
         'revision': json['revision'] == null ? undefined : json['revision'],
-        'tasks': json['tasks'] == null ? undefined : ((json['tasks'] as Array<any>).map(BpnTask2FromJSON)),
+        'tasks': json['tasks'] == null ? undefined : ((json['tasks'] as Array<any>).map(BpnTaskFromJSON)),
         'transitions': json['transitions'] == null ? undefined : ((json['transitions'] as Array<any>).map(BpnTransitionFromJSON)),
         'targetEnvironments': json['targetEnvironments'] == null ? undefined : ((json['targetEnvironments'] as Array<any>).map(EnvironmentFromJSON)),
     };
@@ -149,7 +149,7 @@ export function BpnFeatureRevisionToJSON(value?: BpnFeatureRevision | null): any
         'releasedBy': value['releasedBy'],
         'releasedDate': value['releasedDate'] == null ? undefined : ((value['releasedDate'] as any).toISOString()),
         'revision': value['revision'],
-        'tasks': value['tasks'] == null ? undefined : ((value['tasks'] as Array<any>).map(BpnTask2ToJSON)),
+        'tasks': value['tasks'] == null ? undefined : ((value['tasks'] as Array<any>).map(BpnTaskToJSON)),
         'transitions': value['transitions'] == null ? undefined : ((value['transitions'] as Array<any>).map(BpnTransitionToJSON)),
         'targetEnvironments': value['targetEnvironments'] == null ? undefined : ((value['targetEnvironments'] as Array<any>).map(EnvironmentToJSON)),
     };

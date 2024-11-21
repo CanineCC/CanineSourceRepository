@@ -51,12 +51,9 @@ public class C4ComponentDiagram : ComponentDiagram
                 var newestVersion = component.Revisions.Last();
                 foreach (var task in newestVersion.Tasks)
                 {
-                    
                     if (task.ServiceDependencyId == Guid.Empty)
                          continue;
-
                     var service = ServiceType.ServiceTypes.First(p => p.Id == task.ServiceDependencyId);
-                    //structures.Add(Database.None | (ContainerType.Database, task.NamedConfigurationName.ToPascalCase(), service.InjectedComponent.Name, service.InjectedComponent.Name));
                     components.Add(new (task.NamedConfigurationName.ToPascalCase(), task.NamedConfigurationName, ComponentType.Database, service.InjectedComponent.Name));
                 }
                 components.Add(new (newestVersion.Name.ToPascalCase(), newestVersion.Name, "C#", newestVersion.Objective));
@@ -69,9 +66,7 @@ public class C4ComponentDiagram : ComponentDiagram
     {
         get
         {
-            //TODO: relations between containers and services
             var relationships = new List<Relationship>();
-
             foreach (var component in _components)
             {
                 var newestVersion = component.Revisions.Last();
@@ -92,26 +87,6 @@ public class C4ComponentDiagram : ComponentDiagram
                 }
             }
             return relationships.ToArray();
-
-            //get
-            //{//TODO: relations between containers and services
-            //    //TODO: relations between containers (using events?)
-            //    return [];
-            /*{
-        this["Customer"] > this["WebApp"] | ("Uses", "HTTPS"),
-        this["Customer"] > this["Spa"] | ("Uses", "HTTPS"),
-        this["Customer"] > this["MobileApp"] | "Uses",
-
-        this["WebApp"] > this["Spa"] | "Delivers" | Position.Neighbor,
-        this["Spa"] > this["BackendApi"] | ("Uses", "async, JSON/HTTPS"),
-        this["MobileApp"] > this["BackendApi"] | ("Uses", "async, JSON/HTTPS"),
-        this["SqlDatabase"] < this["BackendApi"] | ("Uses", "async, JSON/HTTPS") | Position.Neighbor,
-        this["RabbitMQ"] < this["BackendApi"] | ("Uses", "async, JSON"),
-
-        this["Customer"] < this["MailSystem"] | "Sends e-mails to",
-        this["MailSystem"] < this["BackendApi"] | ("Sends e-mails using", "sync, SMTP"),
-        this["BackendApi"] > this["BankingSystem"] | ("Uses", "sync/async, XML/HTTPS") | Position.Neighbor
-      }*/
         }
     }
 }
